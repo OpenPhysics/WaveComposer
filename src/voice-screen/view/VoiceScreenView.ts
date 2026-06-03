@@ -12,6 +12,7 @@ import { ScreenView } from "scenerystack/sim";
 import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
+import { AudioSourceControl } from "./AudioSourceControl.js";
 import { CepstrumNode } from "./CepstrumNode.js";
 import { VoiceQualityReadout } from "./VoiceQualityReadout.js";
 import { VowelPlotNode } from "./VowelPlotNode.js";
@@ -39,6 +40,14 @@ export class VoiceScreenView extends ScreenView {
     vowelContainer.left = this.layoutBounds.minX + MARGIN;
     vowelContainer.top = this.layoutBounds.minY + MARGIN;
     this.addChild(vowelContainer);
+
+    // ── Audio source control (below the vowel plot) ─────────────────────────
+    // Lets the user point this screen at the microphone without switching to the
+    // Analyzer screen; both screens share one model, so the choice applies to both.
+    const sourceControl = new AudioSourceControl(model);
+    sourceControl.left = vowelContainer.left;
+    sourceControl.top = vowelContainer.bottom + SPACING;
+    this.addChild(sourceControl);
 
     // ── Cepstrum + readout (right) ──────────────────────────────────────────
     const rightLeft = vowelContainer.right + SPACING + CHART_LEFT_GUTTER;
