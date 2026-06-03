@@ -14,6 +14,7 @@ import { Node, Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
+import { ButtonNode } from "scenerystack/sun";
 import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
@@ -89,6 +90,7 @@ export class SimScreenView extends ScreenView {
 
     // ── Reset All ──────────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
+      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       listener: () => {
         model.reset();
         this.reset();

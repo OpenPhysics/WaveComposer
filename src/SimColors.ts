@@ -72,6 +72,33 @@ const SimColors = {
     projector: "#1a1a1a",
   }),
 
+  // ── Interactive controls (push buttons + combo boxes) ─────────────────────────
+  /**
+   * Base fill for push buttons and combo-box buttons/lists. Pairs with
+   * textColorProperty for the label, so the control reads correctly in both modes:
+   * dark blue with light text in default mode, light gray with dark text in
+   * projector mode. (The previous accent-blue button base went near-black in
+   * projector mode, leaving the black label unreadable.)
+   */
+  buttonFillColorProperty: new ProfileColorProperty(SimNamespace, "buttonFill", {
+    default: "#243a63",
+    projector: "#e0e0e0",
+  }),
+  /**
+   * Fill for a disabled push button (e.g. start/stop while the demo source is
+   * selected). Stays dark in default mode so the dimmed light label remains
+   * legible; the sun default (light gray) made light-on-light text vanish.
+   */
+  buttonDisabledFillColorProperty: new ProfileColorProperty(SimNamespace, "buttonDisabledFill", {
+    default: "#2c3450",
+    projector: "#d6d6d6",
+  }),
+  /** Hover/selection highlight for combo-box list items (kept readable behind the label). */
+  comboBoxHighlightColorProperty: new ProfileColorProperty(SimNamespace, "comboBoxHighlight", {
+    default: "#35538c",
+    projector: "#cdd8ea",
+  }),
+
   // ── Chart chrome ────────────────────────────────────────────────────────────
   /** Plotting-area background (spectrum, waveform, cepstrum, vowel plot). */
   chartBackgroundColorProperty: new ProfileColorProperty(SimNamespace, "chartBackground", {

@@ -11,7 +11,15 @@ import { DerivedProperty, type NumberProperty, type Property, type TReadOnlyProp
 import { Dimension2, Range } from "scenerystack/dot";
 import { HBox, Line, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
-import { AquaRadioButtonGroup, Checkbox, ComboBox, Panel, TextPushButton } from "scenerystack/sun";
+import {
+  AquaRadioButtonGroup,
+  ButtonNode,
+  Checkbox,
+  ComboBox,
+  type ComboBoxOptions,
+  Panel,
+  TextPushButton,
+} from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import { WINDOW_TYPE_VALUES, type WindowType } from "../../model/dsp/WindowFunction.js";
@@ -49,7 +57,10 @@ export class AnalyzerControlPanel extends Panel {
     );
     const startStopButton = new TextPushButton(startStopLabel, {
       font: ViewConstants.CONTROL_FONT,
-      baseColor: SimColors.accentColorProperty,
+      baseColor: SimColors.buttonFillColorProperty,
+      disabledColor: SimColors.buttonDisabledFillColorProperty,
+      textFill: SimColors.textColorProperty,
+      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       maxTextWidth: PANEL_WIDTH - 20,
       enabledProperty: new DerivedProperty([model.audioSourceProperty], (s) => s === AudioSource.MICROPHONE),
       listener: () => {
@@ -65,11 +76,22 @@ export class AnalyzerControlPanel extends Panel {
     const freezeCheckbox = makeCheckbox(model.isFrozenProperty, controls.freezeStringProperty);
 
     // ── Analysis settings ───────────────────────────────────────────────────
+    // Shared combo-box styling: dark fill with light item text in default mode
+    // (the sun default is white, which leaves the light labels unreadable).
+    const comboBoxOptions: ComboBoxOptions = {
+      buttonFill: SimColors.buttonFillColorProperty,
+      buttonStroke: SimColors.panelBorderColorProperty,
+      listFill: SimColors.buttonFillColorProperty,
+      listStroke: SimColors.panelBorderColorProperty,
+      highlightFill: SimColors.comboBoxHighlightColorProperty,
+      tandem: Tandem.OPT_OUT,
+    };
+
     const fftCombo = new ComboBox(
       model.fftSizeProperty,
       FFT_SIZE_OPTIONS.map((size) => ({ value: size, createNode: () => controlText(`${size}`) })),
       listParent,
-      { tandem: Tandem.OPT_OUT },
+      comboBoxOptions,
     );
 
     const windowLabels: Record<WindowType, TReadOnlyProperty<string>> = {
@@ -81,7 +103,7 @@ export class AnalyzerControlPanel extends Panel {
       model.windowTypeProperty,
       WINDOW_TYPE_VALUES.map((type) => ({ value: type, createNode: () => controlText(windowLabels[type]) })),
       listParent,
-      { tandem: Tandem.OPT_OUT },
+      comboBoxOptions,
     );
 
     const colormapLabels: Record<ColormapName, TReadOnlyProperty<string>> = {
@@ -94,7 +116,7 @@ export class AnalyzerControlPanel extends Panel {
       viewProperties.colormapProperty,
       COLORMAP_NAME_VALUES.map((name) => ({ value: name, createNode: () => controlText(colormapLabels[name]) })),
       listParent,
-      { tandem: Tandem.OPT_OUT },
+      comboBoxOptions,
     );
 
     const lpcControl = makeNumberControl(controls.lpcOrderStringProperty, model.lpcOrderProperty, LPC_ORDER_RANGE, 1);

@@ -11,7 +11,7 @@
  */
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { type Node, Text, VBox } from "scenerystack/scenery";
-import { AquaRadioButtonGroup, Panel, TextPushButton } from "scenerystack/sun";
+import { AquaRadioButtonGroup, ButtonNode, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
@@ -39,7 +39,10 @@ export class AudioSourceControl extends Panel {
     );
     const startStopButton = new TextPushButton(startStopLabel, {
       font: ViewConstants.CONTROL_FONT,
-      baseColor: SimColors.accentColorProperty,
+      baseColor: SimColors.buttonFillColorProperty,
+      disabledColor: SimColors.buttonDisabledFillColorProperty,
+      textFill: SimColors.textColorProperty,
+      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       maxTextWidth: MAX_BUTTON_TEXT_WIDTH,
       // Start/stop only applies to the live microphone, not the synthetic demo.
       enabledProperty: new DerivedProperty([model.audioSourceProperty], (s) => s === AudioSource.MICROPHONE),
