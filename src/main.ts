@@ -39,6 +39,26 @@ onReadyToLaunch(() => {
         // Enables keyboard-navigation highlight outlines
         supportsInteractiveHighlights: true,
       },
+      audioOptions: {
+        // Adds the Preferences → Audio tab with a "Sounds" toggle.
+        // Requires supportsSound: true in src/init.ts. Register actual sounds
+        // with soundManager.addSoundGenerator(...) from scenerystack/tambo.
+        supportsSound: true,
+        // Adds an "Extra Sounds" toggle (a second, optional sonification layer).
+        // Requires supportsSound above.
+        supportsExtraSound: true,
+        // Adds Voicing (text-to-speech) controls and the Voicing toolbar.
+        // Requires supportsVoicing: true in src/init.ts. Only active in English
+        // on platforms with SpeechSynthesis; degrades gracefully elsewhere.
+        // NOTE: supportsCoreVoicing is intentionally omitted — it is mutually
+        // exclusive with supportsVoicing (asserts if both are on) and is a
+        // phet-internal mode, not meant for sims.
+        supportsVoicing: true,
+      },
+      inputOptions: {
+        // Adds the Preferences → Input tab with a touchscreen gesture-control toggle.
+        supportsGestureControl: true,
+      },
       localizationOptions: {
         // Adds a language picker in Preferences → Language
         supportsDynamicLocale: true,

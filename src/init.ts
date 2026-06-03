@@ -32,6 +32,23 @@ init({
   // All supported locales — must match the locale keys in src/i18n/StringManager.ts.
   availableLocales: ["en", "fr"],
 
+  // Color profiles the sim supports. Must match the keys used in src/SimColors.ts.
+  // "projector" is required (alongside "default") for the Preferences → Visual
+  // "Projector Mode" toggle (enabled via supportsProjectorMode in src/main.ts).
+  colorProfiles: ["default", "projector"],
+
+  // Enables the sound subsystem (soundManager / tambo). This registers the
+  // "supportsSound" sim feature, which adds the Preferences → Audio tab with a
+  // master "Audio" toggle and a "Sounds" toggle. Surfaced in src/main.ts via the
+  // PreferencesModel audioOptions, and used by soundManager.addSoundGenerator(...).
+  supportsSound: true,
+
+  // Enables the Voicing (text-to-speech) feature. Defaults to false, so it must
+  // be set here for the Preferences → Audio Voicing controls (surfaced via the
+  // PreferencesModel audioOptions in src/main.ts) to function. Voicing is only
+  // active in the English locale on platforms with SpeechSynthesis support.
+  supportsVoicing: true,
+
   // Splash screen shown while the simulation loads.
   splashDataURI: madeWithSceneryStackSplashDataURI,
 

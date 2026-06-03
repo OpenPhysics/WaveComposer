@@ -25,3 +25,6 @@ tsconfig.tsbuildinfo
 
 # Claude Code - local settings excluded, hooks tracked
 .claude/settings.local.json
+
+# Reference repos cloned locally for study (not part of this project)
+references/
