@@ -35,6 +35,9 @@ export class VoiceScreenView extends ScreenView {
     });
     this.addChild(background);
 
+    // Layer for the source ComboBox popup; must be on top of the other content.
+    const popupLayer = new Node();
+
     // ── Vowel plot (left) ───────────────────────────────────────────────────
     this.vowelPlot = new VowelPlotNode(model, { viewWidth: VOWEL_PLOT_SIZE, viewHeight: VOWEL_PLOT_SIZE });
     const vowelContainer = new Node({ children: [this.vowelPlot] });
@@ -45,7 +48,7 @@ export class VoiceScreenView extends ScreenView {
     // ── Audio source control (below the vowel plot) ─────────────────────────
     // Lets the user point this screen at the microphone without switching to the
     // Analyzer screen; both screens share one model, so the choice applies to both.
-    const sourceControl = new AudioSourceControl(model);
+    const sourceControl = new AudioSourceControl(model, popupLayer);
     sourceControl.left = vowelContainer.left;
     sourceControl.top = vowelContainer.bottom + SPACING;
     this.addChild(sourceControl);
@@ -76,6 +79,9 @@ export class VoiceScreenView extends ScreenView {
       bottom: this.layoutBounds.maxY - MARGIN,
     });
     this.addChild(resetAllButton);
+
+    // Added last so the source ComboBox popup renders above everything else.
+    this.addChild(popupLayer);
   }
 
   public reset(): void {

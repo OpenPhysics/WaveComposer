@@ -11,21 +11,14 @@ import { DerivedProperty, type NumberProperty, type Property, type TReadOnlyProp
 import { Dimension2, Range } from "scenerystack/dot";
 import { HBox, Line, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
-import {
-  AquaRadioButtonGroup,
-  ButtonNode,
-  Checkbox,
-  ComboBox,
-  type ComboBoxOptions,
-  Panel,
-  TextPushButton,
-} from "scenerystack/sun";
+import { ButtonNode, Checkbox, ComboBox, type ComboBoxOptions, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import { WINDOW_TYPE_VALUES, type WindowType } from "../../model/dsp/WindowFunction.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
 import { COLORMAP_NAME_VALUES, type ColormapName } from "../../view/Colormaps.js";
+import { createSourceSelector } from "../../view/SourceSelector.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
@@ -42,14 +35,7 @@ export class AnalyzerControlPanel extends Panel {
     const colormapStrings = StringManager.getInstance().getColormapStrings();
 
     // ── Source + start/stop + freeze ────────────────────────────────────────
-    const sourceGroup = new AquaRadioButtonGroup(
-      model.audioSourceProperty,
-      [
-        { value: AudioSource.MICROPHONE, createNode: () => controlText(controls.microphoneStringProperty) },
-        { value: AudioSource.DEMO, createNode: () => controlText(controls.demoStringProperty) },
-      ],
-      { orientation: "horizontal", spacing: 14, radioButtonOptions: { radius: 7 }, tandem: Tandem.OPT_OUT },
-    );
+    const sourceSelector = createSourceSelector(model, listParent);
 
     const startStopLabel = new DerivedProperty(
       [model.isListeningProperty, controls.startMicrophoneStringProperty, controls.stopMicrophoneStringProperty],
@@ -150,7 +136,7 @@ export class AnalyzerControlPanel extends Panel {
           fill: SimColors.textColorProperty,
         }),
         sectionLabel(controls.sourceStringProperty),
-        sourceGroup,
+        sourceSelector,
         startStopButton,
         freezeCheckbox,
         divider(),

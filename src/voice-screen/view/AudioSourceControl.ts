@@ -1,37 +1,32 @@
 /**
  * AudioSourceControl.ts
  *
- * Compact audio-source control for the Voice & Vowels screen: a microphone/demo
- * radio selector and a start/stop button. It binds to the same shared SimModel as
- * the Analyzer screen, so selecting the microphone here switches the input for
- * both screens (the model owns the single audio source / analysis pipeline).
+ * Compact audio-source control for the Voice & Vowels screen: the shared source
+ * ComboBox (microphone + presets) and a start/stop button. It binds to the same
+ * shared SimModel as the Analyzer screen, so changing the source here switches the
+ * input for both screens (the model owns the single audio source / analysis pipeline).
  *
  * The Analyzer screen has its own, larger control panel; this mirrors just the
  * source picker so the input can also be chosen without leaving this screen.
  */
-import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { DerivedProperty } from "scenerystack/axon";
 import { type Node, Text, VBox } from "scenerystack/scenery";
-import { AquaRadioButtonGroup, ButtonNode, Panel, TextPushButton } from "scenerystack/sun";
+import { ButtonNode, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
+import { createSourceSelector } from "../../view/SourceSelector.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
 
 const MAX_BUTTON_TEXT_WIDTH = 170;
 
 export class AudioSourceControl extends Panel {
-  public constructor(model: SimModel) {
+  public constructor(model: SimModel, listParent: Node) {
     const controls = StringManager.getInstance().getControlStrings();
 
-    const sourceGroup = new AquaRadioButtonGroup(
-      model.audioSourceProperty,
-      [
-        { value: AudioSource.MICROPHONE, createNode: () => controlText(controls.microphoneStringProperty) },
-        { value: AudioSource.DEMO, createNode: () => controlText(controls.demoStringProperty) },
-      ],
-      { orientation: "horizontal", spacing: 14, radioButtonOptions: { radius: 7 }, tandem: Tandem.OPT_OUT },
-    );
+    // This panel sits near the bottom of the screen, so open the list upward.
+    const sourceSelector = createSourceSelector(model, listParent, { listPosition: "above" });
 
     const startStopLabel = new DerivedProperty(
       [model.isListeningProperty, controls.startMicrophoneStringProperty, controls.stopMicrophoneStringProperty],
@@ -64,7 +59,7 @@ export class AudioSourceControl extends Panel {
           font: ViewConstants.PANEL_TITLE_FONT,
           fill: SimColors.textColorProperty,
         }),
-        sourceGroup,
+        sourceSelector,
         startStopButton,
       ],
     });
@@ -78,8 +73,4 @@ export class AudioSourceControl extends Panel {
       align: "left",
     });
   }
-}
-
-function controlText(content: string | TReadOnlyProperty<string>): Node {
-  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: SimColors.textColorProperty });
 }

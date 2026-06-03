@@ -5,9 +5,11 @@
  *   - the reactive settings (FFT size, window, LPC order, display range)
  *   - the reactive analysis outputs (F0, note, formants, HNR, CPP, RMS)
  *   - the {@link VoiceAnalyzer} (pure DSP) and the audio sources: a live
- *     {@link MicrophoneInput} and a {@link DemoFrameSource} (a synthetic voice
- *     used by default so the displays animate on load and the sim is verifiable
- *     without a microphone). {@link audioSourceProperty} selects between them.
+ *     {@link MicrophoneInput} (the default), a set of synthetic {@link PresetFrameSource}
+ *     demonstrations (vowels, clarinet, flute, violin, cymbals), and two bundled
+ *     {@link AudioFileFrameSource} clips (singing, guitar scale). {@link audioSourceProperty}
+ *     selects between them; the microphone starts lazily (on the Start button) so no
+ *     permission prompt appears on load.
  *
  * Scalar results are exposed as Axon Properties / DerivedProperties. The large
  * per-frame arrays (waveform, spectrum, LPC envelope, cepstrum) live in reused
@@ -28,9 +30,17 @@ import {
 } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
+import clarinetUrl from "../assets/audio/clarinet.ogg?url";
+import cymbalsUrl from "../assets/audio/cymbals.ogg?url";
+import fluteUrl from "../assets/audio/flute.ogg?url";
+import guitarUrl from "../assets/audio/guitar-scale.ogg?url";
+import violinUrl from "../assets/audio/violin.ogg?url";
+import vowelAhUrl from "../assets/audio/vowel-ah.ogg?url";
+import vowelEeUrl from "../assets/audio/vowel-ee.ogg?url";
+import { AudioFileFrameSource } from "./audio/AudioFileFrameSource.js";
 import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
-import { DemoFrameSource } from "./audio/DemoFrameSource.js";
 import { MicrophoneInput } from "./audio/MicrophoneInput.js";
+import { createSingingSource } from "./audio/presets.js";
 import { centsFromFrequency, noteNameFromFrequency } from "./dsp/NoteUtils.js";
 import type { FormantData } from "./dsp/types.js";
 import { WINDOW_TYPE_VALUES, WindowType } from "./dsp/WindowFunction.js";
@@ -60,15 +70,35 @@ const EMPTY_FORMANTS: readonly FormantData[] = [];
 const DEFAULT_SAMPLE_RATE_HZ = 44100;
 
 /**
- * Which audio source the analyzer reads from. `DEMO` is a synthetic voice that
- * needs no permission and runs immediately; `MICROPHONE` is the live input.
+ * Which audio source the analyzer reads from. `MICROPHONE` is the live input (the
+ * default; it starts lazily so no permission prompt appears on load). The rest are
+ * permission-free demonstrations: synthetic presets (vowels, instruments, cymbals)
+ * and two bundled CC0 recordings (singing, guitar scale) that auto-play on selection.
  */
 export const AudioSource = {
   MICROPHONE: "microphone",
-  DEMO: "demo",
+  VOWEL_AH: "vowelAh",
+  VOWEL_EE: "vowelEe",
+  CLARINET: "clarinet",
+  FLUTE: "flute",
+  VIOLIN: "violin",
+  CYMBALS: "cymbals",
+  SINGING: "singing",
+  GUITAR: "guitar",
 } as const;
 export type AudioSource = (typeof AudioSource)[keyof typeof AudioSource];
-export const AUDIO_SOURCE_VALUES: readonly AudioSource[] = [AudioSource.MICROPHONE, AudioSource.DEMO];
+/** Display order for the source selector. */
+export const AUDIO_SOURCE_VALUES: readonly AudioSource[] = [
+  AudioSource.MICROPHONE,
+  AudioSource.VOWEL_AH,
+  AudioSource.VOWEL_EE,
+  AudioSource.CLARINET,
+  AudioSource.FLUTE,
+  AudioSource.VIOLIN,
+  AudioSource.CYMBALS,
+  AudioSource.SINGING,
+  AudioSource.GUITAR,
+];
 
 export class SimModel implements TModel {
   // ── Settings (inputs) ───────────────────────────────────────────────────────
@@ -81,8 +111,8 @@ export class SimModel implements TModel {
   public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
 
   // ── State ───────────────────────────────────────────────────────────────────
-  /** Selects the active audio source. Defaults to the synthetic demo voice. */
-  public readonly audioSourceProperty = new Property<AudioSource>(AudioSource.DEMO, {
+  /** Selects the active audio source. Defaults to the live microphone (lazy-started). */
+  public readonly audioSourceProperty = new Property<AudioSource>(AudioSource.MICROPHONE, {
     validValues: [...AUDIO_SOURCE_VALUES],
   });
   /** When true, analysis is paused so the current display can be inspected. */
@@ -120,34 +150,67 @@ export class SimModel implements TModel {
   public readonly frameProcessedEmitter = new Emitter();
 
   private readonly micInput: MicrophoneInput;
-  private readonly demoSource: DemoFrameSource;
+  /** Every selectable source, keyed by {@link AudioSource}. */
+  private readonly sources: ReadonlyMap<AudioSource, AudioFrameSource>;
   private readonly analyzer: VoiceAnalyzer;
   private frameBuffer: Float32Array;
   private latestResult: AnalysisResult | null = null;
 
   public constructor() {
     this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
-    this.demoSource = new DemoFrameSource(DEFAULT_SAMPLE_RATE_HZ);
+    this.sources = new Map<AudioSource, AudioFrameSource>([
+      [AudioSource.MICROPHONE, this.micInput],
+      // Real recordings (see CREDITS.md); singing has no suitable free clip, so it
+      // falls back to a synthesized sung vowel.
+      [AudioSource.VOWEL_AH, new AudioFileFrameSource(vowelAhUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.VOWEL_EE, new AudioFileFrameSource(vowelEeUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.CLARINET, new AudioFileFrameSource(clarinetUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.FLUTE, new AudioFileFrameSource(fluteUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.VIOLIN, new AudioFileFrameSource(violinUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.CYMBALS, new AudioFileFrameSource(cymbalsUrl, DEFAULT_FFT_SIZE)],
+      [AudioSource.SINGING, createSingingSource()],
+      [AudioSource.GUITAR, new AudioFileFrameSource(guitarUrl, DEFAULT_FFT_SIZE)],
+    ]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
     this.frameBuffer = new Float32Array(DEFAULT_FFT_SIZE);
 
-    // Reconfigure the analyzer + microphone whenever an analysis setting changes.
+    // Reconfigure the analyzer + sources whenever an analysis setting changes.
     this.fftSizeProperty.lazyLink(() => this.applyConfig());
     this.windowTypeProperty.lazyLink(() => this.applyConfig());
     this.lpcOrderProperty.lazyLink(() => this.applyConfig());
     this.maxFrequencyProperty.lazyLink(() => this.applyConfig());
-    // Switching source changes the sample rate (and releases the mic for demo).
-    this.audioSourceProperty.lazyLink((source) => {
-      if (source === AudioSource.DEMO) {
-        this.stopListening();
-      }
+    // Switching source: release the old one, auto-start the new one if it's a file
+    // clip (the combo selection is a user gesture), and update the sample rate.
+    this.audioSourceProperty.lazyLink((source, oldSource) => {
+      this.deactivate(oldSource);
+      this.activate(source);
       this.applyConfig();
     });
   }
 
   /** The audio source the analyzer currently reads from. */
   private get source(): AudioFrameSource {
-    return this.audioSourceProperty.value === AudioSource.MICROPHONE ? this.micInput : this.demoSource;
+    return this.sources.get(this.audioSourceProperty.value) ?? this.micInput;
+  }
+
+  /** Starts a newly selected source. File clips auto-play; the mic stays lazy. */
+  private activate(value: AudioSource): void {
+    const source = this.sources.get(value);
+    if (source instanceof AudioFileFrameSource) {
+      source.start().catch(() => undefined);
+    }
+  }
+
+  /** Releases a source we are leaving (mic device / file playback). */
+  private deactivate(value: AudioSource): void {
+    if (value === AudioSource.MICROPHONE) {
+      this.stopListening();
+      return;
+    }
+    const source = this.sources.get(value);
+    if (source instanceof AudioFileFrameSource) {
+      source.stop();
+    }
   }
 
   /**
@@ -242,10 +305,16 @@ export class SimModel implements TModel {
     };
   }
 
-  /** Pushes the current settings into the analyzer, microphone, and frame buffer. */
+  /** Pushes the current settings into the analyzer, the sources, and the frame buffer. */
   private applyConfig(): void {
     const fftSize = this.fftSizeProperty.value;
+    // Sources backed by a Web Audio AnalyserNode need their FFT size kept in sync.
     this.micInput.setFftSize(fftSize);
+    for (const source of this.sources.values()) {
+      if (source instanceof AudioFileFrameSource) {
+        source.setFftSize(fftSize);
+      }
+    }
     if (this.frameBuffer.length !== fftSize) {
       this.frameBuffer = new Float32Array(fftSize);
     }

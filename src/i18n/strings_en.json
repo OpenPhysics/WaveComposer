@@ -16,8 +16,6 @@
   },
   "control": {
     "source": "Source",
-    "microphone": "Microphone",
-    "demo": "Demo",
     "startMicrophone": "Start Microphone",
     "stopMicrophone": "Stop Microphone",
     "freeze": "Freeze",
@@ -31,6 +29,26 @@
     "showFormants": "Formant Tracks",
     "showLpcEnvelope": "LPC Envelope",
     "showHarmonics": "Harmonic Markers"
+  },
+  "presets": {
+    "microphone": "Microphone",
+    "vowelAh": "Vowel \"Ah\"",
+    "vowelEe": "Vowel \"Ee\"",
+    "clarinet": "Clarinet",
+    "flute": "Flute",
+    "violin": "Violin (Bowed)",
+    "cymbals": "Cymbals",
+    "singing": "Singing",
+    "guitar": "Guitar Scale",
+    "microphoneCaption": "Live input",
+    "vowelAhCaption": "Formant peaks & LPC fit",
+    "vowelEeCaption": "Formant peaks & LPC fit",
+    "clarinetCaption": "Odd harmonics",
+    "fluteCaption": "Pure tone / fundamental",
+    "violinCaption": "Rich sawtooth / full harmonics",
+    "cymbalsCaption": "Broadband noise / unvoiced",
+    "singingCaption": "Voiced melody & vibrato",
+    "guitarCaption": "Plucked-string scale"
   },
   "window": {
     "hann": "Hann",
