@@ -2,7 +2,13 @@
 
 ## Project: Wave Composer
 
-A single-screen [SceneryStack](https://scenerystack.org/) simulation.
+A VoceVista-style real-time voice-analysis [SceneryStack](https://scenerystack.org/)
+simulation. Two screens share one `SimModel` (a single audio source + DSP pipeline):
+- **Analyzer** (`src/sim-screen/`) — spectrogram, spectrum + LPC envelope, waveform, readouts, controls.
+- **Voice & Vowels** (`src/voice-screen/`) — F1×F2 vowel plot, cepstrum, voice-quality readout.
+
+The model defaults to a synthetic **demo** audio source (`src/model/audio/DemoFrameSource.ts`)
+so the displays animate on load and the sim runs without a microphone.
 
 ## Tech Stack
 
@@ -40,9 +46,14 @@ errors if the chain is broken.
 | `src/i18n/StringManager.ts` | Singleton localized string accessor |
 | `src/i18n/strings_en.json` | English strings (source of truth for keys) |
 | `src/i18n/strings_fr.json` | French strings (must have identical keys) |
-| `src/sim-screen/SimScreen.ts` | Screen wrapper |
-| `src/sim-screen/model/SimModel.ts` | Simulation state & logic |
-| `src/sim-screen/view/SimScreenView.ts` | Visual nodes & layout |
+| `src/model/SimModel.ts` | Shared simulation state & DSP orchestration |
+| `src/model/audio/` | Audio sources: `MicrophoneInput`, `DemoFrameSource`, `SyntheticFrameSource` |
+| `src/model/dsp/` | Pure DSP: FFT, LPC, YIN, formants, cepstrum, windows |
+| `src/view/` | Shared view code: `ChartFrame`, `Colormaps`, `IpaVowels`, `ViewConstants` |
+| `src/sim-screen/SimScreen.ts` | Analyzer screen wrapper (takes the shared model) |
+| `src/sim-screen/view/SimScreenView.ts` | Analyzer layout (spectrogram, spectrum, waveform, panels) |
+| `src/voice-screen/VoiceScreen.ts` | Voice & Vowels screen wrapper (shares the model) |
+| `src/voice-screen/view/VoiceScreenView.ts` | Vowel plot, cepstrum, voice-quality readout |
 
 ## Conventions
 

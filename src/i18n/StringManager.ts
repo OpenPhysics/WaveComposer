@@ -69,10 +69,47 @@ export class StringManager {
    * Each property updates automatically when the locale changes.
    */
   public getScreenNames(): {
-    readonly simStringProperty: ReadOnlyProperty<string>;
+    readonly analyzerStringProperty: ReadOnlyProperty<string>;
+    readonly voiceStringProperty: ReadOnlyProperty<string>;
   } {
     return {
-      simStringProperty: stringProperties.screens.simStringProperty,
+      analyzerStringProperty: stringProperties.screens.analyzerStringProperty,
+      voiceStringProperty: stringProperties.screens.voiceStringProperty,
     };
+  }
+
+  /** Panel-title strings. */
+  public getPanelStrings() {
+    return stringProperties.panel;
+  }
+
+  /** Control-panel labels (source, freeze, FFT size, overlays, …). */
+  public getControlStrings() {
+    return stringProperties.control;
+  }
+
+  /** Window-function names (Hann / Hamming / Blackman). */
+  public getWindowStrings() {
+    return stringProperties.window;
+  }
+
+  /** Colormap names (Viridis / Inferno / Magma / Grayscale). */
+  public getColormapStrings() {
+    return stringProperties.colormap;
+  }
+
+  /** Measurement readout labels (pitch, formants, HNR, CPP, …). */
+  public getReadoutStrings() {
+    return stringProperties.readout;
+  }
+
+  /** Chart axis titles. */
+  public getAxisStrings() {
+    return stringProperties.axis;
+  }
+
+  /** Unit suffixes (Hz, dB, ms, cents). */
+  public getUnitStrings() {
+    return stringProperties.units;
   }
 }

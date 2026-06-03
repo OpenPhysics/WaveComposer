@@ -1,82 +1,112 @@
 /**
  * SimScreenView.ts
  *
- * The top-level view for the simulation screen.
+ * The Analyzer screen: a scrolling spectrogram, an instantaneous spectrum (with
+ * LPC envelope), and a waveform oscilloscope stacked in the center; a control
+ * panel on the left and a live measurement readout on the right.
  *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. SimControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ * The display nodes subscribe themselves to the model (scalar Properties +
+ * frameProcessedEmitter), so this view just builds, lays out, and resets them.
+ * Positioning uses this.layoutBounds; the chart width is derived from the gap
+ * left between the two side panels.
  */
-
-import { Rectangle, Text } from "scenerystack/scenery";
+import { Node, Rectangle, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
+import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import type { SimModel } from "../model/SimModel.js";
+import { ViewConstants } from "../../view/ViewConstants.js";
+import { AnalyzerControlPanel } from "./AnalyzerControlPanel.js";
+import { AnalyzerReadoutPanel } from "./AnalyzerReadoutPanel.js";
+import { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
+import { SpectrogramNode } from "./SpectrogramNode.js";
+import { SpectrumNode } from "./SpectrumNode.js";
+import { WaveformNode } from "./WaveformNode.js";
 
-// Margin between screen edges and buttons/panels (in layout-bounds coordinates)
-const SCREEN_VIEW_MARGIN = 20;
+const MARGIN = ViewConstants.SCREEN_MARGIN;
+const SPACING = ViewConstants.SPACING;
+// Horizontal space reserved for each chart's y-axis label + tick labels.
+const CHART_LEFT_GUTTER = 56;
+const SPECTROGRAM_HEIGHT = 210;
+const SPECTRUM_HEIGHT = 150;
+const WAVEFORM_HEIGHT = 70;
 
 export class SimScreenView extends ScreenView {
+  private readonly viewProperties: AnalyzerViewProperties;
+  private readonly spectrogram: SpectrogramNode;
+
   public constructor(model: SimModel, options?: ScreenViewOptions) {
     super(options);
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
-    const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
+    this.viewProperties = new AnalyzerViewProperties();
+
+    const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
       fill: SimColors.backgroundColorProperty,
     });
-    this.addChild(backgroundRect);
+    this.addChild(background);
 
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text("Wave Composer", {
-      font: "bold 36px sans-serif",
-      fill: SimColors.textColorProperty,
-      center: this.layoutBounds.center,
+    // Layer for ComboBox popups; must be on top of the other content.
+    const popupLayer = new Node();
+
+    // ── Side panels ───────────────────────────────────────────────────────────
+    const controlPanel = new AnalyzerControlPanel(model, this.viewProperties, popupLayer);
+    controlPanel.left = this.layoutBounds.minX + MARGIN;
+    controlPanel.top = this.layoutBounds.minY + MARGIN;
+    this.addChild(controlPanel);
+
+    const readoutPanel = new AnalyzerReadoutPanel(model);
+    readoutPanel.right = this.layoutBounds.maxX - MARGIN;
+    readoutPanel.top = this.layoutBounds.minY + MARGIN;
+    this.addChild(readoutPanel);
+
+    // ── Center charts ───────────────────────────────────────────────────────────
+    const chartLeft = controlPanel.right + SPACING;
+    const chartRight = readoutPanel.left - SPACING;
+    const chartViewWidth = chartRight - chartLeft - CHART_LEFT_GUTTER;
+
+    this.spectrogram = new SpectrogramNode(model, this.viewProperties, {
+      viewWidth: chartViewWidth,
+      viewHeight: SPECTROGRAM_HEIGHT,
     });
-    this.addChild(placeholderText);
+    const spectrum = new SpectrumNode(model, this.viewProperties, {
+      viewWidth: chartViewWidth,
+      viewHeight: SPECTRUM_HEIGHT,
+    });
+    const waveform = new WaveformNode(model, this.viewProperties, {
+      viewWidth: chartViewWidth,
+      viewHeight: WAVEFORM_HEIGHT,
+    });
 
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
+    const charts = new VBox({
+      align: "left",
+      spacing: SPACING + 14,
+      children: [this.spectrogram, spectrum, waveform],
+    });
+    charts.left = chartLeft;
+    charts.top = this.layoutBounds.minY + MARGIN;
+    this.addChild(charts);
+
+    // ── Reset All ──────────────────────────────────────────────────────────────
     const resetAllButton = new ResetAllButton({
       listener: () => {
         model.reset();
         this.reset();
       },
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
+      right: this.layoutBounds.maxX - MARGIN,
+      bottom: this.layoutBounds.maxY - MARGIN,
     });
     this.addChild(resetAllButton);
+
+    this.addChild(popupLayer);
   }
 
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
   public reset(): void {
-    // TODO: reset any view-side state here
+    this.viewProperties.reset();
+    this.spectrogram.reset();
   }
 
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
   public override step(_dt: number): void {
-    // TODO: implement animation updates here
+    // Display nodes update from the model's frameProcessedEmitter; nothing to do here.
   }
 }

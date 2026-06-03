@@ -11,21 +11,21 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import type { SimModel } from "../model/SimModel.js";
 import SimColors from "../SimColors.js";
-import { SimModel } from "./model/SimModel.js";
 import { SimScreenView } from "./view/SimScreenView.js";
 
 // Require tandem to be explicit — accidental omission would break PhET-iO.
 type SimScreenOptions = ScreenOptions & { tandem: Tandem };
 
 export class SimScreen extends Screen<SimModel, SimScreenView> {
-  public constructor(options: SimScreenOptions) {
+  // The model is created once in main.ts and shared with the other screen, so the
+  // single analysis pipeline (one microphone / demo source) drives both screens.
+  public constructor(model: SimModel, options: SimScreenOptions) {
     super(
-      // Model factory — called once when the screen is first shown
-      () => new SimModel(),
-      // View factory — receives the model instance
-      (model) =>
-        new SimScreenView(model, {
+      () => model,
+      (sharedModel) =>
+        new SimScreenView(sharedModel, {
           tandem: options.tandem.createTandem("view"),
         }),
       {

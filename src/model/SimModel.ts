@@ -4,7 +4,10 @@
  * Top-level model for the voice-analysis screen. It owns:
  *   - the reactive settings (FFT size, window, LPC order, display range)
  *   - the reactive analysis outputs (F0, note, formants, HNR, CPP, RMS)
- *   - the {@link VoiceAnalyzer} (pure DSP) and a {@link MicrophoneInput} source
+ *   - the {@link VoiceAnalyzer} (pure DSP) and the audio sources: a live
+ *     {@link MicrophoneInput} and a {@link DemoFrameSource} (a synthetic voice
+ *     used by default so the displays animate on load and the sim is verifiable
+ *     without a microphone). {@link audioSourceProperty} selects between them.
  *
  * Scalar results are exposed as Axon Properties / DerivedProperties. The large
  * per-frame arrays (waveform, spectrum, LPC envelope, cepstrum) live in reused
@@ -13,7 +16,7 @@
  * avoids per-frame allocation and Property churn.
  *
  * The Sim framework calls {@link step} every animation frame; it pulls the
- * current microphone frame, runs the analyzer, and writes the results.
+ * current frame from the active source, runs the analyzer, and writes the results.
  */
 import {
   BooleanProperty,
@@ -25,6 +28,8 @@ import {
 } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
+import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
+import { DemoFrameSource } from "./audio/DemoFrameSource.js";
 import { MicrophoneInput } from "./audio/MicrophoneInput.js";
 import { centsFromFrequency, noteNameFromFrequency } from "./dsp/NoteUtils.js";
 import type { FormantData } from "./dsp/types.js";
@@ -52,6 +57,19 @@ const VOICED_CONFIDENCE_THRESHOLD = 0.5;
 
 const EMPTY_FORMANTS: readonly FormantData[] = [];
 
+const DEFAULT_SAMPLE_RATE_HZ = 44100;
+
+/**
+ * Which audio source the analyzer reads from. `DEMO` is a synthetic voice that
+ * needs no permission and runs immediately; `MICROPHONE` is the live input.
+ */
+export const AudioSource = {
+  MICROPHONE: "microphone",
+  DEMO: "demo",
+} as const;
+export type AudioSource = (typeof AudioSource)[keyof typeof AudioSource];
+export const AUDIO_SOURCE_VALUES: readonly AudioSource[] = [AudioSource.MICROPHONE, AudioSource.DEMO];
+
 export class SimModel implements TModel {
   // ── Settings (inputs) ───────────────────────────────────────────────────────
   public readonly fftSizeProperty = new NumberProperty(DEFAULT_FFT_SIZE, { validValues: FFT_SIZE_VALUES });
@@ -63,10 +81,16 @@ export class SimModel implements TModel {
   public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
 
   // ── State ───────────────────────────────────────────────────────────────────
+  /** Selects the active audio source. Defaults to the synthetic demo voice. */
+  public readonly audioSourceProperty = new Property<AudioSource>(AudioSource.DEMO, {
+    validValues: [...AUDIO_SOURCE_VALUES],
+  });
   /** When true, analysis is paused so the current display can be inspected. */
   public readonly isFrozenProperty = new BooleanProperty(false);
   /** Whether the microphone is currently capturing. */
   public readonly isListeningProperty = new BooleanProperty(false);
+  /** Sample rate (Hz) of the active source; the view needs it to map FFT bins → Hz. */
+  public readonly sampleRateProperty = new NumberProperty(DEFAULT_SAMPLE_RATE_HZ);
 
   // ── Outputs (scalar results) ────────────────────────────────────────────────
   public readonly f0Property = new NumberProperty(0);
@@ -96,12 +120,14 @@ export class SimModel implements TModel {
   public readonly frameProcessedEmitter = new Emitter();
 
   private readonly micInput: MicrophoneInput;
+  private readonly demoSource: DemoFrameSource;
   private readonly analyzer: VoiceAnalyzer;
   private frameBuffer: Float32Array;
   private latestResult: AnalysisResult | null = null;
 
   public constructor() {
     this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
+    this.demoSource = new DemoFrameSource(DEFAULT_SAMPLE_RATE_HZ);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
     this.frameBuffer = new Float32Array(DEFAULT_FFT_SIZE);
 
@@ -110,6 +136,18 @@ export class SimModel implements TModel {
     this.windowTypeProperty.lazyLink(() => this.applyConfig());
     this.lpcOrderProperty.lazyLink(() => this.applyConfig());
     this.maxFrequencyProperty.lazyLink(() => this.applyConfig());
+    // Switching source changes the sample rate (and releases the mic for demo).
+    this.audioSourceProperty.lazyLink((source) => {
+      if (source === AudioSource.DEMO) {
+        this.stopListening();
+      }
+      this.applyConfig();
+    });
+  }
+
+  /** The audio source the analyzer currently reads from. */
+  private get source(): AudioFrameSource {
+    return this.audioSourceProperty.value === AudioSource.MICROPHONE ? this.micInput : this.demoSource;
   }
 
   /**
@@ -122,8 +160,12 @@ export class SimModel implements TModel {
     return this.latestResult;
   }
 
-  /** Starts microphone capture (prompts for permission on first call). */
+  /**
+   * Starts microphone capture (prompts for permission on first call) and selects
+   * the microphone as the active source.
+   */
   public async startListening(): Promise<void> {
+    this.audioSourceProperty.value = AudioSource.MICROPHONE;
     await this.micInput.start();
     // The AudioContext's sample rate is known only after start.
     this.applyConfig();
@@ -142,6 +184,8 @@ export class SimModel implements TModel {
    */
   public reset(): void {
     this.stopListening();
+    this.audioSourceProperty.reset();
+    this.sampleRateProperty.reset();
     this.fftSizeProperty.reset();
     this.lpcOrderProperty.reset();
     this.windowTypeProperty.reset();
@@ -164,10 +208,11 @@ export class SimModel implements TModel {
    * @param _dt - elapsed time in seconds since the last frame
    */
   public step(_dt: number): void {
-    if (this.isFrozenProperty.value || !this.micInput.isActive) {
+    const source = this.source;
+    if (this.isFrozenProperty.value || !source.isActive) {
       return;
     }
-    if (!this.micInput.getFrame(this.frameBuffer)) {
+    if (!source.getFrame(this.frameBuffer)) {
       return;
     }
 
@@ -187,7 +232,7 @@ export class SimModel implements TModel {
   /** Builds the analyzer config from the current settings + source sample rate. */
   private buildConfig(): AnalyzerConfig {
     return {
-      sampleRate: this.micInput.sampleRate,
+      sampleRate: this.source.sampleRate,
       fftSize: this.fftSizeProperty.value,
       windowType: this.windowTypeProperty.value,
       lpcOrder: this.lpcOrderProperty.value,
@@ -204,6 +249,7 @@ export class SimModel implements TModel {
     if (this.frameBuffer.length !== fftSize) {
       this.frameBuffer = new Float32Array(fftSize);
     }
+    this.sampleRateProperty.value = this.source.sampleRate;
     this.analyzer.reconfigure(this.buildConfig());
   }
 

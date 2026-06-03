@@ -1,6 +1,74 @@
 {
   "title": "Wave Composer",
   "screens": {
-    "sim": "Sim"
+    "analyzer": "Analyzer",
+    "voice": "Voice & Vowels"
+  },
+  "panel": {
+    "spectrogram": "Spectrogram",
+    "spectrum": "Spectrum",
+    "waveform": "Waveform",
+    "measurements": "Measurements",
+    "controls": "Controls",
+    "vowelSpace": "Vowel Space",
+    "cepstrum": "Cepstrum",
+    "voiceQuality": "Voice Quality"
+  },
+  "control": {
+    "source": "Source",
+    "microphone": "Microphone",
+    "demo": "Demo",
+    "startMicrophone": "Start Microphone",
+    "stopMicrophone": "Stop Microphone",
+    "freeze": "Freeze",
+    "fftSize": "FFT Size",
+    "lpcOrder": "LPC Order",
+    "window": "Window",
+    "maxFrequency": "Max Frequency",
+    "colormap": "Colormap",
+    "overlays": "Overlays",
+    "showF0": "F0 Track",
+    "showFormants": "Formant Tracks",
+    "showLpcEnvelope": "LPC Envelope",
+    "showHarmonics": "Harmonic Markers"
+  },
+  "window": {
+    "hann": "Hann",
+    "hamming": "Hamming",
+    "blackman": "Blackman"
+  },
+  "colormap": {
+    "viridis": "Viridis",
+    "inferno": "Inferno",
+    "magma": "Magma",
+    "grayscale": "Grayscale"
+  },
+  "readout": {
+    "pitch": "Pitch (F0)",
+    "note": "Note",
+    "formant1": "F1",
+    "formant2": "F2",
+    "formant3": "F3",
+    "formant4": "F4",
+    "hnr": "HNR",
+    "cpp": "CPP",
+    "level": "Level",
+    "voiced": "Voiced",
+    "unvoiced": "Unvoiced"
+  },
+  "axis": {
+    "frequency": "Frequency (Hz)",
+    "magnitude": "Magnitude (dB)",
+    "time": "Time (ms)",
+    "amplitude": "Amplitude",
+    "quefrency": "Quefrency (ms)",
+    "f1": "F1 (Hz)",
+    "f2": "F2 (Hz)"
+  },
+  "units": {
+    "hz": "Hz",
+    "db": "dB",
+    "ms": "ms",
+    "cents": "cents"
   }
 }

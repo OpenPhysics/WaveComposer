@@ -18,16 +18,26 @@ import "./brand.js";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
+import { SimModel } from "./model/SimModel.js";
 import { SimScreen } from "./sim-screen/SimScreen.js";
+import { VoiceScreen } from "./voice-screen/VoiceScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
+  const screenNames = stringManager.getScreenNames();
+
+  // A single model drives both screens (one audio source / analysis pipeline).
+  const model = new SimModel();
 
   const screens = [
-    new SimScreen({
+    new SimScreen(model, {
       // The screen name Property updates automatically when the locale changes
-      name: stringManager.getScreenNames().simStringProperty,
-      tandem: Tandem.ROOT.createTandem("simScreen"),
+      name: screenNames.analyzerStringProperty,
+      tandem: Tandem.ROOT.createTandem("analyzerScreen"),
+    }),
+    new VoiceScreen(model, {
+      name: screenNames.voiceStringProperty,
+      tandem: Tandem.ROOT.createTandem("voiceScreen"),
     }),
   ];
 

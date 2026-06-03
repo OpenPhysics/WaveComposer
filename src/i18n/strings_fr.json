@@ -1,6 +1,74 @@
 {
   "title": "Compositeur d'Ondes",
   "screens": {
-    "sim": "Sim"
+    "analyzer": "Analyseur",
+    "voice": "Voix et Voyelles"
+  },
+  "panel": {
+    "spectrogram": "Spectrogramme",
+    "spectrum": "Spectre",
+    "waveform": "Forme d'onde",
+    "measurements": "Mesures",
+    "controls": "Commandes",
+    "vowelSpace": "Espace vocalique",
+    "cepstrum": "Cepstre",
+    "voiceQuality": "Qualité vocale"
+  },
+  "control": {
+    "source": "Source",
+    "microphone": "Microphone",
+    "demo": "Démo",
+    "startMicrophone": "Activer le microphone",
+    "stopMicrophone": "Arrêter le microphone",
+    "freeze": "Figer",
+    "fftSize": "Taille FFT",
+    "lpcOrder": "Ordre LPC",
+    "window": "Fenêtre",
+    "maxFrequency": "Fréquence max",
+    "colormap": "Palette",
+    "overlays": "Superpositions",
+    "showF0": "Tracé F0",
+    "showFormants": "Tracés des formants",
+    "showLpcEnvelope": "Enveloppe LPC",
+    "showHarmonics": "Repères harmoniques"
+  },
+  "window": {
+    "hann": "Hann",
+    "hamming": "Hamming",
+    "blackman": "Blackman"
+  },
+  "colormap": {
+    "viridis": "Viridis",
+    "inferno": "Inferno",
+    "magma": "Magma",
+    "grayscale": "Niveaux de gris"
+  },
+  "readout": {
+    "pitch": "Hauteur (F0)",
+    "note": "Note",
+    "formant1": "F1",
+    "formant2": "F2",
+    "formant3": "F3",
+    "formant4": "F4",
+    "hnr": "HNR",
+    "cpp": "CPP",
+    "level": "Niveau",
+    "voiced": "Voisé",
+    "unvoiced": "Non voisé"
+  },
+  "axis": {
+    "frequency": "Fréquence (Hz)",
+    "magnitude": "Amplitude (dB)",
+    "time": "Temps (ms)",
+    "amplitude": "Amplitude",
+    "quefrency": "Quéfrence (ms)",
+    "f1": "F1 (Hz)",
+    "f2": "F2 (Hz)"
+  },
+  "units": {
+    "hz": "Hz",
+    "db": "dB",
+    "ms": "ms",
+    "cents": "cents"
   }
 }

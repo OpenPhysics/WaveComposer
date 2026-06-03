@@ -71,6 +71,97 @@ const SimColors = {
     default: "#e0e0e0",
     projector: "#1a1a1a",
   }),
+
+  // ── Chart chrome ────────────────────────────────────────────────────────────
+  /** Plotting-area background (spectrum, waveform, cepstrum, vowel plot). */
+  chartBackgroundColorProperty: new ProfileColorProperty(SimNamespace, "chartBackground", {
+    default: "#0d1117",
+    projector: "#ffffff",
+  }),
+  /** Faint grid lines inside charts. */
+  gridLineColorProperty: new ProfileColorProperty(SimNamespace, "gridLine", {
+    default: "#2a3550",
+    projector: "#dddddd",
+  }),
+  /** Chart axis lines and tick marks. */
+  axisColorProperty: new ProfileColorProperty(SimNamespace, "axis", {
+    default: "#8a97b8",
+    projector: "#555555",
+  }),
+
+  // ── Spectrum / waveform / cepstrum curves ────────────────────────────────────
+  /** Instantaneous FFT magnitude curve. */
+  spectrumCurveColorProperty: new ProfileColorProperty(SimNamespace, "spectrumCurve", {
+    default: "#4fc3f7",
+    projector: "#1565c0",
+  }),
+  /** LPC spectral-envelope overlay. */
+  lpcEnvelopeColorProperty: new ProfileColorProperty(SimNamespace, "lpcEnvelope", {
+    default: "#ffb74d",
+    projector: "#e65100",
+  }),
+  /** Time-domain oscilloscope trace. */
+  waveformColorProperty: new ProfileColorProperty(SimNamespace, "waveform", {
+    default: "#81c784",
+    projector: "#2e7d32",
+  }),
+  /** Cepstrum trace. */
+  cepstrumCurveColorProperty: new ProfileColorProperty(SimNamespace, "cepstrumCurve", {
+    default: "#4fc3f7",
+    projector: "#1565c0",
+  }),
+  /** Marker for the detected cepstral peak / harmonic markers. */
+  harmonicMarkerColorProperty: new ProfileColorProperty(SimNamespace, "harmonicMarker", {
+    default: "#fff176",
+    projector: "#f9a825",
+  }),
+
+  // ── Overlay tracks (spectrogram + spectrum formant markers) ───────────────────
+  /** Fundamental-frequency (F0) track. */
+  f0TrackColorProperty: new ProfileColorProperty(SimNamespace, "f0Track", {
+    default: "#ffffff",
+    projector: "#000000",
+  }),
+  formant1ColorProperty: new ProfileColorProperty(SimNamespace, "formant1", {
+    default: "#ff5252",
+    projector: "#c62828",
+  }),
+  formant2ColorProperty: new ProfileColorProperty(SimNamespace, "formant2", {
+    default: "#69f0ae",
+    projector: "#00897b",
+  }),
+  formant3ColorProperty: new ProfileColorProperty(SimNamespace, "formant3", {
+    default: "#40c4ff",
+    projector: "#0277bd",
+  }),
+  formant4ColorProperty: new ProfileColorProperty(SimNamespace, "formant4", {
+    default: "#e040fb",
+    projector: "#8e24aa",
+  }),
+
+  // ── Readout indicators ────────────────────────────────────────────────────────
+  /** Voiced-state indicator (lit). */
+  voicedColorProperty: new ProfileColorProperty(SimNamespace, "voiced", {
+    default: "#69f0ae",
+    projector: "#2e7d32",
+  }),
+  /** Unvoiced/silent indicator. */
+  unvoicedColorProperty: new ProfileColorProperty(SimNamespace, "unvoiced", {
+    default: "#546e7a",
+    projector: "#b0bec5",
+  }),
+
+  // ── Vowel plot ─────────────────────────────────────────────────────────────────
+  /** Reference IPA vowel markers + labels. */
+  vowelReferenceColorProperty: new ProfileColorProperty(SimNamespace, "vowelReference", {
+    default: "#90a4ae",
+    projector: "#607d8b",
+  }),
+  /** The live, measured vowel position. */
+  vowelCurrentColorProperty: new ProfileColorProperty(SimNamespace, "vowelCurrent", {
+    default: "#ffca28",
+    projector: "#ef6c00",
+  }),
 };
 
 export default SimColors;
