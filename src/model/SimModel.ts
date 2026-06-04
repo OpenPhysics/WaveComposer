@@ -5,11 +5,12 @@
  *   - the reactive settings (FFT size, window, LPC order, display range)
  *   - the reactive analysis outputs (F0, note, formants, HNR, CPP, RMS)
  *   - the {@link VoiceAnalyzer} (pure DSP) and the audio sources: a live
- *     {@link MicrophoneInput} (the default), a set of synthetic {@link PresetFrameSource}
- *     demonstrations (vowels, clarinet, flute, violin, cymbals), and two bundled
- *     {@link AudioFileFrameSource} clips (singing, guitar scale). {@link audioSourceProperty}
- *     selects between them; the microphone starts lazily (on the Start button) so no
- *     permission prompt appears on load.
+ *     {@link MicrophoneInput} (the default), ~20 bundled {@link AudioFileFrameSource}
+ *     instrument/vowel demos (see {@link PRESET_CATALOG}), a few synthesized fallbacks,
+ *     and any
+ *     {@link RecordedAudioSource}s the user captures from the microphone at runtime.
+ *     {@link audioSourceProperty} selects between them; the microphone starts lazily
+ *     (on the Start button) so no permission prompt appears on load.
  *
  * Scalar results are exposed as Axon Properties / DerivedProperties. The large
  * per-frame arrays (waveform, spectrum, LPC envelope, cepstrum) live in reused
@@ -22,25 +23,32 @@
  */
 import {
   BooleanProperty,
+  createObservableArray,
   DerivedProperty,
   Emitter,
   NumberProperty,
+  type ObservableArray,
   Property,
   type TReadOnlyProperty,
 } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
-import clarinetUrl from "../assets/audio/clarinet.ogg?url";
-import cymbalsUrl from "../assets/audio/cymbals.ogg?url";
-import fluteUrl from "../assets/audio/flute.ogg?url";
-import guitarUrl from "../assets/audio/guitar-scale.ogg?url";
-import violinUrl from "../assets/audio/violin.ogg?url";
-import vowelAhUrl from "../assets/audio/vowel-ah.ogg?url";
-import vowelEeUrl from "../assets/audio/vowel-ee.ogg?url";
 import { AudioFileFrameSource } from "./audio/AudioFileFrameSource.js";
 import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
+import { BufferPlaybackSource } from "./audio/BufferPlaybackSource.js";
 import { MicrophoneInput } from "./audio/MicrophoneInput.js";
-import { createSingingSource } from "./audio/presets.js";
+import { isMonitoredAudioSource } from "./audio/MonitoredAudioSource.js";
+import { getPresetAssetUrl } from "./audio/presetAssets.js";
+import {
+  ALL_PRESET_CATALOG,
+  findPresetEntry,
+  INSTRUMENT_PRESET_CATALOG,
+  type PresetCatalogEntry,
+  type PresetId,
+} from "./audio/presetCatalog.js";
+import { createSyntheticSource } from "./audio/presets.js";
+import { RecordedAudioSource } from "./audio/RecordedAudioSource.js";
+import { SyntheticWebAudioSource } from "./audio/SyntheticWebAudioSource.js";
 import { centsFromFrequency, noteNameFromFrequency } from "./dsp/NoteUtils.js";
 import type { FormantData } from "./dsp/types.js";
 import { WINDOW_TYPE_VALUES, WindowType } from "./dsp/WindowFunction.js";
@@ -69,36 +77,58 @@ const EMPTY_FORMANTS: readonly FormantData[] = [];
 
 const DEFAULT_SAMPLE_RATE_HZ = 44100;
 
-/**
- * Which audio source the analyzer reads from. `MICROPHONE` is the live input (the
- * default; it starts lazily so no permission prompt appears on load). The rest are
- * permission-free demonstrations: synthetic presets (vowels, instruments, cymbals)
- * and two bundled CC0 recordings (singing, guitar scale) that auto-play on selection.
- */
+/** Live microphone input id (not in {@link PRESET_CATALOG}). */
 export const AudioSource = {
   MICROPHONE: "microphone",
-  VOWEL_AH: "vowelAh",
-  VOWEL_EE: "vowelEe",
-  CLARINET: "clarinet",
-  FLUTE: "flute",
-  VIOLIN: "violin",
-  CYMBALS: "cymbals",
-  SINGING: "singing",
-  GUITAR: "guitar",
 } as const;
-export type AudioSource = (typeof AudioSource)[keyof typeof AudioSource];
-/** Display order for the source selector. */
-export const AUDIO_SOURCE_VALUES: readonly AudioSource[] = [
+
+/** Bundled demo preset id (see {@link PRESET_CATALOG}). */
+export type AudioSource = PresetId;
+
+/** Default Analyzer-screen source list (microphone + instrument presets). */
+export const AUDIO_SOURCE_VALUES: readonly string[] = [
   AudioSource.MICROPHONE,
-  AudioSource.VOWEL_AH,
-  AudioSource.VOWEL_EE,
-  AudioSource.CLARINET,
-  AudioSource.FLUTE,
-  AudioSource.VIOLIN,
-  AudioSource.CYMBALS,
-  AudioSource.SINGING,
-  AudioSource.GUITAR,
+  ...INSTRUMENT_PRESET_CATALOG.map((entry) => entry.id),
 ];
+
+function createPresetSource(presetId: PresetId, fftSize: number): AudioFrameSource {
+  const entry = findPresetEntry(presetId);
+  if (!entry) {
+    throw new Error(`Unknown preset: ${presetId}`);
+  }
+  if (entry.asset) {
+    const url = getPresetAssetUrl(entry.asset);
+    if (url) {
+      return new AudioFileFrameSource(url, fftSize);
+    }
+  }
+  const synthetic = createSyntheticSource(presetId, fftSize);
+  if (synthetic) {
+    return synthetic;
+  }
+  throw new Error(`No audio asset or synthesizer for preset: ${presetId}`);
+}
+
+/** Prefix for the dynamic ids of user recordings (e.g. "recording-1"). */
+const RECORDING_ID_PREFIX = "recording-";
+
+/**
+ * A user-captured microphone recording, exposed as a selectable source. The raw PCM
+ * is kept so it can be saved to a WAV file; `source` loops it for playback/analysis.
+ */
+export interface RecordingEntry {
+  readonly id: string;
+  /** 1-based ordinal used for the "Recording N" label and the download filename. */
+  readonly index: number;
+  readonly samples: Float32Array;
+  readonly sampleRate: number;
+  readonly source: RecordedAudioSource;
+}
+
+/** Web Audio sources the model can start/stop and keep FFT-synced (everything but the mic). */
+function isPlayableSource(source: AudioFrameSource): source is BufferPlaybackSource | SyntheticWebAudioSource {
+  return source instanceof BufferPlaybackSource || source instanceof SyntheticWebAudioSource;
+}
 
 export class SimModel implements TModel {
   // ── Settings (inputs) ───────────────────────────────────────────────────────
@@ -111,14 +141,23 @@ export class SimModel implements TModel {
   public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
 
   // ── State ───────────────────────────────────────────────────────────────────
-  /** Selects the active audio source. Defaults to the live microphone (lazy-started). */
-  public readonly audioSourceProperty = new Property<AudioSource>(AudioSource.MICROPHONE, {
-    validValues: [...AUDIO_SOURCE_VALUES],
-  });
+  /**
+   * Selects the active audio source by id: a fixed {@link AudioSource} or a dynamic
+   * recording id ("recording-N"). Defaults to the live microphone (lazy-started).
+   * The value set is open-ended (recordings are added at runtime), so it carries no
+   * `validValues`.
+   */
+  public readonly audioSourceProperty = new Property<string>(AudioSource.MICROPHONE);
+  /** User-captured recordings, in creation order; each is also a selectable source. */
+  public readonly recordings: ObservableArray<RecordingEntry> = createObservableArray<RecordingEntry>();
+  /** When true, the microphone is being recorded into a new clip. */
+  public readonly isRecordingProperty = new BooleanProperty(false);
   /** When true, analysis is paused so the current display can be inspected. */
   public readonly isFrozenProperty = new BooleanProperty(false);
   /** Whether the microphone is currently capturing. */
   public readonly isListeningProperty = new BooleanProperty(false);
+  /** When true, the active source is routed to the speakers. */
+  public readonly isAudioEnabledProperty = new BooleanProperty(true);
   /** Sample rate (Hz) of the active source; the view needs it to map FFT bins → Hz. */
   public readonly sampleRateProperty = new NumberProperty(DEFAULT_SAMPLE_RATE_HZ);
 
@@ -150,27 +189,21 @@ export class SimModel implements TModel {
   public readonly frameProcessedEmitter = new Emitter();
 
   private readonly micInput: MicrophoneInput;
-  /** Every selectable source, keyed by {@link AudioSource}. */
-  private readonly sources: ReadonlyMap<AudioSource, AudioFrameSource>;
+  /** Every selectable source, keyed by source id ({@link AudioSource} or recording id). */
+  private readonly sources: Map<string, AudioFrameSource>;
+  /** Counts captured recordings so each gets a stable, ever-increasing ordinal. */
+  private recordingCounter = 0;
   private readonly analyzer: VoiceAnalyzer;
   private frameBuffer: Float32Array;
   private latestResult: AnalysisResult | null = null;
 
   public constructor() {
     this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
-    this.sources = new Map<AudioSource, AudioFrameSource>([
-      [AudioSource.MICROPHONE, this.micInput],
-      // Real recordings (see CREDITS.md); singing has no suitable free clip, so it
-      // falls back to a synthesized sung vowel.
-      [AudioSource.VOWEL_AH, new AudioFileFrameSource(vowelAhUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.VOWEL_EE, new AudioFileFrameSource(vowelEeUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.CLARINET, new AudioFileFrameSource(clarinetUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.FLUTE, new AudioFileFrameSource(fluteUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.VIOLIN, new AudioFileFrameSource(violinUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.CYMBALS, new AudioFileFrameSource(cymbalsUrl, DEFAULT_FFT_SIZE)],
-      [AudioSource.SINGING, createSingingSource()],
-      [AudioSource.GUITAR, new AudioFileFrameSource(guitarUrl, DEFAULT_FFT_SIZE)],
+    const presetSources: [string, AudioFrameSource][] = ALL_PRESET_CATALOG.map((entry) => [
+      entry.id,
+      createPresetSource(entry.id, DEFAULT_FFT_SIZE),
     ]);
+    this.sources = new Map<string, AudioFrameSource>([[AudioSource.MICROPHONE, this.micInput], ...presetSources]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
     this.frameBuffer = new Float32Array(DEFAULT_FFT_SIZE);
 
@@ -186,6 +219,7 @@ export class SimModel implements TModel {
       this.activate(source);
       this.applyConfig();
     });
+    this.isAudioEnabledProperty.lazyLink(() => this.applyMonitoring());
   }
 
   /** The audio source the analyzer currently reads from. */
@@ -193,23 +227,34 @@ export class SimModel implements TModel {
     return this.sources.get(this.audioSourceProperty.value) ?? this.micInput;
   }
 
-  /** Starts a newly selected source. File clips auto-play; the mic stays lazy. */
-  private activate(value: AudioSource): void {
+  /** Starts a newly selected source. File/synthetic/recorded clips auto-play; the mic stays lazy. */
+  private activate(value: string): void {
     const source = this.sources.get(value);
-    if (source instanceof AudioFileFrameSource) {
+    if (source && isPlayableSource(source)) {
       source.start().catch(() => undefined);
     }
+    this.applyMonitoring();
   }
 
-  /** Releases a source we are leaving (mic device / file playback). */
-  private deactivate(value: AudioSource): void {
+  /** Releases a source we are leaving (mic device / clip playback). */
+  private deactivate(value: string): void {
     if (value === AudioSource.MICROPHONE) {
       this.stopListening();
       return;
     }
     const source = this.sources.get(value);
-    if (source instanceof AudioFileFrameSource) {
+    if (source && isPlayableSource(source)) {
       source.stop();
+    }
+  }
+
+  /** Pushes the play-audio toggle to every source that supports speaker output. */
+  private applyMonitoring(): void {
+    const enabled = this.isAudioEnabledProperty.value;
+    for (const source of this.sources.values()) {
+      if (isMonitoredAudioSource(source)) {
+        source.setMonitoringEnabled(enabled);
+      }
     }
   }
 
@@ -232,13 +277,80 @@ export class SimModel implements TModel {
     await this.micInput.start();
     // The AudioContext's sample rate is known only after start.
     this.applyConfig();
+    this.applyMonitoring();
     this.isListeningProperty.value = true;
   }
 
-  /** Stops microphone capture and releases the device. */
+  /** Stops microphone capture and releases the device (discarding any active recording). */
   public stopListening(): void {
+    if (this.isRecordingProperty.value) {
+      this.micInput.cancelRecording();
+      this.isRecordingProperty.value = false;
+    }
     this.micInput.stop();
     this.isListeningProperty.value = false;
+  }
+
+  /**
+   * Starts capturing the live microphone into a new recording. Ensures the
+   * microphone is selected and running first (prompting for permission if needed).
+   */
+  public async startRecording(): Promise<void> {
+    if (this.isRecordingProperty.value) {
+      return;
+    }
+    await this.startListening();
+    this.micInput.startRecording();
+    this.isRecordingProperty.value = true;
+  }
+
+  /**
+   * Stops recording, adds the captured clip to {@link recordings} as a new selectable
+   * source, and switches to it (which auto-starts looped playback). A clip that
+   * captured no audio is discarded.
+   */
+  public stopRecording(): void {
+    if (!this.isRecordingProperty.value) {
+      return;
+    }
+    const clip = this.micInput.stopRecording();
+    this.isRecordingProperty.value = false;
+    if (!clip) {
+      return;
+    }
+    this.recordingCounter += 1;
+    const index = this.recordingCounter;
+    const id = `${RECORDING_ID_PREFIX}${index}`;
+    const source = new RecordedAudioSource(clip.samples, clip.sampleRate, this.fftSizeProperty.value);
+    this.sources.set(id, source);
+    // Add to the list first so the selector rebuilds with this item before we
+    // select it, then switch (which releases the mic and starts playback).
+    this.recordings.push({ id, index, samples: clip.samples, sampleRate: clip.sampleRate, source });
+    this.audioSourceProperty.value = id;
+  }
+
+  /** Looks up a recording by its source id. */
+  public getRecording(id: string): RecordingEntry | undefined {
+    return this.recordings.find((entry) => entry.id === id);
+  }
+
+  /** Whether a source id refers to a user recording. */
+  public isRecordingId(id: string): boolean {
+    return id.startsWith(RECORDING_ID_PREFIX);
+  }
+
+  /**
+   * Source ids for a ComboBox: microphone, presets from `catalog`, then recordings.
+   * If the active source is outside `catalog` (e.g. an instrument on the Voice screen),
+   * it is prepended so the ComboBox stays valid.
+   */
+  public getSourceValues(catalog: readonly PresetCatalogEntry[]): string[] {
+    const values = [AudioSource.MICROPHONE, ...catalog.map((entry) => entry.id), ...this.recordings.map((e) => e.id)];
+    const current = this.audioSourceProperty.value;
+    if (current !== AudioSource.MICROPHONE && !values.includes(current)) {
+      return [current, ...values];
+    }
+    return values;
   }
 
   /**
@@ -255,6 +367,7 @@ export class SimModel implements TModel {
     this.minFrequencyProperty.reset();
     this.maxFrequencyProperty.reset();
     this.isFrozenProperty.reset();
+    this.isAudioEnabledProperty.reset();
     this.f0Property.reset();
     this.f0ConfidenceProperty.reset();
     this.rmsLevelProperty.reset();
@@ -311,7 +424,7 @@ export class SimModel implements TModel {
     // Sources backed by a Web Audio AnalyserNode need their FFT size kept in sync.
     this.micInput.setFftSize(fftSize);
     for (const source of this.sources.values()) {
-      if (source instanceof AudioFileFrameSource) {
+      if (isPlayableSource(source)) {
         source.setFftSize(fftSize);
       }
     }

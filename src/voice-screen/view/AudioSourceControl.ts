@@ -11,9 +11,10 @@
  */
 import { DerivedProperty } from "scenerystack/axon";
 import { type Node, Text, VBox } from "scenerystack/scenery";
-import { ButtonNode, Panel, TextPushButton } from "scenerystack/sun";
+import { ButtonNode, Checkbox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
+import { VOICE_PRESET_CATALOG } from "../../model/audio/presetCatalog.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
 import { createSourceSelector } from "../../view/SourceSelector.js";
@@ -26,7 +27,10 @@ export class AudioSourceControl extends Panel {
     const controls = StringManager.getInstance().getControlStrings();
 
     // This panel sits near the bottom of the screen, so open the list upward.
-    const sourceSelector = createSourceSelector(model, listParent, { listPosition: "above" });
+    const sourceSelector = createSourceSelector(model, listParent, {
+      presetCatalog: VOICE_PRESET_CATALOG,
+      listPosition: "above",
+    });
 
     const startStopLabel = new DerivedProperty(
       [model.isListeningProperty, controls.startMicrophoneStringProperty, controls.stopMicrophoneStringProperty],
@@ -51,6 +55,20 @@ export class AudioSourceControl extends Panel {
       tandem: Tandem.OPT_OUT,
     });
 
+    const playAudioCheckbox = new Checkbox(
+      model.isAudioEnabledProperty,
+      new Text(controls.playAudioStringProperty, {
+        font: ViewConstants.CONTROL_FONT,
+        fill: SimColors.textColorProperty,
+      }),
+      {
+        boxWidth: 16,
+        checkboxColor: SimColors.textColorProperty,
+        checkboxColorBackground: SimColors.chartBackgroundColorProperty,
+        tandem: Tandem.OPT_OUT,
+      },
+    );
+
     const content = new VBox({
       align: "left",
       spacing: 8,
@@ -61,6 +79,7 @@ export class AudioSourceControl extends Panel {
         }),
         sourceSelector,
         startStopButton,
+        playAudioCheckbox,
       ],
     });
 

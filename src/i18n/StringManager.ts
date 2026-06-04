@@ -88,9 +88,14 @@ export class StringManager {
     return stringProperties.control;
   }
 
-  /** Audio-source names + one-line captions (microphone + presets). */
+  /** Analyzer-screen instrument preset names + captions. */
   public getPresetStrings() {
     return stringProperties.presets;
+  }
+
+  /** Voice & Vowels screen preset names + captions (vowels, consonants, singing). */
+  public getVoicePresetStrings() {
+    return stringProperties.voicePresets;
   }
 
   /** Window-function names (Hann / Hamming / Blackman). */

@@ -19,7 +19,9 @@ import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
 import { SimModel } from "./model/SimModel.js";
+import { createColormapPreferenceControl } from "./preferences/ColormapPreferenceControl.js";
 import { SimScreen } from "./sim-screen/SimScreen.js";
+import { AnalyzerViewProperties } from "./sim-screen/view/AnalyzerViewProperties.js";
 import { VoiceScreen } from "./voice-screen/VoiceScreen.js";
 
 onReadyToLaunch(() => {
@@ -29,11 +31,14 @@ onReadyToLaunch(() => {
   // A single model drives both screens (one audio source / analysis pipeline).
   const model = new SimModel();
 
+  const analyzerViewProperties = new AnalyzerViewProperties();
+
   const screens = [
     new SimScreen(model, {
       // The screen name Property updates automatically when the locale changes
       name: screenNames.analyzerStringProperty,
       tandem: Tandem.ROOT.createTandem("analyzerScreen"),
+      viewProperties: analyzerViewProperties,
     }),
     new VoiceScreen(model, {
       name: screenNames.voiceStringProperty,
@@ -48,6 +53,11 @@ onReadyToLaunch(() => {
         supportsProjectorMode: true,
         // Enables keyboard-navigation highlight outlines
         supportsInteractiveHighlights: true,
+        customPreferences: [
+          {
+            createContent: () => createColormapPreferenceControl(analyzerViewProperties.colormapProperty),
+          },
+        ],
       },
       audioOptions: {
         // Adds the Preferences → Audio tab with a "Sounds" toggle.

@@ -20,7 +20,7 @@ import SimColors from "../../SimColors.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
 import { AnalyzerControlPanel } from "./AnalyzerControlPanel.js";
 import { AnalyzerReadoutPanel } from "./AnalyzerReadoutPanel.js";
-import { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
+import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 import { SpectrogramNode } from "./SpectrogramNode.js";
 import { SpectrumNode } from "./SpectrumNode.js";
 import { WaveformNode } from "./WaveformNode.js";
@@ -37,10 +37,10 @@ export class SimScreenView extends ScreenView {
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly spectrogram: SpectrogramNode;
 
-  public constructor(model: SimModel, options?: ScreenViewOptions) {
+  public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, options?: ScreenViewOptions) {
     super(options);
 
-    this.viewProperties = new AnalyzerViewProperties();
+    this.viewProperties = viewProperties;
 
     const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
       fill: SimColors.backgroundColorProperty,

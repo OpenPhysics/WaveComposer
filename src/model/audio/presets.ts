@@ -1,32 +1,90 @@
 /**
  * presets.ts
  *
- * Synthesized fallback sources for presets that have no suitable openly-licensed
- * recording. Currently only "Singing": a sung "ah" arpeggio with vibrato, built
- * from the same source-filter vowel generator the DSP tests use. (Every other
- * preset is a real recording loaded via AudioFileFrameSource — see CREDITS.md.)
+ * Synthesized sources for presets without a bundled clip (or when the clip is not
+ * yet downloaded). Uses deterministic harmonic / source–filter models suited to
+ * spectrum demos. Real recordings are preferred — see CREDITS.md and
+ * scripts/download-preset-audio.sh.
  */
-import { PresetFrameSource } from "./PresetFrameSource.js";
-import { generateVowel } from "./SyntheticFrameSource.js";
+import type { PresetGenerator } from "./PresetFrameSource.js";
+import { generateSine } from "./SyntheticFrameSource.js";
+import { SyntheticWebAudioSource } from "./SyntheticWebAudioSource.js";
+import { createSingingGenerator, createVoiceSyntheticGenerator } from "./voicePresets.js";
 
 const AMPLITUDE = 0.7;
-const VIBRATO_RATE_HZ = 5.5;
-const VIBRATO_DEPTH = 0.025; // ±2.5% of f0
 const NOTE_DURATION_S = 0.7;
 
-// Formants for /a/ ("ah"), the vowel that is sung.
-const AH_FORMANTS_HZ = [730, 1090, 2440, 3400];
-const AH_BANDWIDTHS_HZ = [80, 90, 120, 130];
+/** Bowed-string scale: rich harmonic ladder (f, 2f, 3f, …). */
+const CELLO_MELODY_HZ = [130.81, 146.83, 164.81, 196.0, 220.0, 246.94];
 
-// A simple sung arpeggio (A3–C4–E4–G4–E4–C4) that loops as a vocalise.
-const MELODY_HZ = [220, 261.63, 329.63, 392.0, 329.63, 261.63];
+/** Oboe-like scale: strong odd harmonics (cylindrical bore). */
+const OBOE_MELODY_HZ = [261.63, 293.66, 329.63, 349.23, 392.0, 440.0];
 
-/** A synthesized sung vowel melody with vibrato (the "Singing" preset fallback). */
-export function createSingingSource(): PresetFrameSource {
-  return new PresetFrameSource((out, sampleRate, timeS) => {
-    const noteIndex = Math.floor(timeS / NOTE_DURATION_S) % MELODY_HZ.length;
-    const baseF0 = MELODY_HZ[noteIndex] ?? MELODY_HZ[0] ?? 220;
-    const f0 = baseF0 * (1 + VIBRATO_DEPTH * Math.sin(2 * Math.PI * VIBRATO_RATE_HZ * timeS));
-    out.set(generateVowel(AH_FORMANTS_HZ, AH_BANDWIDTHS_HZ, f0, sampleRate, out.length, AMPLITUDE));
-  });
+function fillHarmonicSeries(
+  out: Float32Array,
+  sampleRate: number,
+  timeS: number,
+  f0Hz: number,
+  harmonics: readonly number[],
+  amplitudes: readonly number[],
+): void {
+  out.fill(0);
+  for (let h = 0; h < harmonics.length; h++) {
+    const harmonic = harmonics[h] ?? 1;
+    const amp = (amplitudes[h] ?? 0) * AMPLITUDE;
+    if (amp <= 0) {
+      continue;
+    }
+    const partial = generateSine(f0Hz * harmonic, sampleRate, out.length, amp, 2 * Math.PI * f0Hz * timeS);
+    for (let i = 0; i < out.length; i++) {
+      out[i] = (out[i] ?? 0) + (partial[i] ?? 0);
+    }
+  }
+}
+
+function createMelodyHarmonicGenerator(
+  melodyHz: readonly number[],
+  harmonics: readonly number[],
+  amplitudes: readonly number[],
+): PresetGenerator {
+  return (out, sampleRate, timeS) => {
+    const noteIndex = Math.floor(timeS / NOTE_DURATION_S) % melodyHz.length;
+    const f0 = melodyHz[noteIndex] ?? melodyHz[0] ?? 220;
+    fillHarmonicSeries(out, sampleRate, timeS, f0, harmonics, amplitudes);
+  };
+}
+
+/** Bowed cello: dense decaying harmonic series. */
+export function createCelloGenerator(): PresetGenerator {
+  const harmonics = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+  const amplitudes = [1, 0.85, 0.7, 0.58, 0.48, 0.4, 0.33, 0.27, 0.22, 0.18];
+  return createMelodyHarmonicGenerator(CELLO_MELODY_HZ, harmonics, amplitudes);
+}
+
+/** Oboe: odd-harmonic emphasis (closed cylindrical pipe). */
+export function createOboeGenerator(): PresetGenerator {
+  const harmonics = [1, 3, 5, 7, 9];
+  const amplitudes = [1, 0.75, 0.5, 0.32, 0.2];
+  return createMelodyHarmonicGenerator(OBOE_MELODY_HZ, harmonics, amplitudes);
+}
+
+const INSTRUMENT_SYNTHETIC_GENERATORS: Record<string, () => PresetGenerator> = {
+  cello: createCelloGenerator,
+  oboe: createOboeGenerator,
+};
+
+/** Returns a synthesized generator for the given preset id, if one exists. */
+export function createSyntheticGenerator(presetId: string): PresetGenerator | undefined {
+  return INSTRUMENT_SYNTHETIC_GENERATORS[presetId]?.() ?? createVoiceSyntheticGenerator(presetId);
+}
+
+/** Web Audio source for a synthesized preset. */
+export function createSyntheticSource(presetId: string, fftSize: number): SyntheticWebAudioSource | undefined {
+  const generate = createSyntheticGenerator(presetId);
+  return generate ? new SyntheticWebAudioSource(generate, fftSize) : undefined;
+}
+
+/** @deprecated Use {@link createSyntheticSource}("singing", …). */
+export function createSingingSource(fftSize: number): SyntheticWebAudioSource {
+  return new SyntheticWebAudioSource(createSingingGenerator(), fftSize);
 }

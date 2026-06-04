@@ -14,10 +14,10 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { ButtonNode, Checkbox, ComboBox, type ComboBoxOptions, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
+import { INSTRUMENT_PRESET_CATALOG } from "../../model/audio/presetCatalog.js";
 import { WINDOW_TYPE_VALUES, type WindowType } from "../../model/dsp/WindowFunction.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { COLORMAP_NAME_VALUES, type ColormapName } from "../../view/Colormaps.js";
 import { createSourceSelector } from "../../view/SourceSelector.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
@@ -32,10 +32,9 @@ export class AnalyzerControlPanel extends Panel {
     const controls = StringManager.getInstance().getControlStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
     const windowStrings = StringManager.getInstance().getWindowStrings();
-    const colormapStrings = StringManager.getInstance().getColormapStrings();
 
     // ── Source + start/stop + freeze ────────────────────────────────────────
-    const sourceSelector = createSourceSelector(model, listParent);
+    const sourceSelector = createSourceSelector(model, listParent, { presetCatalog: INSTRUMENT_PRESET_CATALOG });
 
     const startStopLabel = new DerivedProperty(
       [model.isListeningProperty, controls.startMicrophoneStringProperty, controls.stopMicrophoneStringProperty],
@@ -60,6 +59,7 @@ export class AnalyzerControlPanel extends Panel {
     });
 
     const freezeCheckbox = makeCheckbox(model.isFrozenProperty, controls.freezeStringProperty);
+    const playAudioCheckbox = makeCheckbox(model.isAudioEnabledProperty, controls.playAudioStringProperty);
 
     // ── Analysis settings ───────────────────────────────────────────────────
     // Shared combo-box styling: dark fill with light item text in default mode
@@ -88,19 +88,6 @@ export class AnalyzerControlPanel extends Panel {
     const windowCombo = new ComboBox(
       model.windowTypeProperty,
       WINDOW_TYPE_VALUES.map((type) => ({ value: type, createNode: () => controlText(windowLabels[type]) })),
-      listParent,
-      comboBoxOptions,
-    );
-
-    const colormapLabels: Record<ColormapName, TReadOnlyProperty<string>> = {
-      viridis: colormapStrings.viridisStringProperty,
-      inferno: colormapStrings.infernoStringProperty,
-      magma: colormapStrings.magmaStringProperty,
-      grayscale: colormapStrings.grayscaleStringProperty,
-    };
-    const colormapCombo = new ComboBox(
-      viewProperties.colormapProperty,
-      COLORMAP_NAME_VALUES.map((name) => ({ value: name, createNode: () => controlText(colormapLabels[name]) })),
       listParent,
       comboBoxOptions,
     );
@@ -138,6 +125,7 @@ export class AnalyzerControlPanel extends Panel {
         sectionLabel(controls.sourceStringProperty),
         sourceSelector,
         startStopButton,
+        playAudioCheckbox,
         freezeCheckbox,
         divider(),
         labeled(controls.fftSizeStringProperty, fftCombo),
@@ -145,7 +133,6 @@ export class AnalyzerControlPanel extends Panel {
         lpcControl,
         maxFreqControl,
         divider(),
-        labeled(controls.colormapStringProperty, colormapCombo),
         overlays,
       ],
     });
