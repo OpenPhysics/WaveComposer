@@ -9,7 +9,8 @@ const baseConfig: AnalyzerConfig = {
   sampleRate: SAMPLE_RATE,
   fftSize: 4096,
   windowType: "hann",
-  lpcOrder: 20,
+  // Order applies at the decimated ~11 kHz formant rate (the model default).
+  lpcOrder: 12,
   f0MinHz: 60,
   f0MaxHz: 800,
   formantMaxHz: 5000,
@@ -38,10 +39,12 @@ describe("VoiceAnalyzer (integration)", () => {
     expect(Math.abs(result.pitch.frequencyHz - 140)).toBeLessThan(5);
     expect(result.pitch.confidence).toBeGreaterThan(0.5);
 
-    // Formants (LPC is approximate; allow generous tolerances).
-    expect(result.formants.length).toBeGreaterThanOrEqual(2);
+    // Formants: decimating to ~11 kHz before LPC lets all three resonances —
+    // including F3 — come through (LPC is approximate; allow generous tolerances).
+    expect(result.formants.length).toBeGreaterThanOrEqual(3);
     expect(Math.abs(nearest(result.formants, 700) - 700)).toBeLessThan(100);
     expect(Math.abs(nearest(result.formants, 1220) - 1220)).toBeLessThan(120);
+    expect(Math.abs(nearest(result.formants, 2600) - 2600)).toBeLessThan(150);
 
     // Voice quality: a clean periodic vowel is clearly voiced.
     expect(result.hnrDb).toBeGreaterThan(5);
