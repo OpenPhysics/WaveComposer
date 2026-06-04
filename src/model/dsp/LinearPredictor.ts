@@ -10,8 +10,13 @@
  */
 
 export interface LpcResult {
-  /** Predictor coefficients a_1..a_p (length = order). */
-  readonly coefficients: Float32Array;
+  /**
+   * Predictor coefficients a_1..a_p (length = order). Kept in double precision:
+   * the analysis-filter roots (formants) of clustered near-unit-circle poles are
+   * ill-conditioned, and Float32 storage of these coefficients can shift a
+   * formant by tens of Hz.
+   */
+  readonly coefficients: Float64Array;
   /** Reflection (PARCOR) coefficients k_1..k_p, each in (-1, 1) when stable. */
   readonly reflection: Float32Array;
   /** Residual (prediction-error) energy; 0 for a silent/degenerate frame. */
@@ -25,7 +30,7 @@ export interface LpcResult {
  * precision the recursion needs as the residual energy shrinks.
  */
 export function levinsonDurbin(autocorr: Float32Array | Float64Array, order: number): LpcResult {
-  const coefficients = new Float32Array(order);
+  const coefficients = new Float64Array(order);
   const reflection = new Float32Array(order);
 
   let error = autocorr[0] ?? 0;

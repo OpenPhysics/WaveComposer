@@ -93,14 +93,17 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
 
   const comboContainer = new Node();
   let combo: ComboBox<string> | null = null;
+  let comboValues: string[] = [];
   function rebuildCombo(): void {
     if (combo) {
       comboContainer.removeChild(combo);
       combo.dispose();
+      combo = null;
     }
+    comboValues = model.getSourceValues(catalog);
     combo = new ComboBox(
       model.audioSourceProperty,
-      model.getSourceValues(catalog).map((value) => ({
+      comboValues.map((value) => ({
         value,
         createNode: () =>
           new Text(nameProperty(value), { font: ViewConstants.CONTROL_FONT, fill: SimColors.textColorProperty }),
@@ -110,8 +113,20 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
     );
     comboContainer.addChild(combo);
   }
-  rebuildCombo();
+
+  // Both screens share audioSourceProperty but each lists only its own catalog. When the value
+  // changes to one outside this ComboBox's items (e.g. the other screen picked singingVibrato),
+  // rebuild so this ComboBox is disposed before its button asserts on the foreign value.
+  // When the value is already one of our items — i.e. the user just picked it from THIS ComboBox —
+  // we must NOT rebuild: disposing the in-flight ComboBox tears down its button before
+  // ComboBoxListBox voices the selection, throwing "utterance is not an Utterance" (Voicing.js).
+  model.audioSourceProperty.lazyLink(() => {
+    if (!comboValues.includes(model.audioSourceProperty.value)) {
+      rebuildCombo();
+    }
+  });
   model.recordings.lengthProperty.lazyLink(rebuildCombo);
+  rebuildCombo();
 
   const captionProperty = DerivedProperty.deriveAny(
     [

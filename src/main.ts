@@ -19,6 +19,10 @@ import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
 import { SimModel } from "./model/SimModel.js";
+import {
+  createFftSizePreferenceControl,
+  createWindowPreferenceControl,
+} from "./preferences/AnalysisPreferenceControls.js";
 import { createColormapPreferenceControl } from "./preferences/ColormapPreferenceControl.js";
 import { SimScreen } from "./sim-screen/SimScreen.js";
 import { AnalyzerViewProperties } from "./sim-screen/view/AnalyzerViewProperties.js";
@@ -56,6 +60,12 @@ onReadyToLaunch(() => {
         customPreferences: [
           {
             createContent: () => createColormapPreferenceControl(analyzerViewProperties.colormapProperty),
+          },
+          {
+            createContent: () => createFftSizePreferenceControl(model.fftSizeProperty),
+          },
+          {
+            createContent: () => createWindowPreferenceControl(model.windowTypeProperty),
           },
         ],
       },

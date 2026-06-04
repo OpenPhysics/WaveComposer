@@ -62,17 +62,19 @@ function productOfDifferences(
   out[1] = di;
 }
 
-/** Seeds the roots with powers of (0.4 + 0.9i), an off-axis spiral. */
+/**
+ * Seeds the roots evenly around a circle of radius 0.9 (with a half-step angular
+ * offset so no seed lands on the real axis). LPC analysis polynomials have all
+ * their roots clustered near the unit circle, so this places every seed in the
+ * right neighbourhood and converges far faster — and more accurately at a fixed
+ * iteration budget — than a spiral biased toward large angles.
+ */
 function seedRoots(re: Float64Array, im: Float64Array, degree: number): void {
-  let seedRe = 1;
-  let seedIm = 0;
+  const radius = 0.9;
   for (let k = 0; k < degree; k++) {
-    const nextRe = seedRe * 0.4 - seedIm * 0.9;
-    const nextIm = seedRe * 0.9 + seedIm * 0.4;
-    seedRe = nextRe;
-    seedIm = nextIm;
-    re[k] = seedRe;
-    im[k] = seedIm;
+    const angle = (2 * Math.PI * (k + 0.5)) / degree;
+    re[k] = radius * Math.cos(angle);
+    im[k] = radius * Math.sin(angle);
   }
 }
 

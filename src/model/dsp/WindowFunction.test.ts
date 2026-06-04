@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyWindow, createWindow, WINDOW_TYPE_VALUES, WindowType } from "./WindowFunction.js";
+import { applyWindow, createGaussianWindow, createWindow, WINDOW_TYPE_VALUES, WindowType } from "./WindowFunction.js";
 
 describe("WindowFunction", () => {
   it("exposes the three selectable window types", () => {
@@ -31,5 +31,19 @@ describe("WindowFunction", () => {
     const out = new Float32Array(4);
     applyWindow(signal, window, out);
     expect(Array.from(out)).toEqual([0, 0.5, 0.5, 0]);
+  });
+
+  it("builds a symmetric confined Gaussian window peaking at the centre", () => {
+    const n = 65;
+    const w = createGaussianWindow(n, 2.5);
+    const mid = (n - 1) / 2;
+    expect(w[mid]).toBeCloseTo(1, 6);
+    // Symmetric and unimodal: monotonically decreasing away from the centre.
+    for (let i = 0; i < mid; i++) {
+      expect(w[i]).toBeCloseTo(w[n - 1 - i] ?? 0, 5);
+      expect(w[i + 1] ?? 0).toBeGreaterThanOrEqual(w[i] ?? 0);
+    }
+    // Tapered toward the edges (well below the centre).
+    expect(w[0]).toBeLessThan(0.2);
   });
 });

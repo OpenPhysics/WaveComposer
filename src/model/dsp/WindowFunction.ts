@@ -45,6 +45,32 @@ export function createWindow(type: WindowType, length: number): Float32Array {
   return window;
 }
 
+/**
+ * Builds a Gaussian window of the given length, used only for the LPC/formant
+ * branch — its smooth, low-leakage taper keeps the autocorrelation well-behaved.
+ * `alpha` is the inverse of the standard deviation as a fraction of the half-
+ * width (larger = narrower main lobe); the reference formant analyzer asks for
+ * 2.5, which puts the endpoints near 0.044, matching MATLAB's `gausswin`.
+ *
+ * (The reference's own `gaussianWindow` in
+ * references/in-formant/src/analysis/filter/filter.cpp is the "confined" Gaussian
+ * variant, but its parameterization is degenerate at alpha = 2.5 — sigma ends up
+ * far wider than the window — so we use the standard form it was clearly after.)
+ */
+export function createGaussianWindow(length: number, alpha: number): Float32Array {
+  const window = new Float32Array(length);
+  if (length === 1) {
+    window[0] = 1;
+    return window;
+  }
+  const half = (length - 1) / 2;
+  for (let n = 0; n < length; n++) {
+    const ratio = (alpha * (n - half)) / half;
+    window[n] = Math.exp(-0.5 * ratio * ratio);
+  }
+  return window;
+}
+
 /** Multiplies `signal` by `window` element-wise into `out` (may alias signal). */
 export function applyWindow(signal: Float32Array, window: Float32Array, out: Float32Array): void {
   const n = signal.length;

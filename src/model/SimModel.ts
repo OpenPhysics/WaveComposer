@@ -56,11 +56,11 @@ import { type AnalysisResult, type AnalyzerConfig, VoiceAnalyzer } from "./Voice
 
 const DEFAULT_FFT_SIZE = 2048;
 const FFT_SIZE_VALUES = [1024, 2048, 4096];
-// At the full 44.1/48 kHz rate the formant band occupies only the lower part of
-// the spectrum, so a higher LPC order is needed to resolve F1–F4 cleanly (a
-// future pass may downsample before LPC, allowing a lower order).
-const DEFAULT_LPC_ORDER = 18;
-const LPC_ORDER_RANGE = new Range(8, 24);
+// The formant branch decimates to ~11 kHz before LPC (see VoiceAnalyzer), so the
+// order is chosen for that rate: ~2 poles per formant over 0–5.5 kHz. Order 12
+// resolves F1–F5 with a little headroom; higher orders start fitting noise.
+const DEFAULT_LPC_ORDER = 12;
+const LPC_ORDER_RANGE = new Range(8, 16);
 const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const DEFAULT_MAX_FREQUENCY_HZ = 5000;
 const FREQUENCY_RANGE = new Range(0, 22050);

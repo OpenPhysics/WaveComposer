@@ -9,29 +9,28 @@
  */
 import { DerivedProperty, type NumberProperty, type Property, type TReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
-import { HBox, Line, type Node, Text, VBox } from "scenerystack/scenery";
+import { Line, type Node, Text, VBox } from "scenerystack/scenery";
 import { NumberControl } from "scenerystack/scenery-phet";
-import { ButtonNode, Checkbox, ComboBox, type ComboBoxOptions, Panel, TextPushButton } from "scenerystack/sun";
+import { ButtonNode, Checkbox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import { INSTRUMENT_PRESET_CATALOG } from "../../model/audio/presetCatalog.js";
-import { WINDOW_TYPE_VALUES, type WindowType } from "../../model/dsp/WindowFunction.js";
 import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
 import { createSourceSelector } from "../../view/SourceSelector.js";
 import { ViewConstants } from "../../view/ViewConstants.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
-const FFT_SIZE_OPTIONS = [1024, 2048, 4096];
 const MAX_FREQUENCY_RANGE = new Range(2000, 10000);
-const LPC_ORDER_RANGE = new Range(8, 24);
+// Matches SimModel's LPC_ORDER_RANGE: order applies at the decimated ~11 kHz
+// formant rate, where ~12 is the sweet spot for F1–F5.
+const LPC_ORDER_RANGE = new Range(8, 16);
 const PANEL_WIDTH = 232;
 
 export class AnalyzerControlPanel extends Panel {
   public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, listParent: Node) {
     const controls = StringManager.getInstance().getControlStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
-    const windowStrings = StringManager.getInstance().getWindowStrings();
 
     // ── Source + start/stop + freeze ────────────────────────────────────────
     const sourceSelector = createSourceSelector(model, listParent, { presetCatalog: INSTRUMENT_PRESET_CATALOG });
@@ -62,36 +61,8 @@ export class AnalyzerControlPanel extends Panel {
     const playAudioCheckbox = makeCheckbox(model.isAudioEnabledProperty, controls.playAudioStringProperty);
 
     // ── Analysis settings ───────────────────────────────────────────────────
-    // Shared combo-box styling: dark fill with light item text in default mode
-    // (the sun default is white, which leaves the light labels unreadable).
-    const comboBoxOptions: ComboBoxOptions = {
-      buttonFill: SimColors.buttonFillColorProperty,
-      buttonStroke: SimColors.panelBorderColorProperty,
-      listFill: SimColors.buttonFillColorProperty,
-      listStroke: SimColors.panelBorderColorProperty,
-      highlightFill: SimColors.comboBoxHighlightColorProperty,
-      tandem: Tandem.OPT_OUT,
-    };
-
-    const fftCombo = new ComboBox(
-      model.fftSizeProperty,
-      FFT_SIZE_OPTIONS.map((size) => ({ value: size, createNode: () => controlText(`${size}`) })),
-      listParent,
-      comboBoxOptions,
-    );
-
-    const windowLabels: Record<WindowType, TReadOnlyProperty<string>> = {
-      hann: windowStrings.hannStringProperty,
-      hamming: windowStrings.hammingStringProperty,
-      blackman: windowStrings.blackmanStringProperty,
-    };
-    const windowCombo = new ComboBox(
-      model.windowTypeProperty,
-      WINDOW_TYPE_VALUES.map((type) => ({ value: type, createNode: () => controlText(windowLabels[type]) })),
-      listParent,
-      comboBoxOptions,
-    );
-
+    // FFT size and window are configured in Preferences → Visual (see
+    // AnalysisPreferenceControls), keeping this panel focused on the common controls.
     const lpcControl = makeNumberControl(controls.lpcOrderStringProperty, model.lpcOrderProperty, LPC_ORDER_RANGE, 1);
     const maxFreqControl = makeNumberControl(
       controls.maxFrequencyStringProperty,
@@ -128,8 +99,6 @@ export class AnalyzerControlPanel extends Panel {
         playAudioCheckbox,
         freezeCheckbox,
         divider(),
-        labeled(controls.fftSizeStringProperty, fftCombo),
-        labeled(controls.windowStringProperty, windowCombo),
         lpcControl,
         maxFreqControl,
         divider(),
@@ -154,11 +123,6 @@ function controlText(content: string | TReadOnlyProperty<string>): Node {
 
 function sectionLabel(stringProperty: TReadOnlyProperty<string>): Node {
   return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty });
-}
-
-/** A label to the left of a control (used for ComboBoxes, which lack a built-in label). */
-function labeled(labelProperty: TReadOnlyProperty<string>, control: Node): Node {
-  return new HBox({ spacing: 6, children: [controlText(labelProperty), control] });
 }
 
 function divider(): Node {
