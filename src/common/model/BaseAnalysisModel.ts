@@ -17,6 +17,8 @@ import {
 } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
+import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
+import { DEFAULT_FFT_SIZE } from "../../preferences/AnalysisPreferencesModel.js";
 import { AudioFileFrameSource } from "./audio/AudioFileFrameSource.js";
 import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
 import { BufferPlaybackSource } from "./audio/BufferPlaybackSource.js";
@@ -29,13 +31,9 @@ import { RecordedAudioSource } from "./audio/RecordedAudioSource.js";
 import { SyntheticWebAudioSource } from "./audio/SyntheticWebAudioSource.js";
 import { centsFromFrequency, noteNameFromFrequency } from "./dsp/NoteUtils.js";
 import type { FormantData } from "./dsp/types.js";
-import { WINDOW_TYPE_VALUES, WindowType } from "./dsp/WindowFunction.js";
+import type { WindowType } from "./dsp/WindowFunction.js";
 import { type AnalysisResult, type AnalyzerConfig, VoiceAnalyzer } from "./VoiceAnalyzer.js";
 
-const DEFAULT_FFT_SIZE = 2048;
-const FFT_SIZE_VALUES = [1024, 2048, 4096];
-const DEFAULT_LPC_ORDER = 12;
-const LPC_ORDER_RANGE = new Range(8, 16);
 const DEFAULT_MAX_FREQUENCY_HZ = 5000;
 const MAX_FREQUENCY_RANGE = new Range(0, 22050);
 
@@ -94,13 +92,9 @@ function createPresetSource(entry: PresetCatalogEntry, fftSize: number): AudioFr
 
 export class BaseAnalysisModel implements TModel {
   public readonly presetCatalog: readonly PresetCatalogEntry[];
+  public readonly analysisPreferences: AnalysisPreferencesModel;
 
   // ── Settings (inputs) ───────────────────────────────────────────────────────
-  public readonly fftSizeProperty = new NumberProperty(DEFAULT_FFT_SIZE, { validValues: FFT_SIZE_VALUES });
-  public readonly lpcOrderProperty = new NumberProperty(DEFAULT_LPC_ORDER, { range: LPC_ORDER_RANGE });
-  public readonly windowTypeProperty = new Property<WindowType>(WindowType.HANN, {
-    validValues: [...WINDOW_TYPE_VALUES],
-  });
   public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: MAX_FREQUENCY_RANGE });
 
   // ── State ───────────────────────────────────────────────────────────────────
@@ -151,9 +145,26 @@ export class BaseAnalysisModel implements TModel {
   private readonly analyzer: VoiceAnalyzer;
   private frameBuffer: Float32Array;
   private latestResult: AnalysisResult | null = null;
+  /** True while this screen is hidden and playback was stopped for that reason. */
+  private screenAudioSuspended = false;
+  private resumeMicAfterScreenActive = false;
+  private resumePlaybackAfterScreenActive = false;
 
-  public constructor(presetCatalog: readonly PresetCatalogEntry[]) {
+  public get fftSizeProperty(): NumberProperty {
+    return this.analysisPreferences.fftSizeProperty;
+  }
+
+  public get lpcOrderProperty(): NumberProperty {
+    return this.analysisPreferences.lpcOrderProperty;
+  }
+
+  public get windowTypeProperty(): Property<WindowType> {
+    return this.analysisPreferences.windowTypeProperty;
+  }
+
+  public constructor(presetCatalog: readonly PresetCatalogEntry[], analysisPreferences: AnalysisPreferencesModel) {
     this.presetCatalog = presetCatalog;
+    this.analysisPreferences = analysisPreferences;
     this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
     const presetSources: [string, AudioFrameSource][] = presetCatalog.map((entry) => [
       entry.id,
@@ -233,6 +244,51 @@ export class BaseAnalysisModel implements TModel {
     this.isListeningProperty.value = true;
   }
 
+  /**
+   * Stops all speaker output while this screen is not selected. Called from
+   * {@link linkAnalysisModelToScreenActive}; playback can be restored on return.
+   */
+  public suspendAudioForInactiveScreen(): void {
+    if (this.screenAudioSuspended) {
+      return;
+    }
+    this.screenAudioSuspended = true;
+
+    const sourceId = this.audioSourceProperty.value;
+    if (sourceId === AudioSource.MICROPHONE) {
+      this.resumeMicAfterScreenActive = this.isListeningProperty.value;
+      if (this.resumeMicAfterScreenActive) {
+        this.stopListening();
+      }
+      return;
+    }
+
+    const source = this.sources.get(sourceId);
+    this.resumePlaybackAfterScreenActive = source !== undefined && isPlayableSource(source) && source.isActive;
+    if (this.resumePlaybackAfterScreenActive) {
+      this.deactivate(sourceId);
+    }
+  }
+
+  /** Restores playback that {@link suspendAudioForInactiveScreen} paused when the screen is shown again. */
+  public resumeAudioForActiveScreen(): void {
+    if (!this.screenAudioSuspended) {
+      return;
+    }
+    this.screenAudioSuspended = false;
+
+    if (this.resumeMicAfterScreenActive) {
+      this.resumeMicAfterScreenActive = false;
+      this.startListening().catch(() => undefined);
+      return;
+    }
+
+    if (this.resumePlaybackAfterScreenActive) {
+      this.resumePlaybackAfterScreenActive = false;
+      this.activate(this.audioSourceProperty.value);
+    }
+  }
+
   /** Stops microphone capture and releases the device (discarding any active recording). */
   public stopListening(): void {
     if (this.isRecordingProperty.value) {
@@ -291,10 +347,27 @@ export class BaseAnalysisModel implements TModel {
     return id.startsWith(RECORDING_ID_PREFIX);
   }
 
-  /** Source ids for a ComboBox: microphone, this screen's presets, then recordings. */
+  /** Registers an extra selectable source (e.g. the Analyzer compose lab). */
+  protected registerAdditionalSource(id: string, source: AudioFrameSource): void {
+    this.sources.set(id, source);
+  }
+
+  /** Extra source ids after microphone; override in screen-specific models. */
+  protected getAdditionalSourceIds(): string[] {
+    return [];
+  }
+
+  /** Playback time (s) for a synthetic source, or 0 when the source is not synthetic. */
+  protected getSourcePlaybackTimeS(sourceId: string): number {
+    const source = this.sources.get(sourceId);
+    return source instanceof SyntheticWebAudioSource ? source.playbackTimeS : 0;
+  }
+
+  /** Source ids for a ComboBox: microphone, extras, presets, then recordings. */
   public getSourceValues(): string[] {
     return [
       AudioSource.MICROPHONE,
+      ...this.getAdditionalSourceIds(),
       ...this.presetCatalog.map((entry) => entry.id),
       ...this.recordings.map((e) => e.id),
     ];
@@ -308,9 +381,7 @@ export class BaseAnalysisModel implements TModel {
     this.stopListening();
     this.audioSourceProperty.reset();
     this.sampleRateProperty.reset();
-    this.fftSizeProperty.reset();
-    this.lpcOrderProperty.reset();
-    this.windowTypeProperty.reset();
+    this.analysisPreferences.reset();
     this.maxFrequencyProperty.reset();
     this.isAudioEnabledProperty.reset();
     this.f0Property.reset();
@@ -396,4 +467,21 @@ export class BaseAnalysisModel implements TModel {
   private createFormantFrequencyProperty(index: number): TReadOnlyProperty<number> {
     return new DerivedProperty([this.formantsProperty], (formants) => formants[index]?.frequencyHz ?? 0);
   }
+}
+
+/**
+ * Pauses a screen's audio when it is hidden and restores it when the user returns.
+ * Wire once per analysis screen after constructing the {@link Sim}.
+ */
+export function linkAnalysisModelToScreenActive(
+  screenActiveProperty: TReadOnlyProperty<boolean>,
+  model: BaseAnalysisModel,
+): void {
+  screenActiveProperty.link((active) => {
+    if (active) {
+      model.resumeAudioForActiveScreen();
+    } else {
+      model.suspendAudioForInactiveScreen();
+    }
+  });
 }

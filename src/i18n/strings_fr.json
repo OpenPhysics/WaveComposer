@@ -2,7 +2,13 @@
   "title": "Compositeur d'Ondes",
   "screens": {
     "analyzer": "Analyseur",
+    "composer": "Composer",
     "voice": "Voix et Voyelles"
+  },
+  "composerScreen": {
+    "intro": "Superposez des sinusoïdes et observez battements et modes stationnaires.",
+    "beatRate": "Fréquence de battement",
+    "activePartials": "Partiels actifs"
   },
   "panel": {
     "spectrogram": "Spectrogramme",
@@ -32,7 +38,44 @@
     "showF0": "Tracé F0",
     "showFormants": "Tracés des formants",
     "showLpcEnvelope": "Enveloppe LPC",
-    "showHarmonics": "Repères harmoniques"
+    "showHarmonics": "Repères harmoniques",
+    "showPipeOverlay": "Harmoniques autorisées",
+    "showModeNumbers": "Numéros de mode (n)",
+    "pipeBoundary": "Modèle de frontière"
+  },
+  "compose": {
+    "title": "Composer",
+    "preset": "Démo",
+    "custom": "Personnalisé",
+    "pureTone": "Son pur",
+    "octave": "Octave (2:1)",
+    "majorTriad": "Triade majeure",
+    "beats": "Battements",
+    "phaseCancel": "Annulation de phase (180°)",
+    "phaseQuadrature": "Déphasage (90°)",
+    "harmonicSeries": "Série harmonique",
+    "sawtoothIsh": "Presque dents de scie",
+    "squareIsh": "Presque carré (impairs)",
+    "triangleIsh": "Presque triangulaire (impairs, 1/n²)",
+    "partial": "Partiel",
+    "frequency": "Fréquence",
+    "amplitude": "Amplitude",
+    "phase": "Phase",
+    "enabled": "Actif"
+  },
+  "physics": {
+    "none": "Aucun",
+    "string": "Corde (extrémités fixes)",
+    "openPipe": "Tube ouvert",
+    "closedPipe": "Tube fermé (modes impairs)",
+    "standingWave": "Onde stationnaire",
+    "modeLabel": "n = {{n}}",
+    "resonance": "Résonance",
+    "resonanceCaption": "Pics LPC = résonances",
+    "sourceFilter": "Modèle source–filtre",
+    "glottalSource": "Source glottale",
+    "vocalTract": "Filtre du conduit vocal",
+    "resonanceTuning": "F0 proche de F1 — accord de résonance"
   },
   "presets": {
     "microphone": "Microphone",
@@ -126,6 +169,11 @@
     "inferno": "Inferno",
     "magma": "Magma",
     "grayscale": "Niveaux de gris"
+  },
+  "preferences": {
+    "fftSizeDescription": "Longueur de chaque trame d'analyse en échantillons. Une taille plus grande améliore le détail fréquentiel mais ralentit les mises à jour dans le temps.",
+    "lpcOrderDescription": "Nombre de résonances modélisées dans l'enveloppe spectrale LPC. Des valeurs plus élevées capturent plus de détail des formants ; environ 12 convient bien à la parole.",
+    "windowDescription": "Façonne les bords de chaque trame avant la FFT pour réduire les fuites spectrales. Hann est un bon choix par défaut ; Blackman atténue davantage les lobes secondaires."
   },
   "readout": {
     "pitch": "Hauteur (F0)",

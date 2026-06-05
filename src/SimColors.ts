@@ -189,6 +189,28 @@ const SimColors = {
     default: "#ffca28",
     projector: "#ef6c00",
   }),
+
+  // ── Wave-physics overlays ─────────────────────────────────────────────────────
+  /** Shaded bands for allowed harmonics on the spectrum. */
+  allowedHarmonicBandColorProperty: new ProfileColorProperty(SimNamespace, "allowedHarmonicBand", {
+    default: "#4fc3f7",
+    projector: "#90caf9",
+  }),
+  /** 1D standing-wave mode curve. */
+  standingWaveColorProperty: new ProfileColorProperty(SimNamespace, "standingWave", {
+    default: "#ffab91",
+    projector: "#d84315",
+  }),
+  /** Source–filter diagram accents on the Voice screen. */
+  sourceFilterColorProperty: new ProfileColorProperty(SimNamespace, "sourceFilter", {
+    default: "#ce93d8",
+    projector: "#7b1fa2",
+  }),
+  /** Live resonance-tuning indicator. */
+  resonanceTuningColorProperty: new ProfileColorProperty(SimNamespace, "resonanceTuning", {
+    default: "#ffd54f",
+    projector: "#f9a825",
+  }),
 };
 
 export default SimColors;

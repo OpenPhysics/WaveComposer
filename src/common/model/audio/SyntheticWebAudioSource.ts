@@ -20,7 +20,7 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
   private scriptNode: ScriptProcessorNode | null = null;
   private gainNode: GainNode | null = null;
   private monitoringEnabled = true;
-  private playbackTimeS = 0;
+  private elapsedPlaybackTimeS = 0;
   private timeBuffer: Float32Array<ArrayBuffer>;
 
   public constructor(generate: PresetGenerator, fftSize: number) {
@@ -35,6 +35,11 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
 
   public get isActive(): boolean {
     return this.scriptNode !== null;
+  }
+
+  /** Elapsed synthesis time (s) since the last {@link start}; used for phase-continuous displays. */
+  public get playbackTimeS(): number {
+    return this.elapsedPlaybackTimeS;
   }
 
   /**
@@ -59,8 +64,8 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
     const scriptNode = audioContext.createScriptProcessor(SCRIPT_BUFFER_SIZE, 0, 1);
     scriptNode.onaudioprocess = (event) => {
       const out = event.outputBuffer.getChannelData(0);
-      this.generate(out, audioContext.sampleRate, this.playbackTimeS);
-      this.playbackTimeS += out.length / audioContext.sampleRate;
+      this.generate(out, audioContext.sampleRate, this.elapsedPlaybackTimeS);
+      this.elapsedPlaybackTimeS += out.length / audioContext.sampleRate;
     };
     scriptNode.connect(analyser);
     scriptNode.connect(gainNode);
@@ -72,7 +77,7 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
   public stop(): void {
     this.scriptNode?.disconnect();
     this.scriptNode = null;
-    this.playbackTimeS = 0;
+    this.elapsedPlaybackTimeS = 0;
   }
 
   public setMonitoringEnabled(enabled: boolean): void {

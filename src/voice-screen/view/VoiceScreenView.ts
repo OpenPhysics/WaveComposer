@@ -12,6 +12,7 @@ import { ViewConstants } from "../../common/view/ViewConstants.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 import { AudioSourceControl } from "./AudioSourceControl.js";
 import { CepstrumNode } from "./CepstrumNode.js";
+import { SourceFilterDiagramNode } from "./SourceFilterDiagramNode.js";
 import { VoiceQualityReadout } from "./VoiceQualityReadout.js";
 import { VowelPlotNode } from "./VowelPlotNode.js";
 
@@ -50,9 +51,14 @@ export class VoiceScreenView extends BaseAnalysisScreenView {
     cepstrumContainer.top = this.layoutBounds.minY + MARGIN;
     this.addChild(cepstrumContainer);
 
+    const sourceFilterDiagram = new SourceFilterDiagramNode(model);
+    sourceFilterDiagram.left = rightLeft;
+    sourceFilterDiagram.top = cepstrumContainer.bottom + SPACING;
+    this.addChild(sourceFilterDiagram);
+
     const readout = new VoiceQualityReadout(model);
     readout.left = rightLeft;
-    readout.top = cepstrumContainer.bottom + SPACING + 20;
+    readout.top = sourceFilterDiagram.bottom + SPACING;
     this.addChild(readout);
 
     this.addResetAllButton(model, () => this.reset());

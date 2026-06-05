@@ -2,8 +2,7 @@
  * AnalyzerControlPanel.ts
  *
  * All Analyzer-screen controls: audio source (microphone / demo) with a
- * start/stop button, a freeze toggle, the analysis settings (FFT size, window,
- * LPC order, max frequency), the spectrogram colormap, and overlay-visibility
+ * start/stop button, a freeze toggle, max frequency, and overlay-visibility
  * checkboxes. Analysis settings bind to the model; display settings bind to the
  * AnalyzerViewProperties.
  */
@@ -14,7 +13,7 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { ButtonNode, Checkbox, ComboBox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
-import { WINDOW_TYPE_VALUES, type WindowType } from "../../common/model/dsp/WindowFunction.js";
+import { PipeBoundary, PipeBoundaryValues } from "../../common/model/PipeBoundary.js";
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -23,16 +22,13 @@ import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 const MAX_FREQUENCY_RANGE = new Range(2000, 10000);
-// Matches BaseAnalysisModel's LPC_ORDER_RANGE: order applies at the decimated ~11 kHz
-// formant rate, where ~12 is the sweet spot for F1–F5.
-const LPC_ORDER_RANGE = new Range(8, 16);
-const FFT_SIZE_OPTIONS = [1024, 2048, 4096];
 const PANEL_WIDTH = 232;
 
 export class AnalyzerControlPanel extends Panel {
   public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, listParent: Node) {
     const controls = StringManager.getInstance().getControlStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
+    const physics = StringManager.getInstance().getPhysicsStrings();
 
     // ── Source + start/stop + freeze ────────────────────────────────────────
     const sourceSelector = createSourceSelector(model, listParent);
@@ -63,15 +59,35 @@ export class AnalyzerControlPanel extends Panel {
     const playAudioCheckbox = makeCheckbox(model.isAudioEnabledProperty, controls.playAudioStringProperty);
 
     // ── Analysis settings ───────────────────────────────────────────────────
-    const fftSizeControl = makeFftSizeControl(model.fftSizeProperty, listParent);
-    const windowControl = makeWindowControl(model.windowTypeProperty, listParent);
-    const lpcControl = makeNumberControl(controls.lpcOrderStringProperty, model.lpcOrderProperty, LPC_ORDER_RANGE, 1);
     const maxFreqControl = makeNumberControl(
       controls.maxFrequencyStringProperty,
       model.maxFrequencyProperty,
       MAX_FREQUENCY_RANGE,
       500,
       " Hz",
+    );
+
+    const pipeBoundaryLabels: Record<PipeBoundary, TReadOnlyProperty<string>> = {
+      [PipeBoundary.NONE]: physics.noneStringProperty,
+      [PipeBoundary.STRING]: physics.stringStringProperty,
+      [PipeBoundary.OPEN_PIPE]: physics.openPipeStringProperty,
+      [PipeBoundary.CLOSED_PIPE]: physics.closedPipeStringProperty,
+    };
+    const pipeBoundaryControl = new ComboBox(
+      model.pipeBoundaryProperty,
+      PipeBoundaryValues.map((value) => ({
+        value,
+        createNode: () => controlText(pipeBoundaryLabels[value]),
+      })),
+      listParent,
+      {
+        buttonFill: SimColors.buttonFillColorProperty,
+        buttonStroke: SimColors.panelBorderColorProperty,
+        listFill: SimColors.buttonFillColorProperty,
+        listStroke: SimColors.panelBorderColorProperty,
+        highlightFill: SimColors.comboBoxHighlightColorProperty,
+        tandem: Tandem.OPT_OUT,
+      },
     );
 
     // ── Overlay visibility ──────────────────────────────────────────────────
@@ -84,6 +100,10 @@ export class AnalyzerControlPanel extends Panel {
         makeCheckbox(viewProperties.showFormantTracksProperty, controls.showFormantsStringProperty),
         makeCheckbox(viewProperties.showLpcEnvelopeProperty, controls.showLpcEnvelopeStringProperty),
         makeCheckbox(viewProperties.showHarmonicsProperty, controls.showHarmonicsStringProperty),
+        makeCheckbox(viewProperties.showPipeOverlayProperty, controls.showPipeOverlayStringProperty),
+        makeCheckbox(viewProperties.showModeNumbersProperty, controls.showModeNumbersStringProperty),
+        sectionLabel(controls.pipeBoundaryStringProperty),
+        pipeBoundaryControl,
       ],
     });
 
@@ -101,9 +121,6 @@ export class AnalyzerControlPanel extends Panel {
         playAudioCheckbox,
         freezeCheckbox,
         divider(),
-        fftSizeControl,
-        windowControl,
-        lpcControl,
         maxFreqControl,
         divider(),
         overlays,
@@ -140,57 +157,6 @@ function makeCheckbox(property: Property<boolean>, labelProperty: TReadOnlyPrope
     checkboxColorBackground: SimColors.chartBackgroundColorProperty,
     tandem: Tandem.OPT_OUT,
   });
-}
-
-function makeFftSizeControl(property: NumberProperty, listParent: Node): Node {
-  const controls = StringManager.getInstance().getControlStrings();
-  const comboBox = new ComboBox(
-    property,
-    FFT_SIZE_OPTIONS.map((size) => ({
-      value: size,
-      createNode: () => controlText(`${size}`),
-    })),
-    listParent,
-    {
-      buttonFill: SimColors.buttonFillColorProperty,
-      buttonStroke: SimColors.panelBorderColorProperty,
-      listFill: SimColors.buttonFillColorProperty,
-      listStroke: SimColors.panelBorderColorProperty,
-      highlightFill: SimColors.comboBoxHighlightColorProperty,
-      tandem: Tandem.OPT_OUT,
-    },
-  );
-
-  return new VBox({ align: "left", spacing: 4, children: [sectionLabel(controls.fftSizeStringProperty), comboBox] });
-}
-
-function makeWindowControl(property: Property<WindowType>, listParent: Node): Node {
-  const controls = StringManager.getInstance().getControlStrings();
-  const windowStrings = StringManager.getInstance().getWindowStrings();
-  const windowLabels: Record<WindowType, TReadOnlyProperty<string>> = {
-    hann: windowStrings.hannStringProperty,
-    hamming: windowStrings.hammingStringProperty,
-    blackman: windowStrings.blackmanStringProperty,
-  };
-
-  const comboBox = new ComboBox(
-    property,
-    WINDOW_TYPE_VALUES.map((type) => ({
-      value: type,
-      createNode: () => controlText(windowLabels[type]),
-    })),
-    listParent,
-    {
-      buttonFill: SimColors.buttonFillColorProperty,
-      buttonStroke: SimColors.panelBorderColorProperty,
-      listFill: SimColors.buttonFillColorProperty,
-      listStroke: SimColors.panelBorderColorProperty,
-      highlightFill: SimColors.comboBoxHighlightColorProperty,
-      tandem: Tandem.OPT_OUT,
-    },
-  );
-
-  return new VBox({ align: "left", spacing: 4, children: [sectionLabel(controls.windowStringProperty), comboBox] });
 }
 
 function makeNumberControl(

@@ -8,12 +8,13 @@
 import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
 import { Node } from "scenerystack/scenery";
+import type { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js";
+import { hasDisplayWaveform } from "../../common/model/HarmonicChartModel.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
+import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import SimColors from "../../SimColors.js";
-import type { AnalyzerModel } from "../model/AnalyzerModel.js";
-import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 interface WaveformNodeOptions {
   viewWidth: number;
@@ -24,14 +25,15 @@ const TIME_TICK_SPACING_MS = 10;
 const AMPLITUDE_TICK_SPACING = 0.5;
 
 export class WaveformNode extends Node {
-  private readonly model: AnalyzerModel;
-  private readonly viewProperties: AnalyzerViewProperties;
+  private readonly model: BaseAnalysisModel;
+  private readonly viewProperties: ChartOverlayProperties;
   private readonly maxPoints: number;
   private readonly chartTransform: ChartTransform;
   private readonly plot: CanvasLinePlot;
   private readonly chartCanvas: ChartCanvasNode;
+  private displayWaveformBuffer = new Float32Array(0);
 
-  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options: WaveformNodeOptions) {
+  public constructor(model: BaseAnalysisModel, viewProperties: ChartOverlayProperties, options: WaveformNodeOptions) {
     super();
     this.model = model;
     this.viewProperties = viewProperties;
@@ -71,18 +73,31 @@ export class WaveformNode extends Node {
   }
 
   private update(): void {
-    const analysis = this.model.analysis;
-    if (!analysis) {
-      return;
-    }
     const sampleRate = this.model.sampleRateProperty.value;
     const windowMs = this.viewProperties.timeWindowMsProperty.value;
-    const waveform = analysis.waveform;
-    const windowSamples = Math.min(waveform.length, Math.max(2, Math.round((windowMs / 1000) * sampleRate)));
-    const step = Math.max(1, Math.ceil(windowSamples / this.maxPoints));
+    const windowSamples = Math.max(2, Math.round((windowMs / 1000) * sampleRate));
 
+    let waveform: Float32Array;
+    let sampleCount: number;
+    if (hasDisplayWaveform(this.model)) {
+      if (this.displayWaveformBuffer.length < windowSamples) {
+        this.displayWaveformBuffer = new Float32Array(windowSamples);
+      }
+      waveform = this.displayWaveformBuffer.subarray(0, windowSamples);
+      this.model.fillDisplayWaveform(waveform);
+      sampleCount = windowSamples;
+    } else {
+      const analysis = this.model.analysis;
+      if (!analysis) {
+        return;
+      }
+      waveform = analysis.waveform;
+      sampleCount = Math.min(waveform.length, windowSamples);
+    }
+
+    const step = Math.max(1, Math.ceil(sampleCount / this.maxPoints));
     const data: Vector2[] = [];
-    for (let i = 0; i < windowSamples; i += step) {
+    for (let i = 0; i < sampleCount; i += step) {
       const timeMs = (i / sampleRate) * 1000;
       data.push(new Vector2(timeMs, waveform[i] ?? 0));
     }

@@ -20,6 +20,7 @@ import { AnalyzerReadoutPanel } from "./AnalyzerReadoutPanel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 import { SpectrogramNode } from "./SpectrogramNode.js";
 import { SpectrumNode } from "./SpectrumNode.js";
+import { StandingWaveNode } from "./StandingWaveNode.js";
 import { WaveformNode } from "./WaveformNode.js";
 
 const MARGIN = ViewConstants.SCREEN_MARGIN;
@@ -29,6 +30,7 @@ const CHART_LEFT_GUTTER = 56;
 const SPECTROGRAM_HEIGHT = 210;
 const SPECTRUM_HEIGHT = 150;
 const WAVEFORM_HEIGHT = 70;
+const STANDING_WAVE_HEIGHT = 56;
 
 export class SimScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: AnalyzerViewProperties;
@@ -67,11 +69,15 @@ export class SimScreenView extends BaseAnalysisScreenView {
       viewWidth: chartViewWidth,
       viewHeight: WAVEFORM_HEIGHT,
     });
+    const standingWave = new StandingWaveNode(model, {
+      viewWidth: chartViewWidth,
+      viewHeight: STANDING_WAVE_HEIGHT,
+    });
 
     const charts = new VBox({
       align: "left",
       spacing: SPACING + 14,
-      children: [this.spectrogram, spectrum, waveform],
+      children: [this.spectrogram, spectrum, waveform, standingWave],
     });
     charts.left = chartLeft;
     charts.top = this.layoutBounds.minY + MARGIN;

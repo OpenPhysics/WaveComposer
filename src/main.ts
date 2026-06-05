@@ -17,7 +17,13 @@ import "./brand.js";
 
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import { linkAnalysisModelToScreenActive } from "./common/model/BaseAnalysisModel.js";
+import { ComposerScreen } from "./composer-screen/ComposerScreen.js";
+import { ComposerModel } from "./composer-screen/model/ComposerModel.js";
+import { ComposerViewProperties } from "./composer-screen/view/ComposerViewProperties.js";
 import { StringManager } from "./i18n/StringManager.js";
+import { createAnalysisPreferenceControls } from "./preferences/AnalysisPreferenceControls.js";
+import { AnalysisPreferencesModel } from "./preferences/AnalysisPreferencesModel.js";
 import { createColormapPreferenceControl } from "./preferences/ColormapPreferenceControl.js";
 import { AnalyzerModel } from "./sim-screen/model/AnalyzerModel.js";
 import { SimScreen } from "./sim-screen/SimScreen.js";
@@ -29,12 +35,20 @@ onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
   const screenNames = stringManager.getScreenNames();
 
-  const analyzerModel = new AnalyzerModel();
-  const voiceModel = new VoiceModel();
+  const analysisPreferences = new AnalysisPreferencesModel();
+  const analyzerModel = new AnalyzerModel(analysisPreferences);
+  const composerModel = new ComposerModel(analysisPreferences);
+  const voiceModel = new VoiceModel(analysisPreferences);
 
   const analyzerViewProperties = new AnalyzerViewProperties();
+  const composerViewProperties = new ComposerViewProperties();
 
   const screens = [
+    new ComposerScreen(composerModel, {
+      name: screenNames.composerStringProperty,
+      tandem: Tandem.ROOT.createTandem("composerScreen"),
+      viewProperties: composerViewProperties,
+    }),
     new SimScreen(analyzerModel, {
       // The screen name Property updates automatically when the locale changes
       name: screenNames.analyzerStringProperty,
@@ -55,6 +69,9 @@ onReadyToLaunch(() => {
         // Enables keyboard-navigation highlight outlines
         supportsInteractiveHighlights: true,
         customPreferences: [
+          {
+            createContent: () => createAnalysisPreferenceControls(analysisPreferences),
+          },
           {
             createContent: () => createColormapPreferenceControl(analyzerViewProperties.colormapProperty),
           },
@@ -94,6 +111,10 @@ onReadyToLaunch(() => {
       qualityAssurance: "",
     },
   });
+
+  for (const screen of sim.simScreens) {
+    linkAnalysisModelToScreenActive(screen.activeProperty, screen.model);
+  }
 
   sim.start();
 });

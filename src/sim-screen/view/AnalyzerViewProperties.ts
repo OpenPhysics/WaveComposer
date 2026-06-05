@@ -24,6 +24,10 @@ export class AnalyzerViewProperties {
   public readonly showLpcEnvelopeProperty = new BooleanProperty(true);
   /** Show integer-harmonic markers (multiples of F0) over the spectrum. */
   public readonly showHarmonicsProperty = new BooleanProperty(false);
+  /** Shade allowed harmonics for the selected boundary model. */
+  public readonly showPipeOverlayProperty = new BooleanProperty(false);
+  /** Label harmonic markers with standing-wave mode numbers (n = 1, 2, 3…). */
+  public readonly showModeNumbersProperty = new BooleanProperty(false);
   /** Oscilloscope time window in milliseconds. */
   public readonly timeWindowMsProperty = new NumberProperty(ViewConstants.DEFAULT_TIME_WINDOW_MS, {
     range: ViewConstants.TIME_WINDOW_MS_RANGE,
@@ -35,6 +39,8 @@ export class AnalyzerViewProperties {
     this.showFormantTracksProperty.reset();
     this.showLpcEnvelopeProperty.reset();
     this.showHarmonicsProperty.reset();
+    this.showPipeOverlayProperty.reset();
+    this.showModeNumbersProperty.reset();
     this.timeWindowMsProperty.reset();
   }
 }

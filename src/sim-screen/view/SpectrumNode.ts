@@ -5,20 +5,21 @@
  * spectral-envelope curve overlaid, plus vertical markers at the detected formant
  * frequencies and optional integer-harmonic markers (multiples of F0).
  *
- * The two curves are drawn with bamboo CanvasLinePlots (canvas-rendered, so the
- * per-frame `setDataSet` is cheap). Only bins inside the display frequency range
- * are emitted, keeping each dataset to a few hundred points.
+ * Physics pedagogy overlays: allowed-harmonic bands for pipe/string boundary
+ * models, mode-number labels on harmonic markers, and a resonance caption on the
+ * LPC envelope.
  */
 import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import { Line, Node, Path } from "scenerystack/scenery";
+import { Line, Node, Path, Rectangle, Text } from "scenerystack/scenery";
+import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.js";
+import { isModeAllowed, PipeBoundary } from "../../common/model/PipeBoundary.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
+import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import SimColors from "../../SimColors.js";
-import type { AnalyzerModel } from "../model/AnalyzerModel.js";
-import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 interface SpectrumNodeOptions {
   viewWidth: number;
@@ -27,10 +28,11 @@ interface SpectrumNodeOptions {
 
 const FREQUENCY_TICK_SPACING_HZ = 1000;
 const DB_TICK_SPACING = 20;
+const HARMONIC_BAND_WIDTH_HZ = 18;
 
 export class SpectrumNode extends Node {
-  private readonly model: AnalyzerModel;
-  private readonly viewProperties: AnalyzerViewProperties;
+  private readonly model: HarmonicChartModel;
+  private readonly viewProperties: ChartOverlayProperties;
   private readonly viewHeight: number;
   private readonly chartTransform: ChartTransform;
   private readonly spectrumPlot: CanvasLinePlot;
@@ -38,13 +40,17 @@ export class SpectrumNode extends Node {
   private readonly chartCanvas: ChartCanvasNode;
   private readonly formantLines: Line[];
   private readonly harmonicMarkers: Path;
+  private readonly allowedHarmonicLayer: Node;
+  private readonly modeNumberLayer: Node;
+  private readonly resonanceCaption: Text;
 
-  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options: SpectrumNodeOptions) {
+  public constructor(model: HarmonicChartModel, viewProperties: ChartOverlayProperties, options: SpectrumNodeOptions) {
     super();
     this.model = model;
     this.viewProperties = viewProperties;
     this.viewHeight = options.viewHeight;
     const axisStrings = StringManager.getInstance().getAxisStrings();
+    const physics = StringManager.getInstance().getPhysicsStrings();
 
     const frame = new ChartFrame({
       viewWidth: options.viewWidth,
@@ -58,6 +64,9 @@ export class SpectrumNode extends Node {
     });
     this.chartTransform = frame.chartTransform;
 
+    this.allowedHarmonicLayer = new Node();
+    frame.plotLayer.addChild(this.allowedHarmonicLayer);
+
     this.spectrumPlot = new CanvasLinePlot(this.chartTransform, [], {
       stroke: SimColors.spectrumCurveColorProperty.value.toCSS(),
       lineWidth: 1.5,
@@ -69,7 +78,6 @@ export class SpectrumNode extends Node {
     this.chartCanvas = new ChartCanvasNode(this.chartTransform, [this.spectrumPlot, this.lpcPlot]);
     frame.plotLayer.addChild(this.chartCanvas);
 
-    // Optional integer-harmonic markers (drawn beneath the formant lines).
     this.harmonicMarkers = new Path(null, {
       stroke: SimColors.harmonicMarkerColorProperty,
       lineWidth: 0.5,
@@ -77,7 +85,9 @@ export class SpectrumNode extends Node {
     });
     frame.plotLayer.addChild(this.harmonicMarkers);
 
-    // Persistent vertical lines for F1–F4.
+    this.modeNumberLayer = new Node();
+    frame.plotLayer.addChild(this.modeNumberLayer);
+
     const formantColors = [
       SimColors.formant1ColorProperty,
       SimColors.formant2ColorProperty,
@@ -92,9 +102,17 @@ export class SpectrumNode extends Node {
     });
     frame.plotLayer.addChild(formantLayer);
 
+    this.resonanceCaption = new Text(physics.resonanceCaptionStringProperty, {
+      font: ViewConstants.LABEL_FONT,
+      fill: SimColors.lpcEnvelopeColorProperty,
+      right: options.viewWidth - 4,
+      top: 2,
+      visible: false,
+    });
+    frame.plotLayer.addChild(this.resonanceCaption);
+
     this.addChild(frame);
 
-    // Keep CanvasLinePlot strokes in sync with the active color profile.
     SimColors.spectrumCurveColorProperty.lazyLink((color) => {
       this.spectrumPlot.setStroke(color.toCSS());
       this.chartCanvas.update();
@@ -105,9 +123,13 @@ export class SpectrumNode extends Node {
     });
     viewProperties.showLpcEnvelopeProperty.link((visible) => {
       this.lpcPlot.visible = visible;
+      this.resonanceCaption.visible = visible;
       this.chartCanvas.update();
     });
     viewProperties.showHarmonicsProperty.lazyLink(() => this.update());
+    viewProperties.showPipeOverlayProperty.lazyLink(() => this.update());
+    viewProperties.showModeNumbersProperty.lazyLink(() => this.update());
+    model.pipeBoundaryProperty.lazyLink(() => this.update());
 
     const retarget = () => {
       this.chartTransform.setModelXRange(
@@ -147,6 +169,7 @@ export class SpectrumNode extends Node {
 
     this.updateFormantLines(minF, maxF);
     this.updateHarmonicMarkers(minF, maxF);
+    this.updateAllowedHarmonicBands(minF, maxF);
   }
 
   private updateFormantLines(minF: number, maxF: number): void {
@@ -167,22 +190,69 @@ export class SpectrumNode extends Node {
   }
 
   private updateHarmonicMarkers(minF: number, maxF: number): void {
+    this.modeNumberLayer.removeAllChildren();
+
     if (!this.viewProperties.showHarmonicsProperty.value) {
       this.harmonicMarkers.shape = null;
       return;
     }
-    const f0 = this.model.f0Property.value;
+    const f0 = this.model.getFundamentalHz();
     if (f0 <= 0) {
       this.harmonicMarkers.shape = null;
       return;
     }
     const shape = new Shape();
+    const modeLabelPattern = StringManager.getInstance().getPhysicsStrings().modeLabelStringProperty.value;
+    let modeNumber = 0;
     for (let freq = f0; freq <= maxF; freq += f0) {
+      modeNumber += 1;
       if (freq >= minF) {
         const x = this.chartTransform.modelToViewX(freq);
         shape.moveTo(x, 0).lineTo(x, this.viewHeight);
+        if (this.viewProperties.showModeNumbersProperty.value) {
+          const label = modeLabelPattern.replace("{{n}}", `${modeNumber}`);
+          this.modeNumberLayer.addChild(
+            new Text(label, {
+              font: ViewConstants.LABEL_FONT,
+              fill: SimColors.harmonicMarkerColorProperty,
+              centerX: x,
+              top: 2,
+            }),
+          );
+        }
       }
     }
     this.harmonicMarkers.shape = shape;
+  }
+
+  private updateAllowedHarmonicBands(minF: number, maxF: number): void {
+    this.allowedHarmonicLayer.removeAllChildren();
+    if (!this.viewProperties.showPipeOverlayProperty.value) {
+      return;
+    }
+    const boundary = this.model.pipeBoundaryProperty.value;
+    if (boundary === PipeBoundary.NONE) {
+      return;
+    }
+    const f0 = this.model.getFundamentalHz();
+    if (f0 <= 0) {
+      return;
+    }
+
+    let modeNumber = 0;
+    for (let freq = f0; freq <= maxF; freq += f0) {
+      modeNumber += 1;
+      if (freq < minF || !isModeAllowed(modeNumber, boundary)) {
+        continue;
+      }
+      const xLeft = this.chartTransform.modelToViewX(Math.max(minF, freq - HARMONIC_BAND_WIDTH_HZ / 2));
+      const xRight = this.chartTransform.modelToViewX(Math.min(maxF, freq + HARMONIC_BAND_WIDTH_HZ / 2));
+      this.allowedHarmonicLayer.addChild(
+        new Rectangle(xLeft, 0, xRight - xLeft, this.viewHeight, {
+          fill: SimColors.allowedHarmonicBandColorProperty,
+          opacity: 0.12,
+        }),
+      );
+    }
   }
 }

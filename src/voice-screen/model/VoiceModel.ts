@@ -7,9 +7,10 @@
 
 import { VOICE_PRESET_CATALOG } from "../../common/model/audio/presetCatalog.js";
 import { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js";
+import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
 
 export class VoiceModel extends BaseAnalysisModel {
-  public constructor() {
-    super(VOICE_PRESET_CATALOG);
+  public constructor(analysisPreferences: AnalysisPreferencesModel) {
+    super(VOICE_PRESET_CATALOG, analysisPreferences);
   }
 }

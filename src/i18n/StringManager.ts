@@ -70,10 +70,12 @@ export class StringManager {
    */
   public getScreenNames(): {
     readonly analyzerStringProperty: ReadOnlyProperty<string>;
+    readonly composerStringProperty: ReadOnlyProperty<string>;
     readonly voiceStringProperty: ReadOnlyProperty<string>;
   } {
     return {
       analyzerStringProperty: stringProperties.screens.analyzerStringProperty,
+      composerStringProperty: stringProperties.screens.composerStringProperty,
       voiceStringProperty: stringProperties.screens.voiceStringProperty,
     };
   }
@@ -108,6 +110,11 @@ export class StringManager {
     return stringProperties.colormap;
   }
 
+  /** Preferences-dialog descriptions for shared analysis settings. */
+  public getPreferencesStrings() {
+    return stringProperties.preferences;
+  }
+
   /** Measurement readout labels (pitch, formants, HNR, CPP, …). */
   public getReadoutStrings() {
     return stringProperties.readout;
@@ -121,5 +128,20 @@ export class StringManager {
   /** Unit suffixes (Hz, dB, ms, cents). */
   public getUnitStrings() {
     return stringProperties.units;
+  }
+
+  /** Wave-composition partial controls and demo presets. */
+  public getComposeStrings() {
+    return stringProperties.compose;
+  }
+
+  /** Composer screen readouts and intro copy. */
+  public getComposerScreenStrings() {
+    return stringProperties.composerScreen;
+  }
+
+  /** Wave-physics pedagogy strings (boundary models, resonances). */
+  public getPhysicsStrings() {
+    return stringProperties.physics;
   }
 }

@@ -2,7 +2,13 @@
   "title": "Wave Composer",
   "screens": {
     "analyzer": "Analyzer",
+    "composer": "Compose",
     "voice": "Voice & Vowels"
+  },
+  "composerScreen": {
+    "intro": "Stack sine waves and watch superposition, beats, and standing modes.",
+    "beatRate": "Beat Rate",
+    "activePartials": "Active Partials"
   },
   "panel": {
     "spectrogram": "Spectrogram",
@@ -32,7 +38,44 @@
     "showF0": "F0 Track",
     "showFormants": "Formant Tracks",
     "showLpcEnvelope": "LPC Envelope",
-    "showHarmonics": "Harmonic Markers"
+    "showHarmonics": "Harmonic Markers",
+    "showPipeOverlay": "Allowed Harmonics",
+    "showModeNumbers": "Mode Numbers (n)",
+    "pipeBoundary": "Boundary Model"
+  },
+  "compose": {
+    "title": "Compose",
+    "preset": "Demo",
+    "custom": "Custom",
+    "pureTone": "Pure Tone",
+    "octave": "Octave (2:1)",
+    "majorTriad": "Major Triad",
+    "beats": "Beats",
+    "phaseCancel": "Phase Cancel (180°)",
+    "phaseQuadrature": "Phase Shift (90°)",
+    "harmonicSeries": "Harmonic Series",
+    "sawtoothIsh": "Sawtooth-ish (all harmonics)",
+    "squareIsh": "Square-ish (odd harmonics)",
+    "triangleIsh": "Triangle-ish (odd, 1/n²)",
+    "partial": "Partial",
+    "frequency": "Frequency",
+    "amplitude": "Amplitude",
+    "phase": "Phase",
+    "enabled": "On"
+  },
+  "physics": {
+    "none": "None",
+    "string": "String (fixed ends)",
+    "openPipe": "Open pipe",
+    "closedPipe": "Closed pipe (odd modes)",
+    "standingWave": "Standing wave",
+    "modeLabel": "n = {{n}}",
+    "resonance": "Resonance",
+    "resonanceCaption": "LPC peaks = resonances",
+    "sourceFilter": "Source–filter model",
+    "glottalSource": "Glottal source",
+    "vocalTract": "Vocal tract filter",
+    "resonanceTuning": "F0 near F1 — resonance tuning"
   },
   "presets": {
     "microphone": "Microphone",
@@ -126,6 +169,11 @@
     "inferno": "Inferno",
     "magma": "Magma",
     "grayscale": "Grayscale"
+  },
+  "preferences": {
+    "fftSizeDescription": "Length of each analysis frame in samples. Larger sizes give finer frequency detail but slower time updates.",
+    "lpcOrderDescription": "Number of resonances modeled in the LPC spectral envelope. Higher values capture more formant detail; about 12 works well for speech.",
+    "windowDescription": "Shapes each frame's edges before the FFT to reduce spectral leakage. Hann is a good default; Blackman suppresses sidelobes more strongly."
   },
   "readout": {
     "pitch": "Pitch (F0)",
