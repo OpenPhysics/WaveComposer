@@ -45,6 +45,31 @@ download_hf_wav() {
   sleep 1
 }
 
+# Jazz-Sax.ogg has ~4.3 s of leading silence; trim for a quicker demo start.
+trim_saxophone() {
+  local dest="$OUT/saxophone.ogg"
+  [[ -f "$dest" && -s "$dest" ]] || return 0
+  local ffmpeg_bin=""
+  if command -v ffmpeg >/dev/null 2>&1; then
+    ffmpeg_bin="ffmpeg"
+  elif command -v node >/dev/null 2>&1; then
+    ffmpeg_bin="$(node -e "try{console.log(require('@ffmpeg-installer/ffmpeg').path)}catch{process.exit(1)}" 2>/dev/null || true)"
+  fi
+  if [[ -z "$ffmpeg_bin" ]]; then
+    echo "skip saxophone trim (ffmpeg not found)"
+    return 0
+  fi
+  local tmp
+  tmp="$(mktemp "${TMPDIR:-/tmp}/saxophone.XXXXXX.ogg")"
+  if "$ffmpeg_bin" -y -loglevel error -i "$dest" -ss 4.35 -to 20.1 -c:a libvorbis -q:a 6 "$tmp"; then
+    mv "$tmp" "$dest"
+    echo "trim saxophone.ogg (4.35s–20.1s of source)"
+  else
+    rm -f "$tmp"
+    echo "fail saxophone trim"
+  fi
+}
+
 echo "=== IPA vowels (Wikimedia Commons / Denelson83) ==="
 download "vowel-ah.ogg" "https://upload.wikimedia.org/wikipedia/commons/e/e5/Open_back_unrounded_vowel.ogg" || true
 download "vowel-ee.ogg" "https://upload.wikimedia.org/wikipedia/commons/9/91/Close_front_unrounded_vowel.ogg" || true
@@ -85,6 +110,7 @@ download "trumpet.ogg" "https://upload.wikimedia.org/wikipedia/commons/3/38/Natu
 # Piccolo: Beethoven Symphony No. 5 finale motif (CC0). Ogg transcode of Commons wav.
 download "piccolo.ogg" "https://upload.wikimedia.org/wikipedia/commons/transcoded/3/33/Betthoven%2C_no_5%2C_Piccolo.wav/Betthoven%2C_no_5%2C_Piccolo.wav.ogg" || true
 download "saxophone.ogg" "https://upload.wikimedia.org/wikipedia/commons/e/e1/Jazz-Sax.ogg" || true
+trim_saxophone || true
 download "trombone.ogg" "https://upload.wikimedia.org/wikipedia/commons/a/ab/Trombone-multiphonics.ogg" || true
 # French horn: Beethoven Septet excerpt, Jörg Brückner (CC BY 3.0)
 download "horn.ogg" "https://upload.wikimedia.org/wikipedia/commons/b/ba/BeethovenSeptet.OGG" || true

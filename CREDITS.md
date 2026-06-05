@@ -5,7 +5,8 @@
 Demo sources are real recordings from [Wikimedia Commons](https://commons.wikimedia.org/)
 and the [ClueSurf/wikipedia-ipa](https://huggingface.co/datasets/ClueSurf/wikipedia-ipa)
 dataset (Wikipedia IPA chart audio, CC BY-SA 4.0). Audio is **unmodified** except renamed
-to kebab-case filenames. Run `scripts/download-preset-audio.sh` to fetch or refresh clips.
+to kebab-case filenames and `saxophone.ogg` trimmed (~4.4 s lead silence removed). Run
+`scripts/download-preset-audio.sh` to fetch or refresh clips.
 
 ### Voice & Vowels — IPA vowels (Denelson83, Wikimedia Commons)
 
@@ -48,7 +49,7 @@ recordings, WAV format from the dataset mirror.
 | `violin.ogg` | [Violin G major scale.ogg](https://commons.wikimedia.org/wiki/File:Violin_G_major_scale.ogg) | Mutatis mutandis | CC BY-SA 3.0 |
 | `viola.ogg` | [Viola CGDA.ogg](https://commons.wikimedia.org/wiki/File:Viola_CGDA.ogg) | — | See Commons file page |
 | `bassoon.ogg` | [Bassoon-technical-chromatic.ogg](https://commons.wikimedia.org/wiki/File:Bassoon-technical-chromatic.ogg) | — | See Commons file page |
-| `saxophone.ogg` | [Jazz-Sax.ogg](https://commons.wikimedia.org/wiki/File:Jazz-Sax.ogg) | — | See Commons file page |
+| `saxophone.ogg` | [Jazz-Sax.ogg](https://commons.wikimedia.org/wiki/File:Jazz-Sax.ogg) (trimmed 4.35–20.1 s) | Serolillo | CC BY 2.5 |
 | `trumpet.ogg` | [Natural trumpet B-flat.ogg](https://commons.wikimedia.org/wiki/File:Natural_trumpet_B-flat.ogg) | — | See Commons file page |
 | `horn.ogg` | [BeethovenSeptet.OGG](https://commons.wikimedia.org/wiki/File:BeethovenSeptet.OGG) | Jörg Brückner / Ensemble Mediterrain | CC BY 3.0 |
 | `trombone.ogg` | [Trombone-multiphonics.ogg](https://commons.wikimedia.org/wiki/File:Trombone-multiphonics.ogg) | — | See Commons file page |
