@@ -44,13 +44,13 @@ recordings, WAV format from the dataset mirror.
 |---|---|---|---|
 | `clarinet.ogg` | [Jazz Clarinet.ogg](https://commons.wikimedia.org/wiki/File:Jazz_Clarinet.ogg) | Serolillo | CC BY 2.5 |
 | `flute.ogg` | [Carnatic flute.ogg](https://commons.wikimedia.org/wiki/File:Carnatic_flute.ogg) | Bansuri.arvind | CC BY-SA 3.0 |
-| `piccolo.ogg` | [It-piccolo.oga](https://commons.wikimedia.org/wiki/File:It-piccolo.oga) | — | See Commons file page |
+| `piccolo.ogg` | [Betthoven, no 5, Piccolo.wav](https://commons.wikimedia.org/wiki/File:Betthoven,_no_5,_Piccolo.wav) | MBozorgmehr | CC0 1.0 |
 | `violin.ogg` | [Violin G major scale.ogg](https://commons.wikimedia.org/wiki/File:Violin_G_major_scale.ogg) | Mutatis mutandis | CC BY-SA 3.0 |
 | `viola.ogg` | [Viola CGDA.ogg](https://commons.wikimedia.org/wiki/File:Viola_CGDA.ogg) | — | See Commons file page |
 | `bassoon.ogg` | [Bassoon-technical-chromatic.ogg](https://commons.wikimedia.org/wiki/File:Bassoon-technical-chromatic.ogg) | — | See Commons file page |
 | `saxophone.ogg` | [Jazz-Sax.ogg](https://commons.wikimedia.org/wiki/File:Jazz-Sax.ogg) | — | See Commons file page |
 | `trumpet.ogg` | [Natural trumpet B-flat.ogg](https://commons.wikimedia.org/wiki/File:Natural_trumpet_B-flat.ogg) | — | See Commons file page |
-| `horn.ogg` | [De-Ventilhorn.ogg](https://commons.wikimedia.org/wiki/File:De-Ventilhorn.ogg) | — | See Commons file page |
+| `horn.ogg` | [BeethovenSeptet.OGG](https://commons.wikimedia.org/wiki/File:BeethovenSeptet.OGG) | Jörg Brückner / Ensemble Mediterrain | CC BY 3.0 |
 | `trombone.ogg` | [Trombone-multiphonics.ogg](https://commons.wikimedia.org/wiki/File:Trombone-multiphonics.ogg) | — | See Commons file page |
 | `piano.ogg` | [Eb major piano.ogg](https://commons.wikimedia.org/wiki/File:Eb_major_piano.ogg) | ROUX₪ | CC0 1.0 |
 | `guitar-scale.ogg` | [Classical guitar scale.ogg](https://commons.wikimedia.org/wiki/File:Classical_guitar_scale.ogg) | Georg Feitscher | CC BY-SA 3.0 / GFDL |
@@ -58,7 +58,7 @@ recordings, WAV format from the dataset mirror.
 | `timpani.ogg` | [Timpani F major triad.ogg](https://commons.wikimedia.org/wiki/File:Timpani_F_major_triad.ogg) | — | See Commons file page |
 | `cymbals.ogg` | [Crash cymbal.ogg](https://commons.wikimedia.org/wiki/File:Crash_cymbal.ogg) | Clngre | CC BY-SA 3.0 / GFDL |
 
-Optional: `oboe.ogg` — [Ferling Oboe Study](https://commons.wikimedia.org/wiki/File:Ferling_Oboe_Study_No_28_Aaron_Hill.ogg)
+| `oboe.ogg` | [Dorisk.ogg](https://commons.wikimedia.org/wiki/File:Dorisk.ogg) | Simny | CC0 1.0 |
 
 ### Voice & Vowels — singing demos
 
@@ -71,7 +71,7 @@ Optional: `oboe.ogg` — [Ferling Oboe Study](https://commons.wikimedia.org/wiki
 
 ### Synthesized instrument fallbacks
 
-**Cello** and **oboe** until `cello.ogg` / `oboe.ogg` are present — `src/model/audio/presets.ts` (CC0 1.0).
+**Cello** until `cello.ogg` is present — `src/model/audio/presets.ts` (CC0 1.0).
 
 ### Refreshing clips
 

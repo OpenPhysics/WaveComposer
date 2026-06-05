@@ -82,14 +82,17 @@ echo "=== Instruments (skip if present) ==="
 download "piano.ogg" "https://upload.wikimedia.org/wikipedia/commons/e/e2/Eb_major_piano.ogg" || true
 download "bassoon.ogg" "https://upload.wikimedia.org/wikipedia/commons/f/f9/Bassoon-technical-chromatic.ogg" || true
 download "trumpet.ogg" "https://upload.wikimedia.org/wikipedia/commons/3/38/Natural_trumpet_B-flat.ogg" || true
-download "piccolo.ogg" "https://upload.wikimedia.org/wikipedia/commons/b/b4/It-piccolo.oga" || true
+# Piccolo: Beethoven Symphony No. 5 finale motif (CC0). Ogg transcode of Commons wav.
+download "piccolo.ogg" "https://upload.wikimedia.org/wikipedia/commons/transcoded/3/33/Betthoven%2C_no_5%2C_Piccolo.wav/Betthoven%2C_no_5%2C_Piccolo.wav.ogg" || true
 download "saxophone.ogg" "https://upload.wikimedia.org/wikipedia/commons/e/e1/Jazz-Sax.ogg" || true
 download "trombone.ogg" "https://upload.wikimedia.org/wikipedia/commons/a/ab/Trombone-multiphonics.ogg" || true
-download "horn.ogg" "https://upload.wikimedia.org/wikipedia/commons/8/85/De-Ventilhorn.ogg" || true
+# French horn: Beethoven Septet excerpt, Jörg Brückner (CC BY 3.0)
+download "horn.ogg" "https://upload.wikimedia.org/wikipedia/commons/b/ba/BeethovenSeptet.OGG" || true
 download "viola.ogg" "https://upload.wikimedia.org/wikipedia/commons/3/31/Viola_CGDA.ogg" || true
 download "snare.ogg" "https://upload.wikimedia.org/wikipedia/commons/a/a3/Snare_drum_muffled.ogg" || true
 download "timpani.ogg" "https://upload.wikimedia.org/wikipedia/commons/c/c4/Timpani_F_major_triad.ogg" || true
-download "oboe.ogg" "https://upload.wikimedia.org/wikipedia/commons/4/44/Ferling_Oboe_Study_No_28_Aaron_Hill.ogg" || true
+# Oboe: D dorian scale (CC0)
+download "oboe.ogg" "https://upload.wikimedia.org/wikipedia/commons/b/bf/Dorisk.ogg" || true
 
 echo "=== Voice singing demos ==="
 # singing-arpeggio: Freesound #448085 — Katarina Rose (CC BY 3.0)
