@@ -1,25 +1,9 @@
 /**
- * SimModel.ts
+ * BaseAnalysisModel.ts
  *
- * Top-level model for the voice-analysis screen. It owns:
- *   - the reactive settings (FFT size, window, LPC order, display range)
- *   - the reactive analysis outputs (F0, note, formants, HNR, CPP, RMS)
- *   - the {@link VoiceAnalyzer} (pure DSP) and the audio sources: a live
- *     {@link MicrophoneInput} (the default), ~20 bundled {@link AudioFileFrameSource}
- *     instrument/vowel demos (see {@link PRESET_CATALOG}), a few synthesized fallbacks,
- *     and any
- *     {@link RecordedAudioSource}s the user captures from the microphone at runtime.
- *     {@link audioSourceProperty} selects between them; the microphone starts lazily
- *     (on the Start button) so no permission prompt appears on load.
- *
- * Scalar results are exposed as Axon Properties / DerivedProperties. The large
- * per-frame arrays (waveform, spectrum, LPC envelope, cepstrum) live in reused
- * analyzer buffers and are surfaced through {@link analysis}; a single
- * {@link frameProcessedEmitter} signals when new buffer contents are ready, which
- * avoids per-frame allocation and Property churn.
- *
- * The Sim framework calls {@link step} every animation frame; it pulls the
- * current frame from the active source, runs the analyzer, and writes the results.
+ * Shared per-screen audio and DSP model. Each screen owns its own instance so
+ * source selection, recordings, microphone state, analyzer settings, and analysis
+ * outputs are isolated from the other screens.
  */
 import {
   BooleanProperty,
@@ -39,13 +23,7 @@ import { BufferPlaybackSource } from "./audio/BufferPlaybackSource.js";
 import { MicrophoneInput } from "./audio/MicrophoneInput.js";
 import { isMonitoredAudioSource } from "./audio/MonitoredAudioSource.js";
 import { getPresetAssetUrl } from "./audio/presetAssets.js";
-import {
-  ALL_PRESET_CATALOG,
-  findPresetEntry,
-  INSTRUMENT_PRESET_CATALOG,
-  type PresetCatalogEntry,
-  type PresetId,
-} from "./audio/presetCatalog.js";
+import type { PresetCatalogEntry, PresetId } from "./audio/presetCatalog.js";
 import { createSyntheticSource } from "./audio/presets.js";
 import { RecordedAudioSource } from "./audio/RecordedAudioSource.js";
 import { SyntheticWebAudioSource } from "./audio/SyntheticWebAudioSource.js";
@@ -56,14 +34,10 @@ import { type AnalysisResult, type AnalyzerConfig, VoiceAnalyzer } from "./Voice
 
 const DEFAULT_FFT_SIZE = 2048;
 const FFT_SIZE_VALUES = [1024, 2048, 4096];
-// The formant branch decimates to ~11 kHz before LPC (see VoiceAnalyzer), so the
-// order is chosen for that rate: ~2 poles per formant over 0–5.5 kHz. Order 12
-// resolves F1–F5 with a little headroom; higher orders start fitting noise.
 const DEFAULT_LPC_ORDER = 12;
 const LPC_ORDER_RANGE = new Range(8, 16);
-const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const DEFAULT_MAX_FREQUENCY_HZ = 5000;
-const FREQUENCY_RANGE = new Range(0, 22050);
+const MAX_FREQUENCY_RANGE = new Range(0, 22050);
 
 // Fixed F0 / voice-quality search band (Hz). Covers low male speech to high
 // singing without wandering into formant territory.
@@ -74,40 +48,14 @@ const F0_MAX_HZ = 800;
 const VOICED_CONFIDENCE_THRESHOLD = 0.5;
 
 const EMPTY_FORMANTS: readonly FormantData[] = [];
-
 const DEFAULT_SAMPLE_RATE_HZ = 44100;
 
-/** Live microphone input id (not in {@link PRESET_CATALOG}). */
+/** Live microphone input id (not in the preset catalogs). */
 export const AudioSource = {
   MICROPHONE: "microphone",
 } as const;
 
-/** Bundled demo preset id (see {@link PRESET_CATALOG}). */
-export type AudioSource = PresetId;
-
-/** Default Analyzer-screen source list (microphone + instrument presets). */
-export const AUDIO_SOURCE_VALUES: readonly string[] = [
-  AudioSource.MICROPHONE,
-  ...INSTRUMENT_PRESET_CATALOG.map((entry) => entry.id),
-];
-
-function createPresetSource(presetId: PresetId, fftSize: number): AudioFrameSource {
-  const entry = findPresetEntry(presetId);
-  if (!entry) {
-    throw new Error(`Unknown preset: ${presetId}`);
-  }
-  if (entry.asset) {
-    const url = getPresetAssetUrl(entry.asset);
-    if (url) {
-      return new AudioFileFrameSource(url, fftSize);
-    }
-  }
-  const synthetic = createSyntheticSource(presetId, fftSize);
-  if (synthetic) {
-    return synthetic;
-  }
-  throw new Error(`No audio asset or synthesizer for preset: ${presetId}`);
-}
+export type AudioSource = (typeof AudioSource)[keyof typeof AudioSource] | PresetId | string;
 
 /** Prefix for the dynamic ids of user recordings (e.g. "recording-1"). */
 const RECORDING_ID_PREFIX = "recording-";
@@ -130,35 +78,42 @@ function isPlayableSource(source: AudioFrameSource): source is BufferPlaybackSou
   return source instanceof BufferPlaybackSource || source instanceof SyntheticWebAudioSource;
 }
 
-export class SimModel implements TModel {
+function createPresetSource(entry: PresetCatalogEntry, fftSize: number): AudioFrameSource {
+  if (entry.asset) {
+    const url = getPresetAssetUrl(entry.asset);
+    if (url) {
+      return new AudioFileFrameSource(url, fftSize);
+    }
+  }
+  const synthetic = createSyntheticSource(entry.id, fftSize);
+  if (synthetic) {
+    return synthetic;
+  }
+  throw new Error(`No audio asset or synthesizer for preset: ${entry.id}`);
+}
+
+export class BaseAnalysisModel implements TModel {
+  public readonly presetCatalog: readonly PresetCatalogEntry[];
+
   // ── Settings (inputs) ───────────────────────────────────────────────────────
   public readonly fftSizeProperty = new NumberProperty(DEFAULT_FFT_SIZE, { validValues: FFT_SIZE_VALUES });
   public readonly lpcOrderProperty = new NumberProperty(DEFAULT_LPC_ORDER, { range: LPC_ORDER_RANGE });
   public readonly windowTypeProperty = new Property<WindowType>(WindowType.HANN, {
     validValues: [...WINDOW_TYPE_VALUES],
   });
-  public readonly minFrequencyProperty = new NumberProperty(DEFAULT_MIN_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
-  public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
+  public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: MAX_FREQUENCY_RANGE });
 
   // ── State ───────────────────────────────────────────────────────────────────
-  /**
-   * Selects the active audio source by id: a fixed {@link AudioSource} or a dynamic
-   * recording id ("recording-N"). Defaults to the live microphone (lazy-started).
-   * The value set is open-ended (recordings are added at runtime), so it carries no
-   * `validValues`.
-   */
   public readonly audioSourceProperty = new Property<string>(AudioSource.MICROPHONE);
   /** User-captured recordings, in creation order; each is also a selectable source. */
   public readonly recordings: ObservableArray<RecordingEntry> = createObservableArray<RecordingEntry>();
   /** When true, the microphone is being recorded into a new clip. */
   public readonly isRecordingProperty = new BooleanProperty(false);
-  /** When true, analysis is paused so the current display can be inspected. */
-  public readonly isFrozenProperty = new BooleanProperty(false);
   /** Whether the microphone is currently capturing. */
   public readonly isListeningProperty = new BooleanProperty(false);
   /** When true, the active source is routed to the speakers. */
   public readonly isAudioEnabledProperty = new BooleanProperty(true);
-  /** Sample rate (Hz) of the active source; the view needs it to map FFT bins → Hz. */
+  /** Sample rate (Hz) of the active source; the view needs it to map FFT bins to Hz. */
   public readonly sampleRateProperty = new NumberProperty(DEFAULT_SAMPLE_RATE_HZ);
 
   // ── Outputs (scalar results) ────────────────────────────────────────────────
@@ -197,11 +152,12 @@ export class SimModel implements TModel {
   private frameBuffer: Float32Array;
   private latestResult: AnalysisResult | null = null;
 
-  public constructor() {
+  public constructor(presetCatalog: readonly PresetCatalogEntry[]) {
+    this.presetCatalog = presetCatalog;
     this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
-    const presetSources: [string, AudioFrameSource][] = ALL_PRESET_CATALOG.map((entry) => [
+    const presetSources: [string, AudioFrameSource][] = presetCatalog.map((entry) => [
       entry.id,
-      createPresetSource(entry.id, DEFAULT_FFT_SIZE),
+      createPresetSource(entry, DEFAULT_FFT_SIZE),
     ]);
     this.sources = new Map<string, AudioFrameSource>([[AudioSource.MICROPHONE, this.micInput], ...presetSources]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
@@ -212,8 +168,6 @@ export class SimModel implements TModel {
     this.windowTypeProperty.lazyLink(() => this.applyConfig());
     this.lpcOrderProperty.lazyLink(() => this.applyConfig());
     this.maxFrequencyProperty.lazyLink(() => this.applyConfig());
-    // Switching source: release the old one, auto-start the new one if it's a file
-    // clip (the combo selection is a user gesture), and update the sample rate.
     this.audioSourceProperty.lazyLink((source, oldSource) => {
       this.deactivate(oldSource);
       this.activate(source);
@@ -260,9 +214,7 @@ export class SimModel implements TModel {
 
   /**
    * The most recent per-frame analysis, including the reused buffers (waveform,
-   * power spectrum dB, LPC envelope dB, cepstrum), or null before the first
-   * frame. Read inside a {@link frameProcessedEmitter} listener; do not retain
-   * the buffers across frames.
+   * power spectrum dB, LPC envelope dB, cepstrum), or null before the first frame.
    */
   public get analysis(): AnalysisResult | null {
     return this.latestResult;
@@ -339,18 +291,13 @@ export class SimModel implements TModel {
     return id.startsWith(RECORDING_ID_PREFIX);
   }
 
-  /**
-   * Source ids for a ComboBox: microphone, presets from `catalog`, then recordings.
-   * If the active source is outside `catalog` (e.g. an instrument on the Voice screen),
-   * it is prepended so the ComboBox stays valid.
-   */
-  public getSourceValues(catalog: readonly PresetCatalogEntry[]): string[] {
-    const values = [AudioSource.MICROPHONE, ...catalog.map((entry) => entry.id), ...this.recordings.map((e) => e.id)];
-    const current = this.audioSourceProperty.value;
-    if (current !== AudioSource.MICROPHONE && !values.includes(current)) {
-      return [current, ...values];
-    }
-    return values;
+  /** Source ids for a ComboBox: microphone, this screen's presets, then recordings. */
+  public getSourceValues(): string[] {
+    return [
+      AudioSource.MICROPHONE,
+      ...this.presetCatalog.map((entry) => entry.id),
+      ...this.recordings.map((e) => e.id),
+    ];
   }
 
   /**
@@ -364,9 +311,7 @@ export class SimModel implements TModel {
     this.fftSizeProperty.reset();
     this.lpcOrderProperty.reset();
     this.windowTypeProperty.reset();
-    this.minFrequencyProperty.reset();
     this.maxFrequencyProperty.reset();
-    this.isFrozenProperty.reset();
     this.isAudioEnabledProperty.reset();
     this.f0Property.reset();
     this.f0ConfidenceProperty.reset();
@@ -375,6 +320,13 @@ export class SimModel implements TModel {
     this.cppProperty.reset();
     this.formantsProperty.reset();
     this.latestResult = null;
+
+    for (const recording of this.recordings) {
+      this.deactivate(recording.id);
+      this.sources.delete(recording.id);
+    }
+    this.recordings.clear();
+    this.recordingCounter = 0;
   }
 
   /**
@@ -385,7 +337,7 @@ export class SimModel implements TModel {
    */
   public step(_dt: number): void {
     const source = this.source;
-    if (this.isFrozenProperty.value || !source.isActive) {
+    if (this.isAnalysisPaused || !source.isActive) {
       return;
     }
     if (!source.getFrame(this.frameBuffer)) {
@@ -403,6 +355,11 @@ export class SimModel implements TModel {
     this.formantsProperty.value = result.formants;
 
     this.frameProcessedEmitter.emit();
+  }
+
+  /** Screen subclasses can pause analysis without putting the control in every model. */
+  protected get isAnalysisPaused(): boolean {
+    return false;
   }
 
   /** Builds the analyzer config from the current settings + source sample rate. */

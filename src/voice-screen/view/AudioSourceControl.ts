@@ -1,10 +1,8 @@
 /**
  * AudioSourceControl.ts
  *
- * Compact audio-source control for the Voice & Vowels screen: the shared source
- * ComboBox (microphone + presets) and a start/stop button. It binds to the same
- * shared SimModel as the Analyzer screen, so changing the source here switches the
- * input for both screens (the model owns the single audio source / analysis pipeline).
+ * Compact audio-source control for the Voice & Vowels screen: the source ComboBox
+ * (microphone + voice presets) and a start/stop button.
  *
  * The Analyzer screen has its own, larger control panel; this mirrors just the
  * source picker so the input can also be chosen without leaving this screen.
@@ -13,22 +11,21 @@ import { DerivedProperty } from "scenerystack/axon";
 import { type Node, Text, VBox } from "scenerystack/scenery";
 import { ButtonNode, Checkbox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
+import { createSourceSelector } from "../../common/view/SourceSelector.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { VOICE_PRESET_CATALOG } from "../../model/audio/presetCatalog.js";
-import { AudioSource, type SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { createSourceSelector } from "../../view/SourceSelector.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { VoiceModel } from "../model/VoiceModel.js";
 
 const MAX_BUTTON_TEXT_WIDTH = 170;
 
 export class AudioSourceControl extends Panel {
-  public constructor(model: SimModel, listParent: Node) {
+  public constructor(model: VoiceModel, listParent: Node) {
     const controls = StringManager.getInstance().getControlStrings();
 
     // This panel sits near the bottom of the screen, so open the list upward.
     const sourceSelector = createSourceSelector(model, listParent, {
-      presetCatalog: VOICE_PRESET_CATALOG,
       listPosition: "above",
     });
 

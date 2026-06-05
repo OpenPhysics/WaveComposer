@@ -13,11 +13,11 @@ import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerysta
 import { Range, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Line, Node, Path } from "scenerystack/scenery";
+import { ChartFrame } from "../../common/view/ChartFrame.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ChartFrame } from "../../view/ChartFrame.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 interface SpectrumNodeOptions {
@@ -29,7 +29,7 @@ const FREQUENCY_TICK_SPACING_HZ = 1000;
 const DB_TICK_SPACING = 20;
 
 export class SpectrumNode extends Node {
-  private readonly model: SimModel;
+  private readonly model: AnalyzerModel;
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly viewHeight: number;
   private readonly chartTransform: ChartTransform;
@@ -39,7 +39,7 @@ export class SpectrumNode extends Node {
   private readonly formantLines: Line[];
   private readonly harmonicMarkers: Path;
 
-  public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, options: SpectrumNodeOptions) {
+  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options: SpectrumNodeOptions) {
     super();
     this.model = model;
     this.viewProperties = viewProperties;

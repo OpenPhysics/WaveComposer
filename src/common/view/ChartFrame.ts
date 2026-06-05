@@ -17,7 +17,7 @@ import type { Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import { Node, Text } from "scenerystack/scenery";
-import SimColors from "../SimColors.js";
+import SimColors from "../../SimColors.js";
 import { ViewConstants } from "./ViewConstants.js";
 
 const TICK_LENGTH = 5;

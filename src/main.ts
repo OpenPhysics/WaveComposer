@@ -18,33 +18,30 @@ import "./brand.js";
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "./i18n/StringManager.js";
-import { SimModel } from "./model/SimModel.js";
-import {
-  createFftSizePreferenceControl,
-  createWindowPreferenceControl,
-} from "./preferences/AnalysisPreferenceControls.js";
 import { createColormapPreferenceControl } from "./preferences/ColormapPreferenceControl.js";
+import { AnalyzerModel } from "./sim-screen/model/AnalyzerModel.js";
 import { SimScreen } from "./sim-screen/SimScreen.js";
 import { AnalyzerViewProperties } from "./sim-screen/view/AnalyzerViewProperties.js";
+import { VoiceModel } from "./voice-screen/model/VoiceModel.js";
 import { VoiceScreen } from "./voice-screen/VoiceScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
   const screenNames = stringManager.getScreenNames();
 
-  // A single model drives both screens (one audio source / analysis pipeline).
-  const model = new SimModel();
+  const analyzerModel = new AnalyzerModel();
+  const voiceModel = new VoiceModel();
 
   const analyzerViewProperties = new AnalyzerViewProperties();
 
   const screens = [
-    new SimScreen(model, {
+    new SimScreen(analyzerModel, {
       // The screen name Property updates automatically when the locale changes
       name: screenNames.analyzerStringProperty,
       tandem: Tandem.ROOT.createTandem("analyzerScreen"),
       viewProperties: analyzerViewProperties,
     }),
-    new VoiceScreen(model, {
+    new VoiceScreen(voiceModel, {
       name: screenNames.voiceStringProperty,
       tandem: Tandem.ROOT.createTandem("voiceScreen"),
     }),
@@ -60,12 +57,6 @@ onReadyToLaunch(() => {
         customPreferences: [
           {
             createContent: () => createColormapPreferenceControl(analyzerViewProperties.colormapProperty),
-          },
-          {
-            createContent: () => createFftSizePreferenceControl(model.fftSizeProperty),
-          },
-          {
-            createContent: () => createWindowPreferenceControl(model.windowTypeProperty),
           },
         ],
       },

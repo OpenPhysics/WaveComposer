@@ -3,26 +3,24 @@
  *
  * The shared audio-source picker used by both screens' controls: a ComboBox over
  * microphone, presets from a screen-specific catalog, and user recordings, plus a
- * one-line caption and Record / Save buttons. Both screens share one SimModel, so
- * the active source applies everywhere; each screen passes its own preset catalog.
+ * one-line caption and Record / Save buttons. Each screen has an independent
+ * model, so the selector uses the preset catalog configured on that model.
  */
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { ButtonNode, ComboBox, type ComboBoxOptions, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
-import { StringManager } from "../i18n/StringManager.js";
-import { findPresetEntry, INSTRUMENT_PRESET_CATALOG, type PresetCatalogEntry } from "../model/audio/presetCatalog.js";
+import { StringManager } from "../../i18n/StringManager.js";
+import SimColors from "../../SimColors.js";
+import type { PresetCatalogEntry } from "../model/audio/presetCatalog.js";
 import { downloadBlob, encodeWav } from "../model/audio/WavEncoder.js";
-import { AudioSource, type SimModel } from "../model/SimModel.js";
-import SimColors from "../SimColors.js";
+import { AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
 import { ViewConstants } from "./ViewConstants.js";
 
 const CAPTION_MAX_WIDTH = 200;
 const BUTTON_MAX_TEXT_WIDTH = 180;
 
 interface SourceSelectorOptions {
-  /** Presets listed in the ComboBox (defaults to {@link INSTRUMENT_PRESET_CATALOG}). */
-  presetCatalog?: readonly PresetCatalogEntry[];
   /** Direction the dropdown opens; use "above" when the control sits near the bottom. */
   listPosition?: "above" | "below";
 }
@@ -42,8 +40,12 @@ function presetCaptionProperty(
 }
 
 /** Builds the source ComboBox + caption + record/save buttons as a left-aligned column. */
-export function createSourceSelector(model: SimModel, listParent: Node, options?: SourceSelectorOptions): Node {
-  const catalog = options?.presetCatalog ?? INSTRUMENT_PRESET_CATALOG;
+export function createSourceSelector(
+  model: BaseAnalysisModel,
+  listParent: Node,
+  options?: SourceSelectorOptions,
+): Node {
+  const catalog = model.presetCatalog;
   const instrumentStrings = StringManager.getInstance().getPresetStrings();
   const voiceStrings = StringManager.getInstance().getVoicePresetStrings();
   const controls = StringManager.getInstance().getControlStrings();
@@ -67,10 +69,6 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
     const presetName = nameByPresetId.get(value);
     if (presetName) {
       return presetName;
-    }
-    const orphan = findPresetEntry(value);
-    if (orphan) {
-      return presetNameProperty(stringsForEntry(orphan), orphan.nameKey);
     }
     let label = recordingLabelCache.get(value);
     if (!label) {
@@ -100,7 +98,7 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
       combo.dispose();
       combo = null;
     }
-    comboValues = model.getSourceValues(catalog);
+    comboValues = model.getSourceValues();
     combo = new ComboBox(
       model.audioSourceProperty,
       comboValues.map((value) => ({
@@ -114,17 +112,7 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
     comboContainer.addChild(combo);
   }
 
-  // Both screens share audioSourceProperty but each lists only its own catalog. When the value
-  // changes to one outside this ComboBox's items (e.g. the other screen picked singingVibrato),
-  // rebuild so this ComboBox is disposed before its button asserts on the foreign value.
-  // When the value is already one of our items — i.e. the user just picked it from THIS ComboBox —
-  // we must NOT rebuild: disposing the in-flight ComboBox tears down its button before
-  // ComboBoxListBox voices the selection, throwing "utterance is not an Utterance" (Voicing.js).
-  model.audioSourceProperty.lazyLink(() => {
-    if (!comboValues.includes(model.audioSourceProperty.value)) {
-      rebuildCombo();
-    }
-  });
+  // Recordings are dynamic choices, so rebuild the ComboBox when that list changes.
   model.recordings.lengthProperty.lazyLink(rebuildCombo);
   rebuildCombo();
 
@@ -143,10 +131,6 @@ export function createSourceSelector(model: SimModel, listParent: Node, options?
       const caption = captionByPresetId.get(value);
       if (caption) {
         return caption.value;
-      }
-      const orphan = findPresetEntry(value);
-      if (orphan) {
-        return presetCaptionProperty(stringsForEntry(orphan), orphan.captionKey).value;
       }
       return instrumentStrings.recordingCaptionStringProperty.value;
     },

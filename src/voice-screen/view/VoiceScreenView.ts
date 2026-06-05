@@ -2,17 +2,14 @@
  * VoiceScreenView.ts
  *
  * The Voice & Vowels screen: an F1×F2 vowel chart on the left, a cepstrum chart
- * on the right, and a voice-quality readout below it. Shares the single SimModel
- * with the Analyzer screen, so it shows live analysis of the same source.
+ * on the right, and a voice-quality readout below it. The screen owns an
+ * independent VoiceModel, so its source and analysis settings are isolated.
  */
-import { Node, Rectangle } from "scenerystack/scenery";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { Node } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
-import { ButtonNode } from "scenerystack/sun";
-import type { SimModel } from "../../model/SimModel.js";
-import SimColors from "../../SimColors.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
+import type { VoiceModel } from "../model/VoiceModel.js";
 import { AudioSourceControl } from "./AudioSourceControl.js";
 import { CepstrumNode } from "./CepstrumNode.js";
 import { VoiceQualityReadout } from "./VoiceQualityReadout.js";
@@ -24,19 +21,11 @@ const CHART_LEFT_GUTTER = 56;
 const VOWEL_PLOT_SIZE = 380;
 const CEPSTRUM_HEIGHT = 200;
 
-export class VoiceScreenView extends ScreenView {
+export class VoiceScreenView extends BaseAnalysisScreenView {
   private readonly vowelPlot: VowelPlotNode;
 
-  public constructor(model: SimModel, options?: ScreenViewOptions) {
+  public constructor(model: VoiceModel, options?: ScreenViewOptions) {
     super(options);
-
-    const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: SimColors.backgroundColorProperty,
-    });
-    this.addChild(background);
-
-    // Layer for the source ComboBox popup; must be on top of the other content.
-    const popupLayer = new Node();
 
     // ── Vowel plot (left) ───────────────────────────────────────────────────
     this.vowelPlot = new VowelPlotNode(model, { viewWidth: VOWEL_PLOT_SIZE, viewHeight: VOWEL_PLOT_SIZE });
@@ -46,9 +35,7 @@ export class VoiceScreenView extends ScreenView {
     this.addChild(vowelContainer);
 
     // ── Audio source control (below the vowel plot) ─────────────────────────
-    // Lets the user point this screen at the microphone without switching to the
-    // Analyzer screen; both screens share one model, so the choice applies to both.
-    const sourceControl = new AudioSourceControl(model, popupLayer);
+    const sourceControl = new AudioSourceControl(model, this.popupLayer);
     sourceControl.left = vowelContainer.left;
     sourceControl.top = vowelContainer.bottom + SPACING;
     this.addChild(sourceControl);
@@ -68,27 +55,11 @@ export class VoiceScreenView extends ScreenView {
     readout.top = cepstrumContainer.bottom + SPACING + 20;
     this.addChild(readout);
 
-    // ── Reset All ────────────────────────────────────────────────────────────
-    const resetAllButton = new ResetAllButton({
-      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
-      listener: () => {
-        model.reset();
-        this.reset();
-      },
-      right: this.layoutBounds.maxX - MARGIN,
-      bottom: this.layoutBounds.maxY - MARGIN,
-    });
-    this.addChild(resetAllButton);
-
-    // Added last so the source ComboBox popup renders above everything else.
-    this.addChild(popupLayer);
+    this.addResetAllButton(model, () => this.reset());
+    this.addPopupLayer();
   }
 
   public reset(): void {
     this.vowelPlot.reset();
-  }
-
-  public override step(_dt: number): void {
-    // Display nodes update from the model's frameProcessedEmitter; nothing to do here.
   }
 }

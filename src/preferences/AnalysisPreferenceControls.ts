@@ -1,9 +1,9 @@
 /**
  * AnalysisPreferenceControls.ts
  *
- * FFT size and analysis-window selectors for Preferences → Visual. These bind to
- * the shared SimModel (they affect the DSP), but live in Preferences alongside the
- * spectrogram colormap rather than cluttering the on-screen control panel.
+ * FFT size and analysis-window selector factories for screen-local preferences or
+ * controls. The main simulation keeps DSP settings screen-specific so one screen's
+ * analyzer controls do not mutate the other screen's model.
  */
 import type { NumberProperty, Property, TReadOnlyProperty } from "scenerystack/axon";
 import { PreferencesControl, PreferencesDialogConstants } from "scenerystack/joist";
@@ -11,8 +11,8 @@ import type { Node } from "scenerystack/scenery";
 import { Text } from "scenerystack/scenery";
 import { ComboBox } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
+import { WINDOW_TYPE_VALUES, type WindowType } from "../common/model/dsp/WindowFunction.js";
 import { StringManager } from "../i18n/StringManager.js";
-import { WINDOW_TYPE_VALUES, type WindowType } from "../model/dsp/WindowFunction.js";
 
 const FFT_SIZE_OPTIONS = [1024, 2048, 4096];
 

@@ -3,7 +3,7 @@
  *
  * Demo sources for the source ComboBox. The Analyzer screen lists
  * {@link INSTRUMENT_PRESET_CATALOG}; Voice & Vowels lists {@link VOICE_PRESET_CATALOG}.
- * {@link ALL_PRESET_CATALOG} is the union used to wire {@link SimModel} sources.
+ * {@link ALL_PRESET_CATALOG} is the union used for lookups and preset id typing.
  */
 export type PresetCatalogEntry = {
   readonly id: string;

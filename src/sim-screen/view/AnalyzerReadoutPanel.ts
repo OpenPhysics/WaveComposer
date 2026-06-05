@@ -9,10 +9,10 @@
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Circle, type Color, GridBox, HBox, Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 
 const EMPTY = "—";
 const LEVEL_BAR_WIDTH = 150;
@@ -20,7 +20,7 @@ const LEVEL_BAR_HEIGHT = 10;
 const LEVEL_FULL_SCALE_RMS = 0.5;
 
 export class AnalyzerReadoutPanel extends Panel {
-  public constructor(model: SimModel) {
+  public constructor(model: AnalyzerModel) {
     const readout = StringManager.getInstance().getReadoutStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
 

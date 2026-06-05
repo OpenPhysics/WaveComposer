@@ -8,8 +8,8 @@
  * Reset All can restore them.
  */
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
-import { COLORMAP_NAME_VALUES, type ColormapName } from "../../view/Colormaps.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import { COLORMAP_NAME_VALUES, type ColormapName } from "../../common/view/Colormaps.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 
 export class AnalyzerViewProperties {
   /** Spectrogram colormap. */

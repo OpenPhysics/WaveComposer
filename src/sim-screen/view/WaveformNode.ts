@@ -8,11 +8,11 @@
 import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
 import { Node } from "scenerystack/scenery";
+import { ChartFrame } from "../../common/view/ChartFrame.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ChartFrame } from "../../view/ChartFrame.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 interface WaveformNodeOptions {
@@ -24,14 +24,14 @@ const TIME_TICK_SPACING_MS = 10;
 const AMPLITUDE_TICK_SPACING = 0.5;
 
 export class WaveformNode extends Node {
-  private readonly model: SimModel;
+  private readonly model: AnalyzerModel;
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly maxPoints: number;
   private readonly chartTransform: ChartTransform;
   private readonly plot: CanvasLinePlot;
   private readonly chartCanvas: ChartCanvasNode;
 
-  public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, options: WaveformNodeOptions) {
+  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options: WaveformNodeOptions) {
     super();
     this.model = model;
     this.viewProperties = viewProperties;

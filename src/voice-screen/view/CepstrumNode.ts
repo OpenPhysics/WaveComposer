@@ -9,11 +9,11 @@
 import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerystack/bamboo";
 import { Range, Vector2 } from "scenerystack/dot";
 import { Line, Node } from "scenerystack/scenery";
+import { ChartFrame } from "../../common/view/ChartFrame.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ChartFrame } from "../../view/ChartFrame.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface CepstrumNodeOptions {
   viewWidth: number;
@@ -25,13 +25,13 @@ const AMPLITUDE_TICK_SPACING = 0.5;
 const CEPSTRUM_Y_RANGE = new Range(-0.5, 1.5);
 
 export class CepstrumNode extends Node {
-  private readonly model: SimModel;
+  private readonly model: VoiceModel;
   private readonly chartTransform: ChartTransform;
   private readonly plot: CanvasLinePlot;
   private readonly chartCanvas: ChartCanvasNode;
   private readonly peakMarker: Line;
 
-  public constructor(model: SimModel, options: CepstrumNodeOptions) {
+  public constructor(model: VoiceModel, options: CepstrumNodeOptions) {
     super();
     this.model = model;
     const axisStrings = StringManager.getInstance().getAxisStrings();

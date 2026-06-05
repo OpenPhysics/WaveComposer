@@ -3,20 +3,20 @@
  *
  * Compact panel for the Voice screen: a voiced/unvoiced indicator plus the
  * pitch, note, and the two voice-quality metrics (HNR and CPP). Values bind to
- * the shared model via DerivedProperties.
+ * the screen model via DerivedProperties.
  */
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { Circle, type Color, GridBox, HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { VoiceModel } from "../model/VoiceModel.js";
 
 const EMPTY = "—";
 
 export class VoiceQualityReadout extends Panel {
-  public constructor(model: SimModel) {
+  public constructor(model: VoiceModel) {
     const readout = StringManager.getInstance().getReadoutStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
 

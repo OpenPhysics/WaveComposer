@@ -10,14 +10,11 @@
  * Positioning uses this.layoutBounds; the chart width is derived from the gap
  * left between the two side panels.
  */
-import { Node, Rectangle, VBox } from "scenerystack/scenery";
-import { ResetAllButton } from "scenerystack/scenery-phet";
+import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
-import { ButtonNode } from "scenerystack/sun";
-import type { SimModel } from "../../model/SimModel.js";
-import SimColors from "../../SimColors.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
+import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import { AnalyzerControlPanel } from "./AnalyzerControlPanel.js";
 import { AnalyzerReadoutPanel } from "./AnalyzerReadoutPanel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
@@ -33,25 +30,17 @@ const SPECTROGRAM_HEIGHT = 210;
 const SPECTRUM_HEIGHT = 150;
 const WAVEFORM_HEIGHT = 70;
 
-export class SimScreenView extends ScreenView {
+export class SimScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly spectrogram: SpectrogramNode;
 
-  public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, options?: ScreenViewOptions) {
+  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options?: ScreenViewOptions) {
     super(options);
 
     this.viewProperties = viewProperties;
 
-    const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: SimColors.backgroundColorProperty,
-    });
-    this.addChild(background);
-
-    // Layer for ComboBox popups; must be on top of the other content.
-    const popupLayer = new Node();
-
     // ── Side panels ───────────────────────────────────────────────────────────
-    const controlPanel = new AnalyzerControlPanel(model, this.viewProperties, popupLayer);
+    const controlPanel = new AnalyzerControlPanel(model, this.viewProperties, this.popupLayer);
     controlPanel.left = this.layoutBounds.minX + MARGIN;
     controlPanel.top = this.layoutBounds.minY + MARGIN;
     this.addChild(controlPanel);
@@ -88,27 +77,12 @@ export class SimScreenView extends ScreenView {
     charts.top = this.layoutBounds.minY + MARGIN;
     this.addChild(charts);
 
-    // ── Reset All ──────────────────────────────────────────────────────────────
-    const resetAllButton = new ResetAllButton({
-      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
-      listener: () => {
-        model.reset();
-        this.reset();
-      },
-      right: this.layoutBounds.maxX - MARGIN,
-      bottom: this.layoutBounds.maxY - MARGIN,
-    });
-    this.addChild(resetAllButton);
-
-    this.addChild(popupLayer);
+    this.addResetAllButton(model, () => this.reset());
+    this.addPopupLayer();
   }
 
   public reset(): void {
     this.viewProperties.reset();
     this.spectrogram.reset();
-  }
-
-  public override step(_dt: number): void {
-    // Display nodes update from the model's frameProcessedEmitter; nothing to do here.
   }
 }

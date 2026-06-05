@@ -17,11 +17,11 @@
 import type { ChartTransform } from "scenerystack/bamboo";
 import { Bounds2, Range } from "scenerystack/dot";
 import { CanvasNode, type CanvasNodeOptions, Node } from "scenerystack/scenery";
-import type { SimModel } from "../../model/SimModel.js";
+import { ChartFrame } from "../../common/view/ChartFrame.js";
+import { getColormapLut } from "../../common/view/Colormaps.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import SimColors from "../../SimColors.js";
-import { ChartFrame } from "../../view/ChartFrame.js";
-import { getColormapLut } from "../../view/Colormaps.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
 interface SpectrogramNodeOptions {
@@ -35,7 +35,7 @@ export class SpectrogramNode extends Node {
   private readonly raster: SpectrogramRaster;
   private readonly chartTransform: ChartTransform;
 
-  public constructor(model: SimModel, viewProperties: AnalyzerViewProperties, options: SpectrogramNodeOptions) {
+  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options: SpectrogramNodeOptions) {
     super();
     const { viewWidth, viewHeight } = options;
 
@@ -72,7 +72,7 @@ export class SpectrogramNode extends Node {
 
 /** Canvas-2D scrolling raster + F0/formant overlays. */
 class SpectrogramRaster extends CanvasNode {
-  private readonly model: SimModel;
+  private readonly model: AnalyzerModel;
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly viewWidth: number;
   private readonly viewHeight: number;
@@ -86,7 +86,7 @@ class SpectrogramRaster extends CanvasNode {
   private readonly formantHistory: Float32Array[];
 
   public constructor(
-    model: SimModel,
+    model: AnalyzerModel,
     viewProperties: AnalyzerViewProperties,
     viewWidth: number,
     viewHeight: number,

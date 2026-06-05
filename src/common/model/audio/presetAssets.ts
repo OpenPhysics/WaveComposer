@@ -4,7 +4,7 @@
  * Resolves bundled preset filenames to Vite asset URLs. Uses import.meta.glob so
  * new clips only need a file in src/assets/audio/ plus an entry in presetCatalog.ts.
  */
-const presetAssetUrls = import.meta.glob("../../assets/audio/*", {
+const presetAssetUrls = import.meta.glob("../../../assets/audio/*", {
   eager: true,
   query: "?url",
   import: "default",

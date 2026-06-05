@@ -9,12 +9,12 @@
 import { ScatterPlot } from "scenerystack/bamboo";
 import { Vector2 } from "scenerystack/dot";
 import { Circle, Node, Text } from "scenerystack/scenery";
+import { ChartFrame } from "../../common/view/ChartFrame.js";
+import { IPA_VOWELS } from "../../common/view/IpaVowels.js";
+import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import type { SimModel } from "../../model/SimModel.js";
 import SimColors from "../../SimColors.js";
-import { ChartFrame } from "../../view/ChartFrame.js";
-import { IPA_VOWELS } from "../../view/IpaVowels.js";
-import { ViewConstants } from "../../view/ViewConstants.js";
+import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface VowelPlotNodeOptions {
   viewWidth: number;
@@ -28,7 +28,7 @@ const TRAIL_LENGTH = 40;
 export class VowelPlotNode extends Node {
   private readonly trail: Vector2[] = [];
 
-  public constructor(model: SimModel, options: VowelPlotNodeOptions) {
+  public constructor(model: VoiceModel, options: VowelPlotNodeOptions) {
     super();
     const axisStrings = StringManager.getInstance().getAxisStrings();
 
