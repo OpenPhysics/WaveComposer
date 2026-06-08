@@ -96,10 +96,7 @@ export class ComposePanelNode extends Panel {
       xSpacing: PARTIAL_COLUMN_SPACING,
       ySpacing: 4,
       xAlign: "left",
-      rows: [
-        [partialSections[0]!, partialSections[1]!],
-        [partialSections[2]!, partialSections[3]!],
-      ],
+      rows: [partialSections.slice(0, 2), partialSections.slice(2, 4)],
     });
 
     const content = new VBox({

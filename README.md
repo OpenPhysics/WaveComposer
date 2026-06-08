@@ -1,6 +1,6 @@
 # Wave Composer
 
-A single-screen simulation built with [SceneryStack](https://scenerystack.org/),
+A three-screen VoceVista-style real-time voice-analysis simulation built with [SceneryStack](https://scenerystack.org/),
 Vite 8, TypeScript 6, and Biome 2.
 
 ## Quick Start
@@ -43,12 +43,30 @@ src/
     StringManager.ts         # Singleton i18n string accessor
     strings_en.json          # English strings
     strings_fr.json          # French strings
-  sim-screen/
-    SimScreen.ts             # Screen wrapper (model + view factories)
+  common/                    # Shared model, view, and DSP code across screens
     model/
-      SimModel.ts            # Simulation model (state + logic)
+      BaseAnalysisModel.ts   # Shared per-screen base audio/DSP model
+      audio/                 # Audio source handlers (microphone, file playback, presets)
+      dsp/                   # DSP components (FFT, LPC, pitch tracking, formants)
+    view/                    # Shared view nodes and constants
+  composer-screen/           # Wave Composer screen
+    ComposerScreen.ts        # Composer screen class
+    model/
+      ComposerModel.ts       # Composer specific model logic
     view/
-      SimScreenView.ts       # Simulation view (nodes + layout)
+      ComposerScreenView.ts  # Composer screen layout and view nodes
+  sim-screen/                # Analyzer screen
+    SimScreen.ts             # Analyzer screen class
+    model/
+      AnalyzerModel.ts       # Analyzer specific model logic
+    view/
+      SimScreenView.ts       # Analyzer screen layout and view nodes
+  voice-screen/              # Voice & Vowels screen
+    VoiceScreen.ts           # Voice & Vowels screen class
+    model/
+      VoiceModel.ts          # Voice specific model logic
+    view/
+      VoiceScreenView.ts     # Voice & Vowels screen layout and view nodes
 scripts/
   generate-icons.ts          # Generate PNG icons from icons/icon.svg
 icons/
@@ -64,7 +82,7 @@ icons/
 
 ### Rename the simulation
 
-Search-and-replace `sim-template` / `SimTemplate` / `Sim Template` / `SimModel` / `SimScreen` etc.
+Search-and-replace `sim-template` / `SimTemplate` / `Sim Template` / `BaseAnalysisModel` / `SimScreen` etc.
 with your simulation's name throughout the source files.
 
 ### Adding a locale

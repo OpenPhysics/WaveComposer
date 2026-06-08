@@ -7,15 +7,12 @@
  */
 import { BooleanProperty, NumberProperty } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
+import { createComposableGenerator, createComposableSource } from "../../common/model/audio/ComposableFrameSource.js";
 import { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js";
-import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
-import {
-  createComposableGenerator,
-  createComposableSource,
-} from "../../common/model/audio/ComposableFrameSource.js";
 import { COMPOSE_SOURCE_ID, CompositionState } from "../../common/model/CompositionState.js";
 import type { HarmonicChartModel, StandingWaveMode } from "../../common/model/HarmonicChartModel.js";
 import { createPipeBoundaryProperty, PipeBoundary } from "../../common/model/PipeBoundary.js";
+import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
 
 const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const FREQUENCY_RANGE = new Range(0, 22050);

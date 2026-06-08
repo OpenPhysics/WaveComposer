@@ -3,7 +3,8 @@
 ## Project: Wave Composer
 
 A VoceVista-style real-time voice-analysis [SceneryStack](https://scenerystack.org/)
-simulation. Two screens share one `SimModel` (a single audio source + DSP pipeline):
+simulation. Three screens share isolated models extending `BaseAnalysisModel` (each with its own audio source + DSP pipeline):
+- **Composer** (`src/composer-screen/`) — wave-composition, superpose sinusoids, explore beats, phase cancellation, harmonic series, and standing-wave modes.
 - **Analyzer** (`src/sim-screen/`) — spectrogram, spectrum + LPC envelope, waveform, readouts, controls.
 - **Voice & Vowels** (`src/voice-screen/`) — F1×F2 vowel plot, cepstrum, voice-quality readout.
 
@@ -50,14 +51,19 @@ errors if the chain is broken.
 | `src/i18n/StringManager.ts` | Singleton localized string accessor |
 | `src/i18n/strings_en.json` | English strings (source of truth for keys) |
 | `src/i18n/strings_fr.json` | French strings (must have identical keys) |
-| `src/model/SimModel.ts` | Shared simulation state & DSP orchestration |
-| `src/model/audio/` | Audio sources: `MicrophoneInput`, `PresetFrameSource` (+ `presets.ts`), `AudioFileFrameSource`, `SyntheticFrameSource` |
+| `src/common/model/BaseAnalysisModel.ts` | Shared per-screen audio and DSP base model |
+| `src/common/model/audio/` | Audio sources: `MicrophoneInput`, `PresetFrameSource` (+ `presets.ts`), `AudioFileFrameSource`, `SyntheticFrameSource` |
+| `src/common/model/dsp/` | Pure DSP: FFT, LPC, YIN, formants, cepstrum, windows |
+| `src/common/view/` | Shared view code: `ChartFrame`, `Colormaps`, `IpaVowels`, `SourceSelector`, `ViewConstants` |
 | `src/assets/audio/` | Bundled openly-licensed preset recordings, `.ogg` (see `CREDITS.md`) |
-| `src/model/dsp/` | Pure DSP: FFT, LPC, YIN, formants, cepstrum, windows |
-| `src/view/` | Shared view code: `ChartFrame`, `Colormaps`, `IpaVowels`, `SourceSelector`, `ViewConstants` |
-| `src/sim-screen/SimScreen.ts` | Analyzer screen wrapper (takes the shared model) |
+| `src/composer-screen/ComposerScreen.ts` | Composer screen wrapper |
+| `src/composer-screen/model/ComposerModel.ts` | Composer specific model state |
+| `src/composer-screen/view/ComposerScreenView.ts` | Composer layout (sinusoids superposing, harmonic series, etc.) |
+| `src/sim-screen/SimScreen.ts` | Analyzer screen wrapper |
+| `src/sim-screen/model/AnalyzerModel.ts` | Analyzer specific model state |
 | `src/sim-screen/view/SimScreenView.ts` | Analyzer layout (spectrogram, spectrum, waveform, panels) |
-| `src/voice-screen/VoiceScreen.ts` | Voice & Vowels screen wrapper (shares the model) |
+| `src/voice-screen/VoiceScreen.ts` | Voice & Vowels screen wrapper |
+| `src/voice-screen/model/VoiceModel.ts` | Voice specific model state |
 | `src/voice-screen/view/VoiceScreenView.ts` | Vowel plot, cepstrum, voice-quality readout |
 
 ## Conventions
@@ -100,8 +106,8 @@ scenerystack/splash       (side-effect import)
 
 ## Adding Simulation Content
 
-1. **Model** — add `Property<T>` fields to `SimModel`, call `.reset()` on each in `reset()`
-2. **View** — create `Node` subclasses, add them in `SimScreenView`, link to model:
+1. **Model** — add `Property<T>` fields to the appropriate screen-specific model (or `BaseAnalysisModel` if shared), call `.reset()` on each in `reset()`
+2. **View** — create `Node` subclasses, add them in the screen's view class (e.g. `SimScreenView`), link to model:
    ```typescript
    model.myValueProperty.link(value => { myNode.visible = value > 0; });
    ```

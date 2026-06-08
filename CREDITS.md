@@ -72,7 +72,7 @@ recordings, WAV format from the dataset mirror.
 
 ### Synthesized instrument fallbacks
 
-**Cello** until `cello.ogg` is present — `src/model/audio/presets.ts` (CC0 1.0).
+**Cello** until `cello.ogg` is present — `src/common/model/audio/presets.ts` (CC0 1.0).
 
 ### Refreshing clips
 
@@ -81,4 +81,4 @@ recordings, WAV format from the dataset mirror.
 FORCE=1 PAUSE=3 bash scripts/download-preset-audio.sh
 ```
 
-Preset wiring: `src/model/audio/presetCatalog.ts` and `presetAssets.ts` (glob). Prefer **Ogg / WAV / MP3** (not Ogg Speex).
+Preset wiring: `src/common/model/audio/presetCatalog.ts` and `src/common/model/audio/presetAssets.ts` (glob). Prefer **Ogg / WAV / MP3** (not Ogg Speex).

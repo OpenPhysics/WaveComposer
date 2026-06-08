@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "A SceneryStack single-screen simulation template.",
+  "description": "A SceneryStack three-screen VoceVista-style voice analysis simulation.",
   "license": "MIT",
   "scripts": {
     "start": "vite",
