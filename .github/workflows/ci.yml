@@ -14,3 +14,5 @@ concurrency:
 jobs:
   ci:
     uses: OpenPhysics/.github/.github/workflows/ci.yml@main
+    with:
+      run-tests: true
