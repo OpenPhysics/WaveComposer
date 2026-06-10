@@ -3,16 +3,22 @@
 A three-screen VoceVista-style real-time voice-analysis simulation built with [SceneryStack](https://scenerystack.org/),
 Vite 8, TypeScript 6, and Biome 2.
 
+## Features
+
+- **Wave Composer** — compose and inspect waveforms in real time
+- **Analyzer** — spectrum and pitch analysis views
+- **Voice & Vowels** — formant and vowel visualization
+- Microphone, file playback, and preset audio sources
+- Shared DSP pipeline (FFT, LPC, pitch tracking, formants)
+- English and French UI, projector color profile, and PWA support
+
 ## Quick Start
 
 ```bash
 npm install
-npm run icons    # generate PWA icons + favicon from public/icons/icon.svg
+npm run icons    # generate PNG icons from public/icons/icon.svg
 npm start        # dev server → http://localhost:5173
 ```
-
-Open `http://localhost:5173` in your browser. You should see a dark screen with
-"Wave Composer" text, a Reset All button, and a navigation bar with Preferences (gear icon).
 
 ## Scripts
 
@@ -21,114 +27,13 @@ Open `http://localhost:5173` in your browser. You should see a dark screen with
 | `npm start` / `npm run dev` | Start Vite dev server |
 | `npm run build` | Type-check + production build → `dist/` |
 | `npm run preview` | Preview the production build locally |
-| `npm run check` | TypeScript type check only (`tsc --noEmit`) |
+| `npm run check` | TypeScript type check |
 | `npm run lint` | Biome lint check |
 | `npm run format` | Auto-format all files |
 | `npm run fix` | Lint + auto-fix |
-| `npm run icons` | Regenerate icons from `public/icons/icon.svg` |
+| `npm test` | Run Vitest unit tests |
+| `npm run icons` | Regenerate PNG icons from `public/icons/icon.svg` |
 | `npm run clean` | Remove `dist/` |
-
-## Project Structure
-
-```
-src/
-  init.ts                    # SceneryStack initialization (chain start)
-  assert.ts                  # Enable runtime assertions
-  splash.ts                  # Splash screen
-  brand.ts                   # Brand registration (MUST be first import in main.ts)
-  main.ts                    # Simulation entry point
-  SimNamespace.ts            # Namespace for ProfileColorProperty registration
-  SimColors.ts               # Dynamic colors (dark default + projector mode)
-  i18n/
-    StringManager.ts         # Singleton i18n string accessor
-    strings_en.json          # English strings
-    strings_fr.json          # French strings
-  common/                    # Shared model, view, and DSP code across screens
-    model/
-      BaseAnalysisModel.ts   # Shared per-screen base audio/DSP model
-      audio/                 # Audio source handlers (microphone, file playback, presets)
-      dsp/                   # DSP components (FFT, LPC, pitch tracking, formants)
-    view/                    # Shared view nodes and constants
-  composer-screen/           # Wave Composer screen
-    ComposerScreen.ts        # Composer screen class
-    model/
-      ComposerModel.ts       # Composer specific model logic
-    view/
-      ComposerScreenView.ts  # Composer screen layout and view nodes
-  sim-screen/                # Analyzer screen
-    SimScreen.ts             # Analyzer screen class
-    model/
-      AnalyzerModel.ts       # Analyzer specific model logic
-    view/
-      SimScreenView.ts       # Analyzer screen layout and view nodes
-  voice-screen/              # Voice & Vowels screen
-    VoiceScreen.ts           # Voice & Vowels screen class
-    model/
-      VoiceModel.ts          # Voice specific model logic
-    view/
-      VoiceScreenView.ts     # Voice & Vowels screen layout and view nodes
-scripts/
-  generate-icons.ts          # Generate PNG icons from public/icons/icon.svg
-public/
-  icons/
-    icon.svg                 # Source icon (512×512 SVG — edit this one)
-.github/
-  workflows/
-    ci.yml                   # GitHub Actions: type-check, lint, build
-.githooks/
-  pre-commit                 # Runs Biome before each commit
-```
-
-## Customizing the Template
-
-### Rename the simulation
-
-Search-and-replace `sim-template` / `SimTemplate` / `Sim Template` / `BaseAnalysisModel` / `SimScreen` etc.
-with your simulation's name throughout the source files.
-
-### Adding a locale
-
-1. Create `src/i18n/strings_XX.json` — copy `strings_en.json` and translate the values
-2. Import it in `src/i18n/StringManager.ts` and add `XX: stringsXX` to the locale map
-3. Add `"XX"` to `availableLocales` in `src/init.ts`
-
-### Adding strings
-
-1. Add the key + English value to `src/i18n/strings_en.json`
-2. Add the same key + translated value to **all** locale files  
-   *(TypeScript will error here if any locale is missing a key — that's intentional)*
-3. Expose the new `StringProperty` via a getter in `StringManager.ts`
-
-### Customizing colors
-
-Edit `src/SimColors.ts`. Each `ProfileColorProperty` takes:
-- `"default"` — color in standard (dark) mode
-- `"projector"` — color when Projector Mode is enabled
-
-Pass the property directly to any node's `fillProperty` or `strokeProperty`.
-
-### Updating the icon
-
-Edit `public/icons/icon.svg`, then run `npm run icons` to regenerate the PNG files.
-The theme color in `index.html` and `vite.config.ts` (currently `#1a1a2e`) should
-match your icon's background.
-
-## Git Hooks
-
-Activate the pre-commit hook once after cloning:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-This runs `biome check` before every commit so formatting/lint issues are caught early.
-
-## PWA
-
-The simulation is a Progressive Web App. After running `npm run build`:
-- Users can install it as a standalone app on desktop and mobile
-- It works offline (Workbox service worker caches all assets)
-- The manifest is at `dist/manifest.webmanifest`
 
 ## Tech Stack
 
@@ -143,3 +48,8 @@ The simulation is a Progressive Web App. After running `npm run build`:
 ## License
 
 MIT
+
+## Contributing
+
+See [OpenPhysics contributing guidelines](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
+Report bugs via GitHub Issues; use org issue templates.

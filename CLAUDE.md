@@ -1,130 +1,34 @@
-# CLAUDE.md — Project Context for Claude Code
+# CLAUDE.md — Wave Composer
 
-## Project: Wave Composer
+Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
 
-A VoceVista-style real-time voice-analysis [SceneryStack](https://scenerystack.org/)
-simulation. Three screens share isolated models extending `BaseAnalysisModel` (each with its own audio source + DSP pipeline):
-- **Composer** (`src/composer-screen/`) — wave-composition, superpose sinusoids, explore beats, phase cancellation, harmonic series, and standing-wave modes.
-- **Analyzer** (`src/sim-screen/`) — spectrogram, spectrum + LPC envelope, waveform, readouts, controls.
-- **Voice & Vowels** (`src/voice-screen/`) — F1×F2 vowel plot, cepstrum, voice-quality readout.
+## Project
 
-The model defaults to the **microphone** source but starts it lazily (on the Start
-button), so no permission prompt appears on load. A menu of permission-free
-**presets** is also offered — mostly real, openly-licensed recordings (vowels Ah/Ee,
-clarinet, flute, violin, cymbals, guitar scale) loaded via `AudioFileFrameSource`,
-plus a synthesized "Singing" fallback (`PresetFrameSource`) — so the displays can be
-driven without a microphone. Clip attributions/licenses are in `CREDITS.md`.
+VoceVista-style real-time voice-analysis simulation with three screens. Each screen has an isolated model extending `BaseAnalysisModel` (own audio source + DSP pipeline):
 
-## Tech Stack
+- **Composer** (`src/composer-screen/`) — superpose sinusoids, beats, harmonics, standing-wave modes
+- **Analyzer** (`src/sim-screen/`) — spectrogram, spectrum + LPC envelope, waveform
+- **Voice & Vowels** (`src/voice-screen/`) — F1×F2 vowel plot, cepstrum, voice-quality readout
 
-| Tool | Version | Notes |
-|---|---|---|
-| SceneryStack | ^3.0.0 | Simulation framework (PhET-derived) |
-| Vite | ^8 | Build tool and dev server |
-| TypeScript | ^6 | `erasableSyntaxOnly` — no `enum` or `namespace` |
-| Biome | ^2.4 | Linting + formatting (not ESLint, not Prettier) |
-| vite-plugin-pwa | ^1 | PWA / offline / installable |
+Audio defaults to **microphone** but starts lazily on the Start button (no permission prompt on load). Permission-free **presets** (real recordings + synthesized fallback) use `AudioFileFrameSource` / `PresetFrameSource`. Attributions in `CREDITS.md`.
 
-## !! Critical: SceneryStack Import Order !!
-
-`src/main.ts` must have `import "./brand.js"` as its **very first import**. This
-triggers the full bootstrap chain:
-
-```
-brand.ts → splash.ts → assert.ts → init.ts
-```
-
-**Never reorder these imports.** SceneryStack will fail silently or throw cryptic
-errors if the chain is broken.
-
-## Key Files
+## Key files
 
 | File | Purpose |
 |---|---|
-| `src/init.ts` | Sim name, version, locales — START of chain |
-| `src/assert.ts` | Enables runtime assertions |
-| `src/splash.ts` | Shows splash screen while loading |
-| `src/brand.ts` | Registers brand (logo, copyright, links) |
-| `src/main.ts` | Entry point — imports brand.js first |
-| `src/SimColors.ts` | All dynamic colors (`ProfileColorProperty`) |
-| `src/SimNamespace.ts` | Namespace for scoping color property names |
-| `src/i18n/StringManager.ts` | Singleton localized string accessor |
-| `src/i18n/strings_en.json` | English strings (source of truth for keys) |
-| `src/i18n/strings_fr.json` | French strings (must have identical keys) |
-| `src/common/model/BaseAnalysisModel.ts` | Shared per-screen audio and DSP base model |
-| `src/common/model/audio/` | Audio sources: `MicrophoneInput`, `PresetFrameSource` (+ `presets.ts`), `AudioFileFrameSource`, `SyntheticFrameSource` |
-| `src/common/model/dsp/` | Pure DSP: FFT, LPC, YIN, formants, cepstrum, windows |
-| `src/common/view/` | Shared view code: `ChartFrame`, `Colormaps`, `IpaVowels`, `SourceSelector`, `ViewConstants` |
-| `src/assets/audio/` | Bundled openly-licensed preset recordings, `.ogg` (see `CREDITS.md`) |
-| `src/composer-screen/ComposerScreen.ts` | Composer screen wrapper |
-| `src/composer-screen/model/ComposerModel.ts` | Composer specific model state |
-| `src/composer-screen/view/ComposerScreenView.ts` | Composer layout (sinusoids superposing, harmonic series, etc.) |
-| `src/sim-screen/SimScreen.ts` | Analyzer screen wrapper |
-| `src/sim-screen/model/AnalyzerModel.ts` | Analyzer specific model state |
-| `src/sim-screen/view/SimScreenView.ts` | Analyzer layout (spectrogram, spectrum, waveform, panels) |
-| `src/voice-screen/VoiceScreen.ts` | Voice & Vowels screen wrapper |
-| `src/voice-screen/model/VoiceModel.ts` | Voice specific model state |
-| `src/voice-screen/view/VoiceScreenView.ts` | Vowel plot, cepstrum, voice-quality readout |
+| `src/common/model/BaseAnalysisModel.ts` | Shared per-screen audio + DSP base model |
+| `src/common/model/audio/` | `MicrophoneInput`, presets, file playback, synthetic sources |
+| `src/common/model/dsp/` | FFT, LPC, YIN, formants, cepstrum, windows |
+| `src/common/view/` | `ChartFrame`, colormaps, IPA vowels, source selector |
+| `src/assets/audio/` | Bundled preset recordings (`.ogg`) |
+| `src/composer-screen/` | Composer screen model + view |
+| `src/sim-screen/` | Analyzer screen model + view |
+| `src/voice-screen/` | Voice & Vowels screen model + view |
 
-## Conventions
-
-- **No `enum`** — use `const SomeEnum = { ... } as const` instead (TS6 `erasableSyntaxOnly`)
-- **No `namespace`** — use modules or classes with static members
-- **`import type`** required for type-only imports (`verbatimModuleSyntax`)
-- **Formatter**: 2-space indent, 120-char line width, double quotes, always semicolons
-- **Colors** always go in `SimColors.ts` — never hardcode hex values in view files
-- **Strings** always go in the JSON files — never hardcode display text in view files
-- **Positioning** always uses `this.layoutBounds` — never magic pixel values
-
-## Common Commands
+## Sim-specific commands
 
 ```bash
-npm start          # dev server (http://localhost:5173)
-npm run build      # type-check + production build
-npm run fix        # biome auto-fix (format + lint)
-npm run check      # tsc type check only
-npm run icons      # regenerate PNG icons from public/icons/icon.svg
+npm test           # Vitest unit tests
 ```
 
-## SceneryStack Module Paths
-
-```
-scenerystack/sim          Sim, Screen, ScreenView, ScreenViewOptions, PreferencesModel, onReadyToLaunch
-scenerystack/axon         Property, BooleanProperty, NumberProperty, StringProperty, TReadOnlyProperty
-scenerystack/scenery      Node, Rectangle, Circle, Text, Image, ProfileColorProperty
-scenerystack/scenery-phet ResetAllButton, ArrowNode, NumberDisplay, MagnifyingGlassZoomButtonGroup
-scenerystack/dot          Vector2, Dimension2, Range, Bounds2
-scenerystack/tandem       Tandem
-scenerystack/phet-core    Namespace, optionize
-scenerystack/chipper      LocalizedString
-scenerystack/joist        TModel
-scenerystack/init         init, madeWithSceneryStackSplashDataURI
-scenerystack/brand        brand, TBrand, madeWithSceneryStackOnDark, madeWithSceneryStackOnLight
-scenerystack/assert       enableAssert
-scenerystack/splash       (side-effect import)
-```
-
-## Adding Simulation Content
-
-1. **Model** — add `Property<T>` fields to the appropriate screen-specific model (or `BaseAnalysisModel` if shared), call `.reset()` on each in `reset()`
-2. **View** — create `Node` subclasses, add them in the screen's view class (e.g. `SimScreenView`), link to model:
-   ```typescript
-   model.myValueProperty.link(value => { myNode.visible = value > 0; });
-   ```
-3. **Colors** — add `ProfileColorProperty` entries to `SimColors.ts`
-4. **Strings** — add keys to `strings_en.json` + all locale files, expose in `StringManager`
-5. **Preferences** — extend `PreferencesModel` options in `src/main.ts`
-
-## TypeScript 6 Notes
-
-- `erasableSyntaxOnly` rejects `enum` and `namespace` (they generate runtime JS)
-- `verbatimModuleSyntax` requires explicit `import type` for type-only symbols
-- `noUncheckedSideEffectImports` requires side-effect imports to be in package exports  
-  (`scenerystack/splash` is exported, so it's fine — if you see an error, check the package version)
-
-## CI
-
-GitHub Actions runs on every push/PR to `main`:
-1. `npm run check` (TypeScript)
-2. `npm run lint` (Biome)
-3. `npm run icons && npm run build` (production artifact uploaded)
+When adding a feature, extend the appropriate screen model/view or `BaseAnalysisModel` if shared across screens.
