@@ -112,9 +112,10 @@ onReadyToLaunch(() => {
     },
   });
 
-  for (const screen of sim.simScreens) {
-    linkAnalysisModelToScreenActive(screen.activeProperty, screen.model);
-  }
+  // Models are created during sim.start(), so pass the instances we already hold.
+  linkAnalysisModelToScreenActive(screens[0]!.activeProperty, composerModel);
+  linkAnalysisModelToScreenActive(screens[1]!.activeProperty, analyzerModel);
+  linkAnalysisModelToScreenActive(screens[2]!.activeProperty, voiceModel);
 
   sim.start();
 });

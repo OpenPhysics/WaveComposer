@@ -8,9 +8,8 @@
  */
 import type { AudioFrameSource } from "./AudioFrameSource.js";
 import type { PresetGenerator } from "./PresetFrameSource.js";
-import { getSharedAudioContext, resumeSharedAudioContext } from "./SharedAudioContext.js";
+import { getSharedSampleRate, resumeSharedAudioContext } from "./SharedAudioContext.js";
 
-const DEFAULT_SAMPLE_RATE = 44100;
 const SCRIPT_BUFFER_SIZE = 2048;
 
 export class SyntheticWebAudioSource implements AudioFrameSource {
@@ -30,7 +29,7 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
   }
 
   public get sampleRate(): number {
-    return getSharedAudioContext().sampleRate ?? DEFAULT_SAMPLE_RATE;
+    return getSharedSampleRate();
   }
 
   public get isActive(): boolean {

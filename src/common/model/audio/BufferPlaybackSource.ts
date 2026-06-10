@@ -14,9 +14,7 @@
  */
 import type { AudioFrameSource } from "./AudioFrameSource.js";
 import type { MonitoredAudioSource } from "./MonitoredAudioSource.js";
-import { getSharedAudioContext, resumeSharedAudioContext } from "./SharedAudioContext.js";
-
-const DEFAULT_SAMPLE_RATE = 44100;
+import { getSharedSampleRate, resumeSharedAudioContext } from "./SharedAudioContext.js";
 
 export abstract class BufferPlaybackSource implements AudioFrameSource, MonitoredAudioSource {
   private fftSize: number;
@@ -36,7 +34,7 @@ export abstract class BufferPlaybackSource implements AudioFrameSource, Monitore
   }
 
   public get sampleRate(): number {
-    return getSharedAudioContext().sampleRate ?? DEFAULT_SAMPLE_RATE;
+    return getSharedSampleRate();
   }
 
   public get isActive(): boolean {

@@ -7,7 +7,7 @@ Vite 8, TypeScript 6, and Biome 2.
 
 ```bash
 npm install
-npm run icons    # generate PNG icons from icons/icon.svg
+npm run icons    # generate PWA icons + favicon from public/icons/icon.svg
 npm start        # dev server → http://localhost:5173
 ```
 
@@ -25,7 +25,7 @@ Open `http://localhost:5173` in your browser. You should see a dark screen with
 | `npm run lint` | Biome lint check |
 | `npm run format` | Auto-format all files |
 | `npm run fix` | Lint + auto-fix |
-| `npm run icons` | Generate PNG icons from `icons/icon.svg` |
+| `npm run icons` | Regenerate icons from `public/icons/icon.svg` |
 | `npm run clean` | Remove `dist/` |
 
 ## Project Structure
@@ -68,9 +68,10 @@ src/
     view/
       VoiceScreenView.ts     # Voice & Vowels screen layout and view nodes
 scripts/
-  generate-icons.ts          # Generate PNG icons from icons/icon.svg
-icons/
-  icon.svg                   # Source icon (512×512 SVG — edit this one)
+  generate-icons.ts          # Generate PNG icons from public/icons/icon.svg
+public/
+  icons/
+    icon.svg                 # Source icon (512×512 SVG — edit this one)
 .github/
   workflows/
     ci.yml                   # GitHub Actions: type-check, lint, build
@@ -108,7 +109,7 @@ Pass the property directly to any node's `fillProperty` or `strokeProperty`.
 
 ### Updating the icon
 
-Edit `icons/icon.svg`, then run `npm run icons` to regenerate the PNG files.
+Edit `public/icons/icon.svg`, then run `npm run icons` to regenerate the PNG files.
 The theme color in `index.html` and `vite.config.ts` (currently `#1a1a2e`) should
 match your icon's background.
 
