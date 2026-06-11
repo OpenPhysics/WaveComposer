@@ -9,7 +9,7 @@ import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
 import { ButtonNode } from "scenerystack/sun";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
 import { ViewConstants } from "./ViewConstants.js";
 
@@ -20,7 +20,7 @@ export class BaseAnalysisScreenView extends ScreenView {
     super(options);
 
     const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: SimColors.backgroundColorProperty,
+      fill: WaveComposerColors.backgroundColorProperty,
     });
     this.addChild(background);
   }

@@ -17,7 +17,7 @@ import { PipeBoundary, PipeBoundaryValues } from "../../common/model/PipeBoundar
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
@@ -39,9 +39,9 @@ export class AnalyzerControlPanel extends Panel {
     );
     const startStopButton = new TextPushButton(startStopLabel, {
       font: ViewConstants.CONTROL_FONT,
-      baseColor: SimColors.buttonFillColorProperty,
-      disabledColor: SimColors.buttonDisabledFillColorProperty,
-      textFill: SimColors.textColorProperty,
+      baseColor: WaveComposerColors.buttonFillColorProperty,
+      disabledColor: WaveComposerColors.buttonDisabledFillColorProperty,
+      textFill: WaveComposerColors.textColorProperty,
       buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       maxTextWidth: PANEL_WIDTH - 20,
       enabledProperty: new DerivedProperty([model.audioSourceProperty], (s) => s === AudioSource.MICROPHONE),
@@ -81,11 +81,11 @@ export class AnalyzerControlPanel extends Panel {
       })),
       listParent,
       {
-        buttonFill: SimColors.buttonFillColorProperty,
-        buttonStroke: SimColors.panelBorderColorProperty,
-        listFill: SimColors.buttonFillColorProperty,
-        listStroke: SimColors.panelBorderColorProperty,
-        highlightFill: SimColors.comboBoxHighlightColorProperty,
+        buttonFill: WaveComposerColors.buttonFillColorProperty,
+        buttonStroke: WaveComposerColors.panelBorderColorProperty,
+        listFill: WaveComposerColors.buttonFillColorProperty,
+        listStroke: WaveComposerColors.panelBorderColorProperty,
+        highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
         tandem: Tandem.OPT_OUT,
       },
     );
@@ -113,7 +113,7 @@ export class AnalyzerControlPanel extends Panel {
       children: [
         new Text(panelStrings.controlsStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         sectionLabel(controls.sourceStringProperty),
         sourceSelector,
@@ -128,8 +128,8 @@ export class AnalyzerControlPanel extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -139,22 +139,22 @@ export class AnalyzerControlPanel extends Panel {
 }
 
 function controlText(content: string | TReadOnlyProperty<string>): Node {
-  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: SimColors.textColorProperty });
+  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: WaveComposerColors.textColorProperty });
 }
 
 function sectionLabel(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
 }
 
 function divider(): Node {
-  return new Line(0, 0, PANEL_WIDTH, 0, { stroke: SimColors.panelBorderColorProperty, lineWidth: 1 });
+  return new Line(0, 0, PANEL_WIDTH, 0, { stroke: WaveComposerColors.panelBorderColorProperty, lineWidth: 1 });
 }
 
 function makeCheckbox(property: Property<boolean>, labelProperty: TReadOnlyProperty<string>): Checkbox {
   return new Checkbox(property, controlText(labelProperty), {
     boxWidth: 16,
-    checkboxColor: SimColors.textColorProperty,
-    checkboxColorBackground: SimColors.chartBackgroundColorProperty,
+    checkboxColor: WaveComposerColors.textColorProperty,
+    checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
     tandem: Tandem.OPT_OUT,
   });
 }
@@ -168,7 +168,7 @@ function makeNumberControl(
 ): NumberControl {
   return new NumberControl(title, property, range, {
     delta,
-    titleNodeOptions: { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty },
+    titleNodeOptions: { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
     numberDisplayOptions: { valuePattern: `{{value}}${unit}`, textOptions: { font: ViewConstants.CONTROL_FONT } },
     sliderOptions: { trackSize: new Dimension2(120, 3), thumbSize: new Dimension2(13, 22) },
     tandem: Tandem.OPT_OUT,

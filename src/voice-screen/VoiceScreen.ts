@@ -8,7 +8,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
-import SimColors from "../SimColors.js";
+import WaveComposerColors from "../WaveComposerColors.js";
 import type { VoiceModel } from "./model/VoiceModel.js";
 import { VoiceScreenView } from "./view/VoiceScreenView.js";
 
@@ -23,7 +23,7 @@ export class VoiceScreen extends Screen<VoiceModel, VoiceScreenView> {
           tandem: options.tandem.createTandem("view"),
         }),
       {
-        backgroundColorProperty: SimColors.backgroundColorProperty,
+        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
         ...options,
       },
     );

@@ -12,7 +12,7 @@ import { Line, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface CepstrumNodeOptions {
@@ -49,14 +49,14 @@ export class CepstrumNode extends Node {
     this.chartTransform = frame.chartTransform;
 
     this.plot = new CanvasLinePlot(this.chartTransform, [], {
-      stroke: SimColors.cepstrumCurveColorProperty.value.toCSS(),
+      stroke: WaveComposerColors.cepstrumCurveColorProperty.value.toCSS(),
       lineWidth: 1.5,
     });
     this.chartCanvas = new ChartCanvasNode(this.chartTransform, [this.plot]);
     frame.plotLayer.addChild(this.chartCanvas);
 
     this.peakMarker = new Line(0, 0, 0, options.viewHeight, {
-      stroke: SimColors.harmonicMarkerColorProperty,
+      stroke: WaveComposerColors.harmonicMarkerColorProperty,
       lineWidth: 1.5,
       visible: false,
     });
@@ -64,7 +64,7 @@ export class CepstrumNode extends Node {
 
     this.addChild(frame);
 
-    SimColors.cepstrumCurveColorProperty.lazyLink((color) => {
+    WaveComposerColors.cepstrumCurveColorProperty.lazyLink((color) => {
       this.plot.setStroke(color.toCSS());
       this.chartCanvas.update();
     });

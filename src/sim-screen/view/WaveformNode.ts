@@ -14,7 +14,7 @@ import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 
 interface WaveformNodeOptions {
   viewWidth: number;
@@ -53,14 +53,14 @@ export class WaveformNode extends Node {
     this.chartTransform = frame.chartTransform;
 
     this.plot = new CanvasLinePlot(this.chartTransform, [], {
-      stroke: SimColors.waveformColorProperty.value.toCSS(),
+      stroke: WaveComposerColors.waveformColorProperty.value.toCSS(),
       lineWidth: 1.5,
     });
     this.chartCanvas = new ChartCanvasNode(this.chartTransform, [this.plot]);
     frame.plotLayer.addChild(this.chartCanvas);
     this.addChild(frame);
 
-    SimColors.waveformColorProperty.lazyLink((color) => {
+    WaveComposerColors.waveformColorProperty.lazyLink((color) => {
       this.plot.setStroke(color.toCSS());
       this.chartCanvas.update();
     });

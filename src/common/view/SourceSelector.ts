@@ -11,7 +11,7 @@ import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { ButtonNode, ComboBox, type ComboBoxOptions, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { PresetCatalogEntry } from "../model/audio/presetCatalog.js";
 import { downloadBlob, encodeWav } from "../model/audio/WavEncoder.js";
 import { AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
@@ -80,11 +80,11 @@ export function createSourceSelector(
   }
 
   const comboBoxOptions: ComboBoxOptions = {
-    buttonFill: SimColors.buttonFillColorProperty,
-    buttonStroke: SimColors.panelBorderColorProperty,
-    listFill: SimColors.buttonFillColorProperty,
-    listStroke: SimColors.panelBorderColorProperty,
-    highlightFill: SimColors.comboBoxHighlightColorProperty,
+    buttonFill: WaveComposerColors.buttonFillColorProperty,
+    buttonStroke: WaveComposerColors.panelBorderColorProperty,
+    listFill: WaveComposerColors.buttonFillColorProperty,
+    listStroke: WaveComposerColors.panelBorderColorProperty,
+    highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
     listPosition: options?.listPosition ?? "below",
     tandem: Tandem.OPT_OUT,
   };
@@ -104,7 +104,10 @@ export function createSourceSelector(
       comboValues.map((value) => ({
         value,
         createNode: () =>
-          new Text(nameProperty(value), { font: ViewConstants.CONTROL_FONT, fill: SimColors.textColorProperty }),
+          new Text(nameProperty(value), {
+            font: ViewConstants.CONTROL_FONT,
+            fill: WaveComposerColors.textColorProperty,
+          }),
       })),
       listParent,
       comboBoxOptions,
@@ -137,7 +140,7 @@ export function createSourceSelector(
   );
   const caption = new Text(captionProperty, {
     font: ViewConstants.LABEL_FONT,
-    fill: SimColors.textColorProperty,
+    fill: WaveComposerColors.textColorProperty,
     maxWidth: CAPTION_MAX_WIDTH,
   });
 
@@ -147,8 +150,8 @@ export function createSourceSelector(
   );
   const recordButton = new TextPushButton(recordLabel, {
     font: ViewConstants.CONTROL_FONT,
-    baseColor: SimColors.buttonFillColorProperty,
-    textFill: SimColors.textColorProperty,
+    baseColor: WaveComposerColors.buttonFillColorProperty,
+    textFill: WaveComposerColors.textColorProperty,
     buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
     maxTextWidth: BUTTON_MAX_TEXT_WIDTH,
     listener: () => {
@@ -163,9 +166,9 @@ export function createSourceSelector(
 
   const saveButton = new TextPushButton(controls.saveRecordingStringProperty, {
     font: ViewConstants.CONTROL_FONT,
-    baseColor: SimColors.buttonFillColorProperty,
-    disabledColor: SimColors.buttonDisabledFillColorProperty,
-    textFill: SimColors.textColorProperty,
+    baseColor: WaveComposerColors.buttonFillColorProperty,
+    disabledColor: WaveComposerColors.buttonDisabledFillColorProperty,
+    textFill: WaveComposerColors.textColorProperty,
     buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
     maxTextWidth: BUTTON_MAX_TEXT_WIDTH,
     enabledProperty: new DerivedProperty([model.audioSourceProperty], (value) => model.isRecordingId(value)),

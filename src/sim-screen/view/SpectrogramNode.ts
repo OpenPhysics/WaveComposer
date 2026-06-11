@@ -20,7 +20,7 @@ import { CanvasNode, type CanvasNodeOptions, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { getColormapLut } from "../../common/view/Colormaps.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 
@@ -127,7 +127,7 @@ class SpectrogramRaster extends CanvasNode {
 
   /** Resets the scrolling history to the background color. */
   public clear(): void {
-    this.offContext.fillStyle = SimColors.chartBackgroundColorProperty.value.toCSS();
+    this.offContext.fillStyle = WaveComposerColors.chartBackgroundColorProperty.value.toCSS();
     this.offContext.fillRect(0, 0, this.cols, this.rows);
     this.f0History.fill(0);
     for (const history of this.formantHistory) {
@@ -207,14 +207,22 @@ class SpectrogramRaster extends CanvasNode {
     const maxF = Math.max(this.model.maxFrequencyProperty.value, minF + 1);
 
     if (this.viewProperties.showF0TrackProperty.value) {
-      this.paintTrack(context, this.f0History, SimColors.f0TrackColorProperty.value.toCSS(), 2, scaleX, minF, maxF);
+      this.paintTrack(
+        context,
+        this.f0History,
+        WaveComposerColors.f0TrackColorProperty.value.toCSS(),
+        2,
+        scaleX,
+        minF,
+        maxF,
+      );
     }
     if (this.viewProperties.showFormantTracksProperty.value) {
       const colors = [
-        SimColors.formant1ColorProperty,
-        SimColors.formant2ColorProperty,
-        SimColors.formant3ColorProperty,
-        SimColors.formant4ColorProperty,
+        WaveComposerColors.formant1ColorProperty,
+        WaveComposerColors.formant2ColorProperty,
+        WaveComposerColors.formant3ColorProperty,
+        WaveComposerColors.formant4ColorProperty,
       ];
       for (let f = 0; f < this.formantHistory.length; f++) {
         const history = this.formantHistory[f];

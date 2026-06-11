@@ -5,7 +5,7 @@
  * one place means the two screens stay visually consistent and the display
  * ranges (dB floors, time windows, quefrency band) are easy to tune.
  *
- * Colors live in SimColors.ts and display text lives in the i18n JSON — never
+ * Colors live in WaveComposerColors.ts and display text lives in the i18n JSON — never
  * here.
  */
 import { Range } from "scenerystack/dot";

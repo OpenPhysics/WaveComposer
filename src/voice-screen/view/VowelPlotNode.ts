@@ -13,7 +13,7 @@ import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { IPA_VOWELS } from "../../common/view/IpaVowels.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface VowelPlotNodeOptions {
@@ -50,11 +50,11 @@ export class VowelPlotNode extends Node {
     const referenceLayer = new Node();
     for (const vowel of IPA_VOWELS) {
       const point = chartTransform.modelToViewXY(vowel.f2Hz, vowel.f1Hz);
-      referenceLayer.addChild(new Circle(2, { fill: SimColors.vowelReferenceColorProperty, center: point }));
+      referenceLayer.addChild(new Circle(2, { fill: WaveComposerColors.vowelReferenceColorProperty, center: point }));
       referenceLayer.addChild(
         new Text(vowel.symbol, {
           font: ViewConstants.VOWEL_LABEL_FONT,
-          fill: SimColors.vowelReferenceColorProperty,
+          fill: WaveComposerColors.vowelReferenceColorProperty,
           centerX: point.x,
           centerY: point.y - 11,
         }),
@@ -65,14 +65,14 @@ export class VowelPlotNode extends Node {
     // Fading trail + current marker.
     const trailPlot = new ScatterPlot(chartTransform, [], {
       radius: 2.5,
-      fill: SimColors.vowelCurrentColorProperty,
+      fill: WaveComposerColors.vowelCurrentColorProperty,
       opacity: 0.45,
     });
     frame.plotLayer.addChild(trailPlot);
 
     const currentMarker = new Circle(6, {
-      fill: SimColors.vowelCurrentColorProperty,
-      stroke: SimColors.textColorProperty,
+      fill: WaveComposerColors.vowelCurrentColorProperty,
+      stroke: WaveComposerColors.textColorProperty,
       lineWidth: 1.5,
       visible: false,
     });

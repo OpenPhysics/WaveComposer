@@ -19,7 +19,7 @@ import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 
 interface SpectrumNodeOptions {
   viewWidth: number;
@@ -68,18 +68,18 @@ export class SpectrumNode extends Node {
     frame.plotLayer.addChild(this.allowedHarmonicLayer);
 
     this.spectrumPlot = new CanvasLinePlot(this.chartTransform, [], {
-      stroke: SimColors.spectrumCurveColorProperty.value.toCSS(),
+      stroke: WaveComposerColors.spectrumCurveColorProperty.value.toCSS(),
       lineWidth: 1.5,
     });
     this.lpcPlot = new CanvasLinePlot(this.chartTransform, [], {
-      stroke: SimColors.lpcEnvelopeColorProperty.value.toCSS(),
+      stroke: WaveComposerColors.lpcEnvelopeColorProperty.value.toCSS(),
       lineWidth: 2,
     });
     this.chartCanvas = new ChartCanvasNode(this.chartTransform, [this.spectrumPlot, this.lpcPlot]);
     frame.plotLayer.addChild(this.chartCanvas);
 
     this.harmonicMarkers = new Path(null, {
-      stroke: SimColors.harmonicMarkerColorProperty,
+      stroke: WaveComposerColors.harmonicMarkerColorProperty,
       lineWidth: 0.5,
       opacity: 0.6,
     });
@@ -89,10 +89,10 @@ export class SpectrumNode extends Node {
     frame.plotLayer.addChild(this.modeNumberLayer);
 
     const formantColors = [
-      SimColors.formant1ColorProperty,
-      SimColors.formant2ColorProperty,
-      SimColors.formant3ColorProperty,
-      SimColors.formant4ColorProperty,
+      WaveComposerColors.formant1ColorProperty,
+      WaveComposerColors.formant2ColorProperty,
+      WaveComposerColors.formant3ColorProperty,
+      WaveComposerColors.formant4ColorProperty,
     ];
     const formantLayer = new Node();
     this.formantLines = formantColors.map((colorProperty) => {
@@ -104,7 +104,7 @@ export class SpectrumNode extends Node {
 
     this.resonanceCaption = new Text(physics.resonanceCaptionStringProperty, {
       font: ViewConstants.LABEL_FONT,
-      fill: SimColors.lpcEnvelopeColorProperty,
+      fill: WaveComposerColors.lpcEnvelopeColorProperty,
       right: options.viewWidth - 4,
       top: 2,
       visible: false,
@@ -113,11 +113,11 @@ export class SpectrumNode extends Node {
 
     this.addChild(frame);
 
-    SimColors.spectrumCurveColorProperty.lazyLink((color) => {
+    WaveComposerColors.spectrumCurveColorProperty.lazyLink((color) => {
       this.spectrumPlot.setStroke(color.toCSS());
       this.chartCanvas.update();
     });
-    SimColors.lpcEnvelopeColorProperty.lazyLink((color) => {
+    WaveComposerColors.lpcEnvelopeColorProperty.lazyLink((color) => {
       this.lpcPlot.setStroke(color.toCSS());
       this.chartCanvas.update();
     });
@@ -214,7 +214,7 @@ export class SpectrumNode extends Node {
           this.modeNumberLayer.addChild(
             new Text(label, {
               font: ViewConstants.LABEL_FONT,
-              fill: SimColors.harmonicMarkerColorProperty,
+              fill: WaveComposerColors.harmonicMarkerColorProperty,
               centerX: x,
               top: 2,
             }),
@@ -249,7 +249,7 @@ export class SpectrumNode extends Node {
       const xRight = this.chartTransform.modelToViewX(Math.min(maxF, freq + HARMONIC_BAND_WIDTH_HZ / 2));
       this.allowedHarmonicLayer.addChild(
         new Rectangle(xLeft, 0, xRight - xLeft, this.viewHeight, {
-          fill: SimColors.allowedHarmonicBandColorProperty,
+          fill: WaveComposerColors.allowedHarmonicBandColorProperty,
           opacity: 0.12,
         }),
       );

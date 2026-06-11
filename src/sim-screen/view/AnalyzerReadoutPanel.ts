@@ -11,7 +11,7 @@ import { Circle, type Color, GridBox, HBox, Node, Rectangle, Text, VBox } from "
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 
 const EMPTY = "—";
@@ -26,7 +26,7 @@ export class AnalyzerReadoutPanel extends Panel {
 
     // ── Voiced / unvoiced indicator ──────────────────────────────────────────
     const voicedFill = new DerivedProperty(
-      [model.isVoicedProperty, SimColors.voicedColorProperty, SimColors.unvoicedColorProperty],
+      [model.isVoicedProperty, WaveComposerColors.voicedColorProperty, WaveComposerColors.unvoicedColorProperty],
       (voiced, on, off): Color => (voiced ? on : off),
     );
     const voicedText = new DerivedProperty(
@@ -37,7 +37,7 @@ export class AnalyzerReadoutPanel extends Panel {
       spacing: 6,
       children: [
         new Circle(6, { fill: voicedFill }),
-        new Text(voicedText, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty }),
+        new Text(voicedText, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty }),
       ],
     });
 
@@ -67,12 +67,12 @@ export class AnalyzerReadoutPanel extends Panel {
 
     // ── Input-level meter ──────────────────────────────────────────────────────
     const levelTrack = new Rectangle(0, 0, LEVEL_BAR_WIDTH, LEVEL_BAR_HEIGHT, {
-      fill: SimColors.chartBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.chartBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       cornerRadius: 2,
     });
     const levelFill = new Rectangle(0, 0, 0, LEVEL_BAR_HEIGHT, {
-      fill: SimColors.accentColorProperty,
+      fill: WaveComposerColors.accentColorProperty,
       cornerRadius: 2,
     });
     model.rmsLevelProperty.link((rms) => {
@@ -82,7 +82,10 @@ export class AnalyzerReadoutPanel extends Panel {
     const levelMeter = new HBox({
       spacing: 8,
       children: [
-        new Text(readout.levelStringProperty, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty }),
+        new Text(readout.levelStringProperty, {
+          font: ViewConstants.LABEL_FONT,
+          fill: WaveComposerColors.textColorProperty,
+        }),
         new Node({ children: [levelTrack, levelFill] }),
       ],
     });
@@ -93,7 +96,7 @@ export class AnalyzerReadoutPanel extends Panel {
       children: [
         new Text(panelStrings.measurementsStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         indicator,
         grid,
@@ -102,8 +105,8 @@ export class AnalyzerReadoutPanel extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -113,9 +116,15 @@ export class AnalyzerReadoutPanel extends Panel {
 }
 
 function label(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_LABEL_FONT,
+    fill: WaveComposerColors.textColorProperty,
+  });
 }
 
 function value(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_VALUE_FONT, fill: SimColors.accentColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_VALUE_FONT,
+    fill: WaveComposerColors.accentColorProperty,
+  });
 }

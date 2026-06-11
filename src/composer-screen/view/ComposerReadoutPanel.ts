@@ -9,7 +9,7 @@ import { GridBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 
 const EMPTY = "—";
@@ -51,7 +51,7 @@ export class ComposerReadoutPanel extends Panel {
 
     const caption = new Text(composerStrings.introStringProperty, {
       font: ViewConstants.LABEL_FONT,
-      fill: SimColors.textColorProperty,
+      fill: WaveComposerColors.textColorProperty,
       maxWidth: 220,
     });
 
@@ -61,7 +61,7 @@ export class ComposerReadoutPanel extends Panel {
       children: [
         new Text(panelStrings.measurementsStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         grid,
         caption,
@@ -69,8 +69,8 @@ export class ComposerReadoutPanel extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -80,9 +80,15 @@ export class ComposerReadoutPanel extends Panel {
 }
 
 function label(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_LABEL_FONT,
+    fill: WaveComposerColors.textColorProperty,
+  });
 }
 
 function value(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_VALUE_FONT, fill: SimColors.accentColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_VALUE_FONT,
+    fill: WaveComposerColors.accentColorProperty,
+  });
 }

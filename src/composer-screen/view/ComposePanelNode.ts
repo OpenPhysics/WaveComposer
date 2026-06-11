@@ -12,7 +12,7 @@ import { Tandem } from "scenerystack/tandem";
 import { ComposePreset, ComposePresetValues } from "../../common/model/CompositionState.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 
 const PARTIAL_COLUMN_WIDTH = 168;
@@ -51,11 +51,11 @@ export class ComposePanelNode extends Panel {
       })),
       listParent,
       {
-        buttonFill: SimColors.buttonFillColorProperty,
-        buttonStroke: SimColors.panelBorderColorProperty,
-        listFill: SimColors.buttonFillColorProperty,
-        listStroke: SimColors.panelBorderColorProperty,
-        highlightFill: SimColors.comboBoxHighlightColorProperty,
+        buttonFill: WaveComposerColors.buttonFillColorProperty,
+        buttonStroke: WaveComposerColors.panelBorderColorProperty,
+        listFill: WaveComposerColors.buttonFillColorProperty,
+        listStroke: WaveComposerColors.panelBorderColorProperty,
+        highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
         tandem: Tandem.OPT_OUT,
       },
     );
@@ -105,7 +105,7 @@ export class ComposePanelNode extends Panel {
       children: [
         new Text(compose.titleStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         sectionLabel(compose.presetStringProperty),
         presetCombo,
@@ -115,8 +115,8 @@ export class ComposePanelNode extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -126,15 +126,15 @@ export class ComposePanelNode extends Panel {
 }
 
 function controlText(content: string | TReadOnlyProperty<string>): Node {
-  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: SimColors.textColorProperty });
+  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: WaveComposerColors.textColorProperty });
 }
 
 function sectionLabel(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
 }
 
 function divider(): Node {
-  return new Line(0, 0, PANEL_WIDTH, 0, { stroke: SimColors.panelBorderColorProperty, lineWidth: 1 });
+  return new Line(0, 0, PANEL_WIDTH, 0, { stroke: WaveComposerColors.panelBorderColorProperty, lineWidth: 1 });
 }
 
 function makeCheckbox(
@@ -143,8 +143,8 @@ function makeCheckbox(
 ): Checkbox {
   return new Checkbox(property, controlText(labelProperty), {
     boxWidth: 16,
-    checkboxColor: SimColors.textColorProperty,
-    checkboxColorBackground: SimColors.chartBackgroundColorProperty,
+    checkboxColor: WaveComposerColors.textColorProperty,
+    checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
     tandem: Tandem.OPT_OUT,
   });
 }
@@ -164,7 +164,7 @@ function makeNumberControl(
       titleXSpacing: 4,
       arrowButtonsXSpacing: 6,
     }),
-    titleNodeOptions: { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty },
+    titleNodeOptions: { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
     numberDisplayOptions: {
       valuePattern: `{{value}}${unit}`,
       decimalPlaces,

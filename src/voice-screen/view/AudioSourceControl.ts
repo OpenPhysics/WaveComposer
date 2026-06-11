@@ -15,7 +15,7 @@ import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 const MAX_BUTTON_TEXT_WIDTH = 170;
@@ -35,9 +35,9 @@ export class AudioSourceControl extends Panel {
     );
     const startStopButton = new TextPushButton(startStopLabel, {
       font: ViewConstants.CONTROL_FONT,
-      baseColor: SimColors.buttonFillColorProperty,
-      disabledColor: SimColors.buttonDisabledFillColorProperty,
-      textFill: SimColors.textColorProperty,
+      baseColor: WaveComposerColors.buttonFillColorProperty,
+      disabledColor: WaveComposerColors.buttonDisabledFillColorProperty,
+      textFill: WaveComposerColors.textColorProperty,
       buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       maxTextWidth: MAX_BUTTON_TEXT_WIDTH,
       // Start/stop only applies to the live microphone, not the synthetic demo.
@@ -56,12 +56,12 @@ export class AudioSourceControl extends Panel {
       model.isAudioEnabledProperty,
       new Text(controls.playAudioStringProperty, {
         font: ViewConstants.CONTROL_FONT,
-        fill: SimColors.textColorProperty,
+        fill: WaveComposerColors.textColorProperty,
       }),
       {
         boxWidth: 16,
-        checkboxColor: SimColors.textColorProperty,
-        checkboxColorBackground: SimColors.chartBackgroundColorProperty,
+        checkboxColor: WaveComposerColors.textColorProperty,
+        checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
         tandem: Tandem.OPT_OUT,
       },
     );
@@ -72,7 +72,7 @@ export class AudioSourceControl extends Panel {
       children: [
         new Text(controls.sourceStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         sourceSelector,
         startStopButton,
@@ -81,8 +81,8 @@ export class AudioSourceControl extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,

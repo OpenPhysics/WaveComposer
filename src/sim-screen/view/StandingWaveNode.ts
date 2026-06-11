@@ -9,7 +9,7 @@ import { CanvasNode, Node } from "scenerystack/scenery";
 import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 
 interface StandingWaveNodeOptions {
   viewWidth: number;
@@ -65,7 +65,7 @@ class StandingWaveCanvas extends CanvasNode {
     }
 
     const modes = this.getModeAmplitudes();
-    const stroke = SimColors.standingWaveColorProperty.value.toCSS();
+    const stroke = WaveComposerColors.standingWaveColorProperty.value.toCSS();
     context.strokeStyle = stroke;
     context.lineWidth = 2;
     context.beginPath();

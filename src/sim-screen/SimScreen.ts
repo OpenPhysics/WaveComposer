@@ -11,7 +11,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
-import SimColors from "../SimColors.js";
+import WaveComposerColors from "../WaveComposerColors.js";
 import type { AnalyzerModel } from "./model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./view/AnalyzerViewProperties.js";
 import { SimScreenView } from "./view/SimScreenView.js";
@@ -28,7 +28,7 @@ export class SimScreen extends Screen<AnalyzerModel, SimScreenView> {
           tandem: options.tandem.createTandem("view"),
         }),
       {
-        backgroundColorProperty: SimColors.backgroundColorProperty,
+        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
         ...options,
       },
     );

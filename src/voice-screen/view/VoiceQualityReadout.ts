@@ -10,7 +10,7 @@ import { Circle, type Color, GridBox, HBox, type Node, Text, VBox } from "scener
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 const EMPTY = "—";
@@ -21,7 +21,7 @@ export class VoiceQualityReadout extends Panel {
     const panelStrings = StringManager.getInstance().getPanelStrings();
 
     const voicedFill = new DerivedProperty(
-      [model.isVoicedProperty, SimColors.voicedColorProperty, SimColors.unvoicedColorProperty],
+      [model.isVoicedProperty, WaveComposerColors.voicedColorProperty, WaveComposerColors.unvoicedColorProperty],
       (voiced, on, off): Color => (voiced ? on : off),
     );
     const voicedText = new DerivedProperty(
@@ -32,7 +32,7 @@ export class VoiceQualityReadout extends Panel {
       spacing: 6,
       children: [
         new Circle(7, { fill: voicedFill }),
-        new Text(voicedText, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty }),
+        new Text(voicedText, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty }),
       ],
     });
 
@@ -63,7 +63,7 @@ export class VoiceQualityReadout extends Panel {
       children: [
         new Text(panelStrings.voiceQualityStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         indicator,
         grid,
@@ -71,8 +71,8 @@ export class VoiceQualityReadout extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -82,9 +82,15 @@ export class VoiceQualityReadout extends Panel {
 }
 
 function label(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_LABEL_FONT,
+    fill: WaveComposerColors.textColorProperty,
+  });
 }
 
 function value(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.READOUT_VALUE_FONT, fill: SimColors.accentColorProperty });
+  return new Text(stringProperty, {
+    font: ViewConstants.READOUT_VALUE_FONT,
+    fill: WaveComposerColors.accentColorProperty,
+  });
 }

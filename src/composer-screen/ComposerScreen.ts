@@ -7,7 +7,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
-import SimColors from "../SimColors.js";
+import WaveComposerColors from "../WaveComposerColors.js";
 import type { ComposerModel } from "./model/ComposerModel.js";
 import { ComposerScreenView } from "./view/ComposerScreenView.js";
 import type { ComposerViewProperties } from "./view/ComposerViewProperties.js";
@@ -23,7 +23,7 @@ export class ComposerScreen extends Screen<ComposerModel, ComposerScreenView> {
           tandem: options.tandem.createTandem("view"),
         }),
       {
-        backgroundColorProperty: SimColors.backgroundColorProperty,
+        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
         ...options,
       },
     );

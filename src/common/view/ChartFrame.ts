@@ -17,7 +17,7 @@ import type { Range } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import { Node, Text } from "scenerystack/scenery";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import { ViewConstants } from "./ViewConstants.js";
 
 const TICK_LENGTH = 5;
@@ -60,8 +60,8 @@ export class ChartFrame extends Node {
     this.chartTransform = transform;
 
     const background = new ChartRectangle(transform, {
-      fill: SimColors.chartBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.chartBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       lineWidth: 1,
       cornerXRadius: ViewConstants.CORNER_RADIUS,
       cornerYRadius: ViewConstants.CORNER_RADIUS,
@@ -71,7 +71,7 @@ export class ChartFrame extends Node {
     if (options.xSpacing !== undefined) {
       this.addChild(
         new GridLineSet(transform, Orientation.HORIZONTAL, options.xSpacing, {
-          stroke: SimColors.gridLineColorProperty,
+          stroke: WaveComposerColors.gridLineColorProperty,
           lineWidth: 0.5,
         }),
       );
@@ -79,7 +79,7 @@ export class ChartFrame extends Node {
     if (options.ySpacing !== undefined) {
       this.addChild(
         new GridLineSet(transform, Orientation.VERTICAL, options.ySpacing, {
-          stroke: SimColors.gridLineColorProperty,
+          stroke: WaveComposerColors.gridLineColorProperty,
           lineWidth: 0.5,
         }),
       );
@@ -92,14 +92,18 @@ export class ChartFrame extends Node {
 
     // Axes along the chart edges.
     this.addChild(
-      new AxisLine(transform, Orientation.VERTICAL, { stroke: SimColors.axisColorProperty, lineWidth: 1, value: 0 }),
+      new AxisLine(transform, Orientation.VERTICAL, {
+        stroke: WaveComposerColors.axisColorProperty,
+        lineWidth: 1,
+        value: 0,
+      }),
     );
 
     if (options.xSpacing !== undefined) {
       this.addChild(
         new TickMarkSet(transform, Orientation.HORIZONTAL, options.xSpacing, {
           edge: "min",
-          stroke: SimColors.axisColorProperty,
+          stroke: WaveComposerColors.axisColorProperty,
           extent: TICK_LENGTH,
         }),
       );
@@ -114,7 +118,7 @@ export class ChartFrame extends Node {
       this.addChild(
         new TickMarkSet(transform, Orientation.VERTICAL, options.ySpacing, {
           edge: "min",
-          stroke: SimColors.axisColorProperty,
+          stroke: WaveComposerColors.axisColorProperty,
           extent: TICK_LENGTH,
         }),
       );
@@ -129,7 +133,7 @@ export class ChartFrame extends Node {
     if (options.xLabel !== undefined) {
       const xTitle = new Text(options.xLabel, {
         font: ViewConstants.AXIS_LABEL_FONT,
-        fill: SimColors.textColorProperty,
+        fill: WaveComposerColors.textColorProperty,
         centerX: options.viewWidth / 2,
         top: options.viewHeight + X_TITLE_GUTTER * 0.5,
       });
@@ -138,7 +142,7 @@ export class ChartFrame extends Node {
     if (options.yLabel !== undefined) {
       const yTitle = new Text(options.yLabel, {
         font: ViewConstants.AXIS_LABEL_FONT,
-        fill: SimColors.textColorProperty,
+        fill: WaveComposerColors.textColorProperty,
         rotation: -Math.PI / 2,
       });
       yTitle.right = -Y_TITLE_GUTTER;
@@ -154,6 +158,6 @@ function defaultTickLabel(value: number): Node {
   const text = Number.isInteger(value) ? `${value}` : value.toFixed(1);
   return new Text(text, {
     font: ViewConstants.TICK_FONT,
-    fill: SimColors.textColorProperty,
+    fill: WaveComposerColors.textColorProperty,
   });
 }

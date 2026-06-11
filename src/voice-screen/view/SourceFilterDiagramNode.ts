@@ -10,7 +10,7 @@ import { ArrowNode } from "scenerystack/scenery-phet";
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import SimColors from "../../SimColors.js";
+import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 const BOX_WIDTH = 88;
@@ -21,9 +21,9 @@ export class SourceFilterDiagramNode extends Panel {
     const physics = StringManager.getInstance().getPhysicsStrings();
     const readout = StringManager.getInstance().getReadoutStrings();
 
-    const sourceBox = labeledBox(physics.glottalSourceStringProperty, SimColors.sourceFilterColorProperty);
-    const filterBox = labeledBox(physics.vocalTractStringProperty, SimColors.lpcEnvelopeColorProperty);
-    const outputBox = labeledBox(physics.resonanceStringProperty, SimColors.accentColorProperty);
+    const sourceBox = labeledBox(physics.glottalSourceStringProperty, WaveComposerColors.sourceFilterColorProperty);
+    const filterBox = labeledBox(physics.vocalTractStringProperty, WaveComposerColors.lpcEnvelopeColorProperty);
+    const outputBox = labeledBox(physics.resonanceStringProperty, WaveComposerColors.accentColorProperty);
 
     const f1Label = formantResonanceLabel(readout.formant1StringProperty, model.f1FrequencyProperty);
     const f2Label = formantResonanceLabel(readout.formant2StringProperty, model.f2FrequencyProperty);
@@ -40,9 +40,19 @@ export class SourceFilterDiagramNode extends Panel {
       align: "center",
       children: [
         sourceBox,
-        new ArrowNode(0, 0, 28, 0, { fill: SimColors.textColorProperty, tailWidth: 6, headWidth: 10, headHeight: 8 }),
+        new ArrowNode(0, 0, 28, 0, {
+          fill: WaveComposerColors.textColorProperty,
+          tailWidth: 6,
+          headWidth: 10,
+          headHeight: 8,
+        }),
         filterDetail,
-        new ArrowNode(0, 0, 28, 0, { fill: SimColors.textColorProperty, tailWidth: 6, headWidth: 10, headHeight: 8 }),
+        new ArrowNode(0, 0, 28, 0, {
+          fill: WaveComposerColors.textColorProperty,
+          tailWidth: 6,
+          headWidth: 10,
+          headHeight: 8,
+        }),
         outputBox,
       ],
     });
@@ -54,7 +64,7 @@ export class SourceFilterDiagramNode extends Panel {
       ),
       {
         font: ViewConstants.LABEL_FONT,
-        fill: SimColors.resonanceTuningColorProperty,
+        fill: WaveComposerColors.resonanceTuningColorProperty,
         maxWidth: 360,
       },
     );
@@ -65,7 +75,7 @@ export class SourceFilterDiagramNode extends Panel {
       children: [
         new Text(physics.sourceFilterStringProperty, {
           font: ViewConstants.PANEL_TITLE_FONT,
-          fill: SimColors.textColorProperty,
+          fill: WaveComposerColors.textColorProperty,
         }),
         diagram,
         tuningIndicator,
@@ -73,8 +83,8 @@ export class SourceFilterDiagramNode extends Panel {
     });
 
     super(content, {
-      fill: SimColors.panelBackgroundColorProperty,
-      stroke: SimColors.panelBorderColorProperty,
+      fill: WaveComposerColors.panelBackgroundColorProperty,
+      stroke: WaveComposerColors.panelBorderColorProperty,
       xMargin: ViewConstants.PANEL_X_MARGIN,
       yMargin: ViewConstants.PANEL_Y_MARGIN,
       cornerRadius: ViewConstants.CORNER_RADIUS,
@@ -91,10 +101,14 @@ function labeledBox(label: TReadOnlyProperty<string>, fill: import("scenerystack
       new Rectangle(0, 0, BOX_WIDTH, BOX_HEIGHT, {
         fill,
         opacity: 0.35,
-        stroke: SimColors.panelBorderColorProperty,
+        stroke: WaveComposerColors.panelBorderColorProperty,
         cornerRadius: 4,
       }),
-      new Text(label, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty, maxWidth: BOX_WIDTH }),
+      new Text(label, {
+        font: ViewConstants.LABEL_FONT,
+        fill: WaveComposerColors.textColorProperty,
+        maxWidth: BOX_WIDTH,
+      }),
     ],
   });
 }
@@ -106,5 +120,5 @@ function formantResonanceLabel(
   const text = new DerivedProperty([nameProperty, frequencyProperty], (name, hz) =>
     hz > 0 ? `${name} ${Math.round(hz)}` : name,
   );
-  return new Text(text, { font: ViewConstants.LABEL_FONT, fill: SimColors.textColorProperty });
+  return new Text(text, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
 }
