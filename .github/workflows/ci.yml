@@ -28,6 +28,11 @@ jobs:
     with:
       run-tests: true
 
+  compliance:
+    uses: OpenPhysics/.github/.github/workflows/shared-compliance-check.yml@main
+    with:
+      repo-name: WaveComposer
+
   dependency-review:
     if: github.event_name == 'pull_request'
     uses: OpenPhysics/.github/.github/workflows/shared-dependency-review.yml@main
