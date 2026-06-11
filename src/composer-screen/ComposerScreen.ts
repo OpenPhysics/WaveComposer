@@ -7,6 +7,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { ComposerModel } from "./model/ComposerModel.js";
 import { ComposerScreenView } from "./view/ComposerScreenView.js";
@@ -24,6 +25,7 @@ export class ComposerScreen extends Screen<ComposerModel, ComposerScreenView> {
         }),
       {
         backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
+        createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
         ...options,
       },
     );

@@ -11,6 +11,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { AnalyzerModel } from "./model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./view/AnalyzerViewProperties.js";
@@ -29,6 +30,7 @@ export class SimScreen extends Screen<AnalyzerModel, SimScreenView> {
         }),
       {
         backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
+        createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
         ...options,
       },
     );
