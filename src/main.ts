@@ -30,6 +30,7 @@ import { SimScreen } from "./sim-screen/SimScreen.js";
 import { AnalyzerViewProperties } from "./sim-screen/view/AnalyzerViewProperties.js";
 import { VoiceModel } from "./voice-screen/model/VoiceModel.js";
 import { VoiceScreen } from "./voice-screen/VoiceScreen.js";
+import WaveComposerColors from "./WaveComposerColors.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
@@ -48,16 +49,19 @@ onReadyToLaunch(() => {
       name: screenNames.composerStringProperty,
       tandem: Tandem.ROOT.createTandem("composerScreen"),
       viewProperties: composerViewProperties,
+      backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
     }),
     new SimScreen(analyzerModel, {
       // The screen name Property updates automatically when the locale changes
       name: screenNames.analyzerStringProperty,
       tandem: Tandem.ROOT.createTandem("analyzerScreen"),
       viewProperties: analyzerViewProperties,
+      backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
     }),
     new VoiceScreen(voiceModel, {
       name: screenNames.voiceStringProperty,
       tandem: Tandem.ROOT.createTandem("voiceScreen"),
+      backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
     }),
   ];
 
