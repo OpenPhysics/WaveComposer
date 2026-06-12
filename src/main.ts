@@ -17,7 +17,6 @@ import "./brand.js";
 
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
-import { linkAnalysisModelToScreenActive } from "./common/model/BaseAnalysisModel.js";
 import { ComposerScreen } from "./composer-screen/ComposerScreen.js";
 import { ComposerModel } from "./composer-screen/model/ComposerModel.js";
 import { ComposerViewProperties } from "./composer-screen/view/ComposerViewProperties.js";
@@ -115,11 +114,6 @@ onReadyToLaunch(() => {
       qualityAssurance: "",
     },
   });
-
-  // Models are created during sim.start(), so pass the instances we already hold.
-  linkAnalysisModelToScreenActive(screens[0]!.activeProperty, composerModel);
-  linkAnalysisModelToScreenActive(screens[1]!.activeProperty, analyzerModel);
-  linkAnalysisModelToScreenActive(screens[2]!.activeProperty, voiceModel);
 
   sim.start();
 });

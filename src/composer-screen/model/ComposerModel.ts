@@ -26,7 +26,7 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
   private readonly displayGenerator = createComposableGenerator(() => this.composition.getPartials());
 
   public constructor(analysisPreferences: AnalysisPreferencesModel) {
-    super([], analysisPreferences);
+    super([], analysisPreferences, { includeMicrophone: false });
     this.registerAdditionalSource(
       COMPOSE_SOURCE_ID,
       createComposableSource(() => this.composition.getPartials(), DEFAULT_FFT_SIZE),

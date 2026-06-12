@@ -8,6 +8,7 @@
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
+import { linkAnalysisModelToScreenActive } from "../common/model/BaseAnalysisModel.js";
 import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { VoiceModel } from "./model/VoiceModel.js";
@@ -29,5 +30,6 @@ export class VoiceScreen extends Screen<VoiceModel, VoiceScreenView> {
         ...options,
       },
     );
+    linkAnalysisModelToScreenActive(this.activeProperty, model);
   }
 }

@@ -103,6 +103,9 @@ export abstract class BufferPlaybackSource implements AudioFrameSource, Monitore
       this.sourceNode.disconnect();
       this.sourceNode = null;
     }
+    // Disconnect the gain node so the next start() does not accumulate duplicate
+    // destination connections — Web Audio connections are additive, not idempotent.
+    this.gainNode?.disconnect();
   }
 
   /** Updates the analyser FFT size (frame length). */

@@ -76,6 +76,9 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
   public stop(): void {
     this.scriptNode?.disconnect();
     this.scriptNode = null;
+    // Disconnect the gain node so the next start() does not accumulate duplicate
+    // destination connections — Web Audio connections are additive, not idempotent.
+    this.gainNode?.disconnect();
     this.elapsedPlaybackTimeS = 0;
   }
 
