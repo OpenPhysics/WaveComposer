@@ -193,8 +193,8 @@ export class BaseAnalysisModel implements TModel {
     this.isAudioEnabledProperty.lazyLink(() => this.applyMonitoring());
   }
 
-  /** The audio source the analyzer currently reads from. */
-  private get source(): AudioFrameSource {
+  /** The audio source the analyzer currently reads from, or null if none is registered. */
+  private get source(): AudioFrameSource | null {
     return this.sources.get(this.audioSourceProperty.value) ?? this.micInput;
   }
 
@@ -416,7 +416,7 @@ export class BaseAnalysisModel implements TModel {
    */
   public step(_dt: number): void {
     const source = this.source;
-    if (this.isAnalysisPaused || !source.isActive) {
+    if (!source || this.isAnalysisPaused || !source.isActive) {
       return;
     }
     if (!source.getFrame(this.frameBuffer)) {
@@ -444,7 +444,7 @@ export class BaseAnalysisModel implements TModel {
   /** Builds the analyzer config from the current settings + source sample rate. */
   private buildConfig(): AnalyzerConfig {
     return {
-      sampleRate: this.source.sampleRate,
+      sampleRate: this.source?.sampleRate ?? DEFAULT_SAMPLE_RATE_HZ,
       fftSize: this.fftSizeProperty.value,
       windowType: this.windowTypeProperty.value,
       lpcOrder: this.lpcOrderProperty.value,
