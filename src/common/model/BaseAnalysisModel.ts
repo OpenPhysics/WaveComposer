@@ -467,7 +467,7 @@ export class BaseAnalysisModel implements TModel {
     if (this.frameBuffer.length !== fftSize) {
       this.frameBuffer = new Float32Array(fftSize);
     }
-    this.sampleRateProperty.value = this.source.sampleRate;
+    this.sampleRateProperty.value = this.source?.sampleRate ?? DEFAULT_SAMPLE_RATE_HZ;
     this.analyzer.reconfigure(this.buildConfig());
   }
 
