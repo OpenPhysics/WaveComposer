@@ -137,7 +137,7 @@ export class BaseAnalysisModel implements TModel {
   /** Fires after each analyzed frame; listeners read {@link analysis} buffers. */
   public readonly frameProcessedEmitter = new Emitter();
 
-  private readonly micInput: MicrophoneInput;
+  private readonly micInput: MicrophoneInput | null;
   /** Every selectable source, keyed by source id ({@link AudioSource} or recording id). */
   private readonly sources: Map<string, AudioFrameSource>;
   /** Counts captured recordings so each gets a stable, ever-increasing ordinal. */
@@ -162,15 +162,21 @@ export class BaseAnalysisModel implements TModel {
     return this.analysisPreferences.windowTypeProperty;
   }
 
-  public constructor(presetCatalog: readonly PresetCatalogEntry[], analysisPreferences: AnalysisPreferencesModel) {
+  public constructor(
+    presetCatalog: readonly PresetCatalogEntry[],
+    analysisPreferences: AnalysisPreferencesModel,
+    options?: { includeMicrophone?: boolean },
+  ) {
     this.presetCatalog = presetCatalog;
     this.analysisPreferences = analysisPreferences;
-    this.micInput = new MicrophoneInput(DEFAULT_FFT_SIZE);
+    const includeMicrophone = options?.includeMicrophone !== false;
+    this.micInput = includeMicrophone ? new MicrophoneInput(DEFAULT_FFT_SIZE) : null;
     const presetSources: [string, AudioFrameSource][] = presetCatalog.map((entry) => [
       entry.id,
       createPresetSource(entry, DEFAULT_FFT_SIZE),
     ]);
-    this.sources = new Map<string, AudioFrameSource>([[AudioSource.MICROPHONE, this.micInput], ...presetSources]);
+    const micEntry: [string, AudioFrameSource][] = this.micInput ? [[AudioSource.MICROPHONE, this.micInput]] : [];
+    this.sources = new Map<string, AudioFrameSource>([...micEntry, ...presetSources]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
     this.frameBuffer = new Float32Array(DEFAULT_FFT_SIZE);
 
@@ -236,6 +242,9 @@ export class BaseAnalysisModel implements TModel {
    * the microphone as the active source.
    */
   public async startListening(): Promise<void> {
+    if (!this.micInput) {
+      return;
+    }
     this.audioSourceProperty.value = AudioSource.MICROPHONE;
     await this.micInput.start();
     // The AudioContext's sample rate is known only after start.
@@ -292,10 +301,10 @@ export class BaseAnalysisModel implements TModel {
   /** Stops microphone capture and releases the device (discarding any active recording). */
   public stopListening(): void {
     if (this.isRecordingProperty.value) {
-      this.micInput.cancelRecording();
+      this.micInput?.cancelRecording();
       this.isRecordingProperty.value = false;
     }
-    this.micInput.stop();
+    this.micInput?.stop();
     this.isListeningProperty.value = false;
   }
 
@@ -304,7 +313,7 @@ export class BaseAnalysisModel implements TModel {
    * microphone is selected and running first (prompting for permission if needed).
    */
   public async startRecording(): Promise<void> {
-    if (this.isRecordingProperty.value) {
+    if (!this.micInput || this.isRecordingProperty.value) {
       return;
     }
     await this.startListening();
@@ -321,7 +330,7 @@ export class BaseAnalysisModel implements TModel {
     if (!this.isRecordingProperty.value) {
       return;
     }
-    const clip = this.micInput.stopRecording();
+    const clip = this.micInput?.stopRecording() ?? null;
     this.isRecordingProperty.value = false;
     if (!clip) {
       return;
@@ -363,10 +372,10 @@ export class BaseAnalysisModel implements TModel {
     return source instanceof SyntheticWebAudioSource ? source.playbackTimeS : 0;
   }
 
-  /** Source ids for a ComboBox: microphone, extras, presets, then recordings. */
+  /** Source ids for a ComboBox: microphone (if present), extras, presets, then recordings. */
   public getSourceValues(): string[] {
     return [
-      AudioSource.MICROPHONE,
+      ...(this.micInput ? [AudioSource.MICROPHONE] : []),
       ...this.getAdditionalSourceIds(),
       ...this.presetCatalog.map((entry) => entry.id),
       ...this.recordings.map((e) => e.id),
@@ -381,7 +390,6 @@ export class BaseAnalysisModel implements TModel {
     this.stopListening();
     this.audioSourceProperty.reset();
     this.sampleRateProperty.reset();
-    this.analysisPreferences.reset();
     this.maxFrequencyProperty.reset();
     this.isAudioEnabledProperty.reset();
     this.f0Property.reset();
@@ -450,7 +458,7 @@ export class BaseAnalysisModel implements TModel {
   private applyConfig(): void {
     const fftSize = this.fftSizeProperty.value;
     // Sources backed by a Web Audio AnalyserNode need their FFT size kept in sync.
-    this.micInput.setFftSize(fftSize);
+    this.micInput?.setFftSize(fftSize);
     for (const source of this.sources.values()) {
       if (isPlayableSource(source)) {
         source.setFftSize(fftSize);
