@@ -70,6 +70,7 @@ export class ComposerControlPanel extends Panel {
             listFill: WaveComposerColors.buttonFillColorProperty,
             listStroke: WaveComposerColors.panelBorderColorProperty,
             highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
+            accessibleName: controls.pipeBoundaryStringProperty,
             tandem: Tandem.OPT_OUT,
           },
         ),

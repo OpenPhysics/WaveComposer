@@ -86,6 +86,7 @@ export function createSourceSelector(
     listStroke: WaveComposerColors.panelBorderColorProperty,
     highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
     listPosition: options?.listPosition ?? "below",
+    accessibleName: controls.sourceStringProperty,
     tandem: Tandem.OPT_OUT,
   };
 

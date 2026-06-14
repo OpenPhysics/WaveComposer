@@ -56,6 +56,7 @@ export class ComposePanelNode extends Panel {
         listFill: WaveComposerColors.buttonFillColorProperty,
         listStroke: WaveComposerColors.panelBorderColorProperty,
         highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
+        accessibleName: compose.presetStringProperty,
         tandem: Tandem.OPT_OUT,
       },
     );
