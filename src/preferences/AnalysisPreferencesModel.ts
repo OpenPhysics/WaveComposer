@@ -5,18 +5,22 @@
  * every screen's audio pipeline and exposed in Preferences → Visual.
  */
 import { NumberProperty, Property } from "scenerystack/axon";
-import { Range } from "scenerystack/dot";
-import { WINDOW_TYPE_VALUES, WindowType } from "../common/model/dsp/WindowFunction.js";
+import { WINDOW_TYPE_VALUES, type WindowType } from "../common/model/dsp/WindowFunction.js";
+import { FFT_SIZE_VALUES, LPC_ORDER_RANGE } from "./AnalysisConstants.js";
+import waveComposerQueryParameters from "./waveComposerQueryParameters.js";
 
-export const DEFAULT_FFT_SIZE = 2048;
-export const FFT_SIZE_VALUES = [1024, 2048, 4096] as const;
-export const DEFAULT_LPC_ORDER = 12;
-export const LPC_ORDER_RANGE = new Range(8, 16);
+// Re-exported for backwards compatibility; canonical definitions live in AnalysisConstants.ts.
+export { DEFAULT_FFT_SIZE, DEFAULT_LPC_ORDER, FFT_SIZE_VALUES, LPC_ORDER_RANGE } from "./AnalysisConstants.js";
 
 export class AnalysisPreferencesModel {
-  public readonly fftSizeProperty = new NumberProperty(DEFAULT_FFT_SIZE, { validValues: [...FFT_SIZE_VALUES] });
-  public readonly lpcOrderProperty = new NumberProperty(DEFAULT_LPC_ORDER, { range: LPC_ORDER_RANGE });
-  public readonly windowTypeProperty = new Property<WindowType>(WindowType.HANN, {
+  // Initial values come from query parameters (see waveComposerQueryParameters).
+  public readonly fftSizeProperty = new NumberProperty(waveComposerQueryParameters.fftSize, {
+    validValues: [...FFT_SIZE_VALUES],
+  });
+  public readonly lpcOrderProperty = new NumberProperty(waveComposerQueryParameters.lpcOrder, {
+    range: LPC_ORDER_RANGE,
+  });
+  public readonly windowTypeProperty = new Property<WindowType>(waveComposerQueryParameters.windowType as WindowType, {
     validValues: [...WINDOW_TYPE_VALUES],
   });
 
