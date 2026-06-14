@@ -8,6 +8,8 @@ import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import { SpectrumNode } from "../../sim-screen/view/SpectrumNode.js";
 import { StandingWaveNode } from "../../sim-screen/view/StandingWaveNode.js";
 import { WaveformNode } from "../../sim-screen/view/WaveformNode.js";
@@ -26,7 +28,10 @@ export class ComposerScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: ComposerViewProperties;
 
   public constructor(model: ComposerModel, viewProperties: ComposerViewProperties, options?: ScreenViewOptions) {
-    super(options);
+    super({
+      ...options,
+      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().composer),
+    });
     this.viewProperties = viewProperties;
 
     const readoutPanel = new ComposerReadoutPanel(model);

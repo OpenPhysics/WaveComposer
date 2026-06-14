@@ -14,6 +14,8 @@ import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import { AnalyzerControlPanel } from "./AnalyzerControlPanel.js";
 import { AnalyzerReadoutPanel } from "./AnalyzerReadoutPanel.js";
@@ -37,7 +39,10 @@ export class SimScreenView extends BaseAnalysisScreenView {
   private readonly spectrogram: SpectrogramNode;
 
   public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options?: ScreenViewOptions) {
-    super(options);
+    super({
+      ...options,
+      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().analyzer),
+    });
 
     this.viewProperties = viewProperties;
 

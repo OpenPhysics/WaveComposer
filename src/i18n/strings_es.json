@@ -202,5 +202,31 @@
     "db": "dB",
     "ms": "ms",
     "cents": "cents"
+  },
+  "a11y": {
+    "composer": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra una onda construida al sumar sinusoides, batidos, armónicos y modos de onda estacionaria, mostrada como forma de onda y espectro.",
+        "controlArea": "Los controles agregan y ajustan sinusoides componentes, eligen preajustes y la ventana de análisis, y congelan o ejecutan la visualización. Un botón Restablecer todo devuelve la simulación a su estado inicial.",
+        "interactionHint": "Agrega sinusoides y ajusta su frecuencia y amplitud para componer una onda, luego observa su forma de onda y espectro."
+      },
+      "currentDetails": "Compón una onda sumando sinusoides y observa su forma de onda y espectro."
+    },
+    "analyzer": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra un sonido analizado en sus componentes de frecuencia, mostrado como espectrograma, espectro con una envolvente espectral y forma de onda.",
+        "controlArea": "Los controles eligen la fuente de sonido y los preajustes, ajustan el rango de frecuencias y la ventana de análisis, y congelan o ejecutan la visualización. Un botón Restablecer todo devuelve la simulación a su estado inicial.",
+        "interactionHint": "Elige una fuente de sonido y observa cómo su contenido de frecuencia aparece en el espectrograma y el espectro."
+      },
+      "currentDetails": "Elige una fuente de sonido y observa su espectrograma, espectro y forma de onda."
+    },
+    "voice": {
+      "screenSummary": {
+        "playArea": "El área de juego muestra una voz analizada en formantes de vocales en una gráfica F1 por F2, junto con un cepstrum y un indicador de calidad vocal.",
+        "controlArea": "Los controles eligen la fuente de voz y los preajustes, ajustan la ventana de análisis, y congelan o ejecutan la visualización. Un botón Restablecer todo devuelve la simulación a su estado inicial.",
+        "interactionHint": "Habla o elige un preajuste de voz y observa cómo los formantes de las vocales se mueven en la gráfica F1 por F2."
+      },
+      "currentDetails": "Elige una fuente de voz y observa sus formantes de vocales, su cepstrum y su calidad vocal."
+    }
   }
 }

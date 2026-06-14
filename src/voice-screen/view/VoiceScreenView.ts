@@ -9,6 +9,8 @@ import { Node } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { StringManager } from "../../i18n/StringManager.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 import { AudioSourceControl } from "./AudioSourceControl.js";
 import { CepstrumNode } from "./CepstrumNode.js";
@@ -26,7 +28,10 @@ export class VoiceScreenView extends BaseAnalysisScreenView {
   private readonly vowelPlot: VowelPlotNode;
 
   public constructor(model: VoiceModel, options?: ScreenViewOptions) {
-    super(options);
+    super({
+      ...options,
+      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().voice),
+    });
 
     // ── Vowel plot (left) ───────────────────────────────────────────────────
     this.vowelPlot = new VowelPlotNode(model, { viewWidth: VOWEL_PLOT_SIZE, viewHeight: VOWEL_PLOT_SIZE });

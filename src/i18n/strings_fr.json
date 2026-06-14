@@ -202,5 +202,31 @@
     "db": "dB",
     "ms": "ms",
     "cents": "cents"
+  },
+  "a11y": {
+    "composer": {
+      "screenSummary": {
+        "playArea": "La zone de jeu montre une onde construite en additionnant des sinusoïdes, des battements, des harmoniques et des modes d'onde stationnaire, affichée sous forme de forme d'onde et de spectre.",
+        "controlArea": "Les commandes ajoutent et ajustent des sinusoïdes composantes, choisissent des préréglages et la fenêtre d'analyse, et figent ou lancent l'affichage. Un bouton Tout réinitialiser ramène la simulation à son état initial.",
+        "interactionHint": "Ajoutez des sinusoïdes et ajustez leur fréquence et leur amplitude pour composer une onde, puis observez sa forme d'onde et son spectre."
+      },
+      "currentDetails": "Composez une onde en additionnant des sinusoïdes et observez sa forme d'onde et son spectre."
+    },
+    "analyzer": {
+      "screenSummary": {
+        "playArea": "La zone de jeu montre un son analysé en ses composantes fréquentielles, affiché sous forme de spectrogramme, de spectre avec une enveloppe spectrale et de forme d'onde.",
+        "controlArea": "Les commandes choisissent la source sonore et les préréglages, règlent la plage de fréquences et la fenêtre d'analyse, et figent ou lancent l'affichage. Un bouton Tout réinitialiser ramène la simulation à son état initial.",
+        "interactionHint": "Choisissez une source sonore et observez comment son contenu fréquentiel apparaît dans le spectrogramme et le spectre."
+      },
+      "currentDetails": "Choisissez une source sonore et observez son spectrogramme, son spectre et sa forme d'onde."
+    },
+    "voice": {
+      "screenSummary": {
+        "playArea": "La zone de jeu montre une voix analysée en formants de voyelles sur un graphique F1 par F2, ainsi qu'un cepstre et un indicateur de qualité vocale.",
+        "controlArea": "Les commandes choisissent la source vocale et les préréglages, règlent la fenêtre d'analyse, et figent ou lancent l'affichage. Un bouton Tout réinitialiser ramène la simulation à son état initial.",
+        "interactionHint": "Parlez ou choisissez un préréglage vocal et observez les formants des voyelles se déplacer sur le graphique F1 par F2."
+      },
+      "currentDetails": "Choisissez une source vocale et observez ses formants de voyelles, son cepstre et sa qualité vocale."
+    }
   }
 }

@@ -202,5 +202,31 @@
     "db": "dB",
     "ms": "ms",
     "cents": "cents"
+  },
+  "a11y": {
+    "composer": {
+      "screenSummary": {
+        "playArea": "The play area shows a wave built by adding sinusoids, beats, harmonics, and standing-wave modes, displayed as a waveform and a spectrum.",
+        "controlArea": "The controls add and adjust component sinusoids, choose presets and the analysis window, and freeze or run the display. A Reset All button returns the simulation to its starting state.",
+        "interactionHint": "Add sinusoids and adjust their frequency and amplitude to compose a wave, then watch its waveform and spectrum."
+      },
+      "currentDetails": "Compose a wave by adding sinusoids and observe its waveform and spectrum."
+    },
+    "analyzer": {
+      "screenSummary": {
+        "playArea": "The play area shows a sound analyzed into its frequency components, displayed as a spectrogram, a spectrum with a spectral envelope, and a waveform.",
+        "controlArea": "The controls choose the sound source and presets, set the frequency range and analysis window, and freeze or run the display. A Reset All button returns the simulation to its starting state.",
+        "interactionHint": "Choose a sound source and watch how its frequency content appears in the spectrogram and spectrum."
+      },
+      "currentDetails": "Choose a sound source and observe its spectrogram, spectrum, and waveform."
+    },
+    "voice": {
+      "screenSummary": {
+        "playArea": "The play area shows a voice analyzed into vowel formants on an F1 by F2 plot, along with a cepstrum and a voice-quality readout.",
+        "controlArea": "The controls choose the voice source and presets, set the analysis window, and freeze or run the display. A Reset All button returns the simulation to its starting state.",
+        "interactionHint": "Speak or choose a voice preset and watch the vowel formants move on the F1 by F2 plot."
+      },
+      "currentDetails": "Choose a voice source and observe its vowel formants, cepstrum, and voice quality."
+    }
   }
 }
