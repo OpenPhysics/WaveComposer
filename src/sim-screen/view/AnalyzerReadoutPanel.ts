@@ -6,7 +6,9 @@
  * quality metrics, and an input-level meter. Each value binds to a model Property
  * via a DerivedProperty so it updates live; the panel itself holds no DSP state.
  */
+
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { Circle, type Color, GridBox, HBox, Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
@@ -43,7 +45,7 @@ export class AnalyzerReadoutPanel extends Panel {
 
     // ── Numeric rows ──────────────────────────────────────────────────────────
     const hz = (n: number): string => (n > 0 ? `${Math.round(n)} Hz` : EMPTY);
-    const db = (n: number, valid: boolean): string => (valid ? `${n.toFixed(1)} dB` : EMPTY);
+    const db = (n: number, valid: boolean): string => (valid ? `${toFixed(n, 1)} dB` : EMPTY);
 
     const pitchValue = new DerivedProperty([model.f0Property], hz);
     const noteValue = new DerivedProperty(

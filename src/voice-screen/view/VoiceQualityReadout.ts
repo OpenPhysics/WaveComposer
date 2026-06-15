@@ -5,7 +5,9 @@
  * pitch, note, and the two voice-quality metrics (HNR and CPP). Values bind to
  * the screen model via DerivedProperties.
  */
+
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { Circle, type Color, GridBox, HBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
@@ -36,7 +38,7 @@ export class VoiceQualityReadout extends Panel {
       ],
     });
 
-    const db = (n: number, valid: boolean): string => (valid ? `${n.toFixed(1)} dB` : EMPTY);
+    const db = (n: number, valid: boolean): string => (valid ? `${toFixed(n, 1)} dB` : EMPTY);
     const pitchValue = new DerivedProperty([model.f0Property], (f0) => (f0 > 0 ? `${Math.round(f0)} Hz` : EMPTY));
     const noteValue = new DerivedProperty(
       [model.isVoicedProperty, model.noteNameProperty, model.centsProperty],

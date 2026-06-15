@@ -14,6 +14,7 @@
 import type { TReadOnlyProperty } from "scenerystack/axon";
 import { AxisLine, ChartRectangle, ChartTransform, GridLineSet, TickLabelSet, TickMarkSet } from "scenerystack/bamboo";
 import type { Range } from "scenerystack/dot";
+import { toFixed } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import { Node, Text } from "scenerystack/scenery";
@@ -155,7 +156,7 @@ export class ChartFrame extends Node {
 function defaultTickLabel(value: number): Node {
   // Integers print plainly; fractional spacings (e.g. 0.5) keep one decimal so
   // adjacent ticks don't collapse to the same rounded label.
-  const text = Number.isInteger(value) ? `${value}` : value.toFixed(1);
+  const text = Number.isInteger(value) ? `${value}` : toFixed(value, 1);
   return new Text(text, {
     font: ViewConstants.TICK_FONT,
     fill: WaveComposerColors.textColorProperty,

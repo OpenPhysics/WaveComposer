@@ -4,7 +4,9 @@
  * Live readouts for the wave-composition screen: fundamental, beat rate, active
  * partial count, and a short pedagogical caption.
  */
+
 import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { toFixed } from "scenerystack/dot";
 import { GridBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
 import { ViewConstants } from "../../common/view/ViewConstants.js";
@@ -29,7 +31,7 @@ export class ComposerReadoutPanel extends Panel {
     const fundamentalValue = new DerivedProperty([model.f0Property], (f0) => (f0 > 0 ? `${Math.round(f0)} Hz` : EMPTY));
     const beatValue = DerivedProperty.deriveAny(partialDependencies, () => {
       const beatHz = model.getBeatRateHz();
-      return beatHz > 0 ? `${beatHz.toFixed(1)} Hz` : EMPTY;
+      return beatHz > 0 ? `${toFixed(beatHz, 1)} Hz` : EMPTY;
     });
     const partialCountValue = DerivedProperty.deriveAny(partialDependencies, () => {
       const count = model.composition.partials.filter(
