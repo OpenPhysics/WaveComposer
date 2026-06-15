@@ -1,8 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { generateSine, generateVowel, generateWhiteNoise } from "../audio/SyntheticFrameSource.js";
-import { autocorrelate } from "./Autocorrelation.js";
-import { Fft } from "./Fft.js";
-import { cepstralPeakProminence, computeRealCepstrum, harmonicToNoiseRatio } from "./VoiceQuality.js";
+import {
+  generateSine,
+  generateVowel,
+  generateWhiteNoise,
+} from "../../../../src/common/model/audio/SyntheticFrameSource.js";
+import { autocorrelate } from "../../../../src/common/model/dsp/Autocorrelation.js";
+import { Fft } from "../../../../src/common/model/dsp/Fft.js";
+import {
+  cepstralPeakProminence,
+  computeRealCepstrum,
+  harmonicToNoiseRatio,
+} from "../../../../src/common/model/dsp/VoiceQuality.js";
 
 const SAMPLE_RATE = 44100;
 const N = 4096;

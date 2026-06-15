@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PresetFrameSource } from "./PresetFrameSource.js";
+import { PresetFrameSource } from "../../../../src/common/model/audio/PresetFrameSource.js";
 
 describe("PresetFrameSource", () => {
   it("is always active and reports its sample rate", () => {

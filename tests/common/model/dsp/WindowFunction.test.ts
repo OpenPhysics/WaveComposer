@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { applyWindow, createGaussianWindow, createWindow, WINDOW_TYPE_VALUES, WindowType } from "./WindowFunction.js";
+import {
+  applyWindow,
+  createGaussianWindow,
+  createWindow,
+  WINDOW_TYPE_VALUES,
+  WindowType,
+} from "../../../../src/common/model/dsp/WindowFunction.js";
 
 describe("WindowFunction", () => {
   it("exposes the three selectable window types", () => {

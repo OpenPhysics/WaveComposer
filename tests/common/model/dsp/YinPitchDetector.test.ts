@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { generateSine, generateWhiteNoise } from "../audio/SyntheticFrameSource.js";
-import type { PitchOptions } from "./YinPitchDetector.js";
-import { YinPitchDetector } from "./YinPitchDetector.js";
+import { generateSine, generateWhiteNoise } from "../../../../src/common/model/audio/SyntheticFrameSource.js";
+import type { PitchOptions } from "../../../../src/common/model/dsp/YinPitchDetector.js";
+import { YinPitchDetector } from "../../../../src/common/model/dsp/YinPitchDetector.js";
 
 const SAMPLE_RATE = 44100;
 const FRAME = 4096;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Complex } from "./Complex.js";
-import { findRoots } from "./PolynomialRootFinder.js";
+import type { Complex } from "../../../../src/common/model/dsp/Complex.js";
+import { findRoots } from "../../../../src/common/model/dsp/PolynomialRootFinder.js";
 
 /** Asserts every expected (re, im) root has a computed root within `tol`. */
 function expectRoots(roots: Complex[], expected: ReadonlyArray<readonly [number, number]>, tol = 1e-6): void {

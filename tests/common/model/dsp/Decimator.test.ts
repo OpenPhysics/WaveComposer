@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Decimator } from "./Decimator.js";
+import { Decimator } from "../../../../src/common/model/dsp/Decimator.js";
 
 /** RMS over the first `length` samples of `buffer`. */
 function rms(buffer: Float32Array, length: number): number {

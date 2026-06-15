@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Fft } from "./Fft.js";
+import { Fft } from "../../../../src/common/model/dsp/Fft.js";
 
 function argmax(array: Float32Array): number {
   let best = 0;

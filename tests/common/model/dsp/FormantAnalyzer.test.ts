@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { Fft } from "./Fft.js";
-import { computeLpcEnvelope, extractFormants, type FormantOptions } from "./FormantAnalyzer.js";
-import type { FormantData } from "./types.js";
+import { Fft } from "../../../../src/common/model/dsp/Fft.js";
+import {
+  computeLpcEnvelope,
+  extractFormants,
+  type FormantOptions,
+} from "../../../../src/common/model/dsp/FormantAnalyzer.js";
+import type { FormantData } from "../../../../src/common/model/dsp/types.js";
 
 const SAMPLE_RATE = 44100;
 

@@ -5,7 +5,7 @@ import {
   midiToFrequency,
   midiToNoteName,
   noteNameFromFrequency,
-} from "./NoteUtils.js";
+} from "../../../../src/common/model/dsp/NoteUtils.js";
 
 describe("NoteUtils", () => {
   it("maps A4 = 440 Hz to MIDI 69", () => {

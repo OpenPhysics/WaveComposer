@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { generateVowel } from "./audio/SyntheticFrameSource.js";
-import type { FormantData } from "./dsp/types.js";
-import { type AnalyzerConfig, VoiceAnalyzer } from "./VoiceAnalyzer.js";
+import { generateVowel } from "../../../src/common/model/audio/SyntheticFrameSource.js";
+import type { FormantData } from "../../../src/common/model/dsp/types.js";
+import { type AnalyzerConfig, VoiceAnalyzer } from "../../../src/common/model/VoiceAnalyzer.js";
 
 const SAMPLE_RATE = 44100;
 

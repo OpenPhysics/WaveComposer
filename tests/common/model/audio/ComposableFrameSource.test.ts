@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createComposableGenerator } from "./ComposableFrameSource.js";
+import { createComposableGenerator } from "../../../../src/common/model/audio/ComposableFrameSource.js";
 
 describe("createComposableGenerator", () => {
   it("sums enabled partials", () => {

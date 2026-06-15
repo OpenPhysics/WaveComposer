@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { generateWhiteNoise } from "../audio/SyntheticFrameSource.js";
-import { autocorrelate } from "./Autocorrelation.js";
-import { levinsonDurbin } from "./LinearPredictor.js";
+import { generateWhiteNoise } from "../../../../src/common/model/audio/SyntheticFrameSource.js";
+import { autocorrelate } from "../../../../src/common/model/dsp/Autocorrelation.js";
+import { levinsonDurbin } from "../../../../src/common/model/dsp/LinearPredictor.js";
 
 /** Generates an AR(2) process x[n] = a1·x[n-1] + a2·x[n-2] + e[n]. */
 function generateAr2(a1: number, a2: number, length: number): Float32Array {
