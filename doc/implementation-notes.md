@@ -9,7 +9,7 @@ Wave Composer is a VoceVista-style real-time voice and wave analysis simulation 
 The simulation follows a modular architecture with **three screens**:
 
 - **Composer** (`src/composer-screen/`): Synthetic sinusoid superposition, beats, harmonics, standing-wave modes
-- **Analyzer** (`src/sim-screen/`): Spectrogram, spectrum with LPC envelope, waveform
+- **Analyzer** (`src/analyzer-screen/`): Spectrogram, spectrum with LPC envelope, waveform
 - **Voice & Vowels** (`src/voice-screen/`): F1×F2 vowel plot, cepstrum, voice-quality readout
 
 Shared infrastructure lives under `src/common/`:
@@ -21,7 +21,7 @@ Audio defaults to microphone input but starts lazily on the Start button. Permis
 
 ### Coordinate System
 
-Displays use chart axes (frequency, time, formant space) rather than spatial model-view transforms. Layout margins are defined in `ViewConstants.ts`.
+Displays use chart axes (frequency, time, formant space) rather than spatial model-view transforms. Layout margins are defined in `src/common/WaveComposerConstants.ts`.
 
 ## Model Components
 
@@ -40,7 +40,7 @@ Shared model modules:
 1. **VoiceAnalyzer**: Orchestrates the per-frame DSP chain
 2. **CompositionState**: Harmonic partials for the Composer screen
 3. **DSP modules** (`src/common/model/dsp/`): `Fft`, `LinearPredictor`, `FormantAnalyzer`, `YinPitchDetector`, `Autocorrelation`, `Decimator`
-4. **Audio sources** (`src/common/model/dsp/`): `MicrophoneInput`, `PresetFrameSource`, `RecordedAudioSource`, `SyntheticWebAudioSource`
+4. **Audio sources** (`src/common/model/audio/`): `MicrophoneInput`, `PresetFrameSource`, `RecordedAudioSource`, `SyntheticWebAudioSource`
 5. **AnalysisPreferencesModel**: Shared FFT size, colormap, and analysis settings
 
 Bundled preset audio lives in `src/assets/audio/`.

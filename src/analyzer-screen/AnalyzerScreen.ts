@@ -1,12 +1,8 @@
 /**
  * AnalyzerScreen.ts
  *
- * The top-level Screen component. It wires together the model and view
- * factories and passes screen-level options (name, background color, tandem)
- * to the parent Screen class.
- *
- * For multi-screen simulations, duplicate this file (e.g. IntroScreen.ts,
- * LabScreen.ts) and add each screen to the screens array in src/main.ts.
+ * The real-time analysis screen: spectrogram, spectrum with LPC envelope, and
+ * waveform of the live microphone or preset audio source.
  */
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
@@ -19,10 +15,10 @@ import { AnalyzerScreenView } from "./view/AnalyzerScreenView.js";
 import type { AnalyzerViewProperties } from "./view/AnalyzerViewProperties.js";
 
 // Require tandem to be explicit — accidental omission would break PhET-iO.
-type SimScreenOptions = ScreenOptions & { tandem: Tandem; viewProperties: AnalyzerViewProperties };
+type AnalyzerScreenOptions = ScreenOptions & { tandem: Tandem; viewProperties: AnalyzerViewProperties };
 
 export class AnalyzerScreen extends Screen<AnalyzerModel, AnalyzerScreenView> {
-  public constructor(model: AnalyzerModel, options: SimScreenOptions) {
+  public constructor(model: AnalyzerModel, options: AnalyzerScreenOptions) {
     super(
       () => model,
       (screenModel) =>
