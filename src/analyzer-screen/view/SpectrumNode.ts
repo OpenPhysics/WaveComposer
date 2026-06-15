@@ -17,7 +17,7 @@ import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.j
 import { isModeAllowed, PipeBoundary } from "../../common/model/PipeBoundary.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 
@@ -56,7 +56,7 @@ export class SpectrumNode extends Node {
       viewWidth: options.viewWidth,
       viewHeight: options.viewHeight,
       xRange: new Range(model.minFrequencyProperty.value, Math.max(model.maxFrequencyProperty.value, 1)),
-      yRange: new Range(ViewConstants.SPECTRUM_MIN_DB, ViewConstants.SPECTRUM_MAX_DB),
+      yRange: new Range(WaveComposerConstants.SPECTRUM_MIN_DB, WaveComposerConstants.SPECTRUM_MAX_DB),
       xSpacing: FREQUENCY_TICK_SPACING_HZ,
       ySpacing: DB_TICK_SPACING,
       xLabel: axisStrings.frequencyStringProperty,
@@ -103,7 +103,7 @@ export class SpectrumNode extends Node {
     frame.plotLayer.addChild(formantLayer);
 
     this.resonanceCaption = new Text(physics.resonanceCaptionStringProperty, {
-      font: ViewConstants.LABEL_FONT,
+      font: WaveComposerConstants.LABEL_FONT,
       fill: WaveComposerColors.lpcEnvelopeColorProperty,
       right: options.viewWidth - 4,
       top: 2,
@@ -160,8 +160,8 @@ export class SpectrumNode extends Node {
     const lpcData: Vector2[] = [];
     for (let bin = binStart; bin <= binEnd; bin++) {
       const freq = (bin * sampleRate) / fftSize;
-      spectrumData.push(new Vector2(freq, analysis.powerSpectrumDb[bin] ?? ViewConstants.SPECTRUM_MIN_DB));
-      lpcData.push(new Vector2(freq, analysis.lpcEnvelopeDb[bin] ?? ViewConstants.SPECTRUM_MIN_DB));
+      spectrumData.push(new Vector2(freq, analysis.powerSpectrumDb[bin] ?? WaveComposerConstants.SPECTRUM_MIN_DB));
+      lpcData.push(new Vector2(freq, analysis.lpcEnvelopeDb[bin] ?? WaveComposerConstants.SPECTRUM_MIN_DB));
     }
     this.spectrumPlot.setDataSet(spectrumData);
     this.lpcPlot.setDataSet(lpcData);
@@ -213,7 +213,7 @@ export class SpectrumNode extends Node {
           const label = modeLabelPattern.replace("{{n}}", `${modeNumber}`);
           this.modeNumberLayer.addChild(
             new Text(label, {
-              font: ViewConstants.LABEL_FONT,
+              font: WaveComposerConstants.LABEL_FONT,
               fill: WaveComposerColors.harmonicMarkerColorProperty,
               centerX: x,
               top: 2,

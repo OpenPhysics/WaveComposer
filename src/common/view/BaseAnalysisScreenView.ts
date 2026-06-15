@@ -11,7 +11,7 @@ import { ScreenView } from "scenerystack/sim";
 import { ButtonNode } from "scenerystack/sun";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
-import { ViewConstants } from "./ViewConstants.js";
+import { WaveComposerConstants } from "../WaveComposerConstants.js";
 
 export class BaseAnalysisScreenView extends ScreenView {
   protected readonly popupLayer = new Node();
@@ -32,8 +32,8 @@ export class BaseAnalysisScreenView extends ScreenView {
         model.reset();
         resetView();
       },
-      right: this.layoutBounds.maxX - ViewConstants.SCREEN_MARGIN,
-      bottom: this.layoutBounds.maxY - ViewConstants.SCREEN_MARGIN,
+      right: this.layoutBounds.maxX - WaveComposerConstants.SCREEN_MARGIN,
+      bottom: this.layoutBounds.maxY - WaveComposerConstants.SCREEN_MARGIN,
     });
     this.addChild(resetAllButton);
   }

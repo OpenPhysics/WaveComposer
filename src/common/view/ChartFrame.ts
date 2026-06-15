@@ -19,7 +19,7 @@ import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import { Node, Text } from "scenerystack/scenery";
 import WaveComposerColors from "../../WaveComposerColors.js";
-import { ViewConstants } from "./ViewConstants.js";
+import { WaveComposerConstants } from "../WaveComposerConstants.js";
 
 const TICK_LENGTH = 5;
 const Y_TITLE_GUTTER = 38;
@@ -64,8 +64,8 @@ export class ChartFrame extends Node {
       fill: WaveComposerColors.chartBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
       lineWidth: 1,
-      cornerXRadius: ViewConstants.CORNER_RADIUS,
-      cornerYRadius: ViewConstants.CORNER_RADIUS,
+      cornerXRadius: WaveComposerConstants.CORNER_RADIUS,
+      cornerYRadius: WaveComposerConstants.CORNER_RADIUS,
     });
     this.addChild(background);
 
@@ -133,7 +133,7 @@ export class ChartFrame extends Node {
 
     if (options.xLabel !== undefined) {
       const xTitle = new Text(options.xLabel, {
-        font: ViewConstants.AXIS_LABEL_FONT,
+        font: WaveComposerConstants.AXIS_LABEL_FONT,
         fill: WaveComposerColors.textColorProperty,
         centerX: options.viewWidth / 2,
         top: options.viewHeight + X_TITLE_GUTTER * 0.5,
@@ -142,7 +142,7 @@ export class ChartFrame extends Node {
     }
     if (options.yLabel !== undefined) {
       const yTitle = new Text(options.yLabel, {
-        font: ViewConstants.AXIS_LABEL_FONT,
+        font: WaveComposerConstants.AXIS_LABEL_FONT,
         fill: WaveComposerColors.textColorProperty,
         rotation: -Math.PI / 2,
       });
@@ -158,7 +158,7 @@ function defaultTickLabel(value: number): Node {
   // adjacent ticks don't collapse to the same rounded label.
   const text = Number.isInteger(value) ? `${value}` : toFixed(value, 1);
   return new Text(text, {
-    font: ViewConstants.TICK_FONT,
+    font: WaveComposerConstants.TICK_FONT,
     fill: WaveComposerColors.textColorProperty,
   });
 }

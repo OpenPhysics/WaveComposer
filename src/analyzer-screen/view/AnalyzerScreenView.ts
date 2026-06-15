@@ -1,5 +1,5 @@
 /**
- * SimScreenView.ts
+ * AnalyzerScreenView.ts
  *
  * The Analyzer screen: a scrolling spectrogram, an instantaneous spectrum (with
  * LPC envelope), and a waveform oscilloscope stacked in the center; a control
@@ -13,8 +13,8 @@
 import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import { AnalyzerControlPanel } from "./AnalyzerControlPanel.js";
@@ -25,8 +25,8 @@ import { SpectrumNode } from "./SpectrumNode.js";
 import { StandingWaveNode } from "./StandingWaveNode.js";
 import { WaveformNode } from "./WaveformNode.js";
 
-const MARGIN = ViewConstants.SCREEN_MARGIN;
-const SPACING = ViewConstants.SPACING;
+const MARGIN = WaveComposerConstants.SCREEN_MARGIN;
+const SPACING = WaveComposerConstants.SPACING;
 // Horizontal space reserved for each chart's y-axis label + tick labels.
 const CHART_LEFT_GUTTER = 56;
 const SPECTROGRAM_HEIGHT = 210;
@@ -34,7 +34,7 @@ const SPECTRUM_HEIGHT = 150;
 const WAVEFORM_HEIGHT = 70;
 const STANDING_WAVE_HEIGHT = 56;
 
-export class SimScreenView extends BaseAnalysisScreenView {
+export class AnalyzerScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly spectrogram: SpectrogramNode;
 

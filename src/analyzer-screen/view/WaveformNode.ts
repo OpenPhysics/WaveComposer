@@ -12,7 +12,7 @@ import type { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js"
 import { hasDisplayWaveform } from "../../common/model/HarmonicChartModel.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 
@@ -44,7 +44,7 @@ export class WaveformNode extends Node {
       viewWidth: options.viewWidth,
       viewHeight: options.viewHeight,
       xRange: new Range(0, viewProperties.timeWindowMsProperty.value),
-      yRange: new Range(-ViewConstants.WAVEFORM_AMPLITUDE, ViewConstants.WAVEFORM_AMPLITUDE),
+      yRange: new Range(-WaveComposerConstants.WAVEFORM_AMPLITUDE, WaveComposerConstants.WAVEFORM_AMPLITUDE),
       xSpacing: TIME_TICK_SPACING_MS,
       ySpacing: AMPLITUDE_TICK_SPACING,
       xLabel: axisStrings.timeStringProperty,

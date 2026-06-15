@@ -13,7 +13,7 @@ import { ButtonNode, Checkbox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
@@ -34,7 +34,7 @@ export class AudioSourceControl extends Panel {
       (listening, start, stop) => (listening ? stop : start),
     );
     const startStopButton = new TextPushButton(startStopLabel, {
-      font: ViewConstants.CONTROL_FONT,
+      font: WaveComposerConstants.CONTROL_FONT,
       baseColor: WaveComposerColors.buttonFillColorProperty,
       disabledColor: WaveComposerColors.buttonDisabledFillColorProperty,
       textFill: WaveComposerColors.textColorProperty,
@@ -55,7 +55,7 @@ export class AudioSourceControl extends Panel {
     const playAudioCheckbox = new Checkbox(
       model.isAudioEnabledProperty,
       new Text(controls.playAudioStringProperty, {
-        font: ViewConstants.CONTROL_FONT,
+        font: WaveComposerConstants.CONTROL_FONT,
         fill: WaveComposerColors.textColorProperty,
       }),
       {
@@ -71,7 +71,7 @@ export class AudioSourceControl extends Panel {
       spacing: 8,
       children: [
         new Text(controls.sourceStringProperty, {
-          font: ViewConstants.PANEL_TITLE_FONT,
+          font: WaveComposerConstants.PANEL_TITLE_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         sourceSelector,
@@ -83,9 +83,9 @@ export class AudioSourceControl extends Panel {
     super(content, {
       fill: WaveComposerColors.panelBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
-      xMargin: ViewConstants.PANEL_X_MARGIN,
-      yMargin: ViewConstants.PANEL_Y_MARGIN,
-      cornerRadius: ViewConstants.CORNER_RADIUS,
+      xMargin: WaveComposerConstants.PANEL_X_MARGIN,
+      yMargin: WaveComposerConstants.PANEL_Y_MARGIN,
+      cornerRadius: WaveComposerConstants.CORNER_RADIUS,
       align: "left",
     });
   }

@@ -11,7 +11,7 @@ import { Vector2 } from "scenerystack/dot";
 import { Circle, Node, Text } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { IPA_VOWELS } from "../../common/view/IpaVowels.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
@@ -35,8 +35,8 @@ export class VowelPlotNode extends Node {
     const frame = new ChartFrame({
       viewWidth: options.viewWidth,
       viewHeight: options.viewHeight,
-      xRange: ViewConstants.VOWEL_F2_RANGE,
-      yRange: ViewConstants.VOWEL_F1_RANGE,
+      xRange: WaveComposerConstants.VOWEL_F2_RANGE,
+      yRange: WaveComposerConstants.VOWEL_F1_RANGE,
       xRangeInverted: true,
       yRangeInverted: true,
       xSpacing: F2_TICK_SPACING_HZ,
@@ -53,7 +53,7 @@ export class VowelPlotNode extends Node {
       referenceLayer.addChild(new Circle(2, { fill: WaveComposerColors.vowelReferenceColorProperty, center: point }));
       referenceLayer.addChild(
         new Text(vowel.symbol, {
-          font: ViewConstants.VOWEL_LABEL_FONT,
+          font: WaveComposerConstants.VOWEL_LABEL_FONT,
           fill: WaveComposerColors.vowelReferenceColorProperty,
           centerX: point.x,
           centerY: point.y - 11,
@@ -87,8 +87,8 @@ export class VowelPlotNode extends Node {
         model.isVoicedProperty.value &&
         f1 > 0 &&
         f2 > 0 &&
-        ViewConstants.VOWEL_F1_RANGE.contains(f1) &&
-        ViewConstants.VOWEL_F2_RANGE.contains(f2);
+        WaveComposerConstants.VOWEL_F1_RANGE.contains(f1) &&
+        WaveComposerConstants.VOWEL_F2_RANGE.contains(f2);
 
       currentMarker.visible = visible;
       if (visible) {

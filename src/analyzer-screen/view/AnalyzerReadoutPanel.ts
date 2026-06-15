@@ -11,7 +11,7 @@ import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { toFixed } from "scenerystack/dot";
 import { Circle, type Color, GridBox, HBox, Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
@@ -39,7 +39,7 @@ export class AnalyzerReadoutPanel extends Panel {
       spacing: 6,
       children: [
         new Circle(6, { fill: voicedFill }),
-        new Text(voicedText, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty }),
+        new Text(voicedText, { font: WaveComposerConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty }),
       ],
     });
 
@@ -85,7 +85,7 @@ export class AnalyzerReadoutPanel extends Panel {
       spacing: 8,
       children: [
         new Text(readout.levelStringProperty, {
-          font: ViewConstants.LABEL_FONT,
+          font: WaveComposerConstants.LABEL_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         new Node({ children: [levelTrack, levelFill] }),
@@ -97,7 +97,7 @@ export class AnalyzerReadoutPanel extends Panel {
       spacing: 8,
       children: [
         new Text(panelStrings.measurementsStringProperty, {
-          font: ViewConstants.PANEL_TITLE_FONT,
+          font: WaveComposerConstants.PANEL_TITLE_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         indicator,
@@ -109,9 +109,9 @@ export class AnalyzerReadoutPanel extends Panel {
     super(content, {
       fill: WaveComposerColors.panelBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
-      xMargin: ViewConstants.PANEL_X_MARGIN,
-      yMargin: ViewConstants.PANEL_Y_MARGIN,
-      cornerRadius: ViewConstants.CORNER_RADIUS,
+      xMargin: WaveComposerConstants.PANEL_X_MARGIN,
+      yMargin: WaveComposerConstants.PANEL_Y_MARGIN,
+      cornerRadius: WaveComposerConstants.CORNER_RADIUS,
       align: "left",
     });
   }
@@ -119,14 +119,14 @@ export class AnalyzerReadoutPanel extends Panel {
 
 function label(stringProperty: TReadOnlyProperty<string>): Node {
   return new Text(stringProperty, {
-    font: ViewConstants.READOUT_LABEL_FONT,
+    font: WaveComposerConstants.READOUT_LABEL_FONT,
     fill: WaveComposerColors.textColorProperty,
   });
 }
 
 function value(stringProperty: TReadOnlyProperty<string>): Node {
   return new Text(stringProperty, {
-    font: ViewConstants.READOUT_VALUE_FONT,
+    font: WaveComposerConstants.READOUT_VALUE_FONT,
     fill: WaveComposerColors.accentColorProperty,
   });
 }

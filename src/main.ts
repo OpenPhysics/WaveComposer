@@ -17,16 +17,15 @@ import "./brand.js";
 
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import { AnalyzerScreen } from "./analyzer-screen/AnalyzerScreen.js";
+import { AnalyzerModel } from "./analyzer-screen/model/AnalyzerModel.js";
+import { AnalyzerViewProperties } from "./analyzer-screen/view/AnalyzerViewProperties.js";
 import { ComposerScreen } from "./composer-screen/ComposerScreen.js";
 import { ComposerModel } from "./composer-screen/model/ComposerModel.js";
 import { ComposerViewProperties } from "./composer-screen/view/ComposerViewProperties.js";
 import { StringManager } from "./i18n/StringManager.js";
-import { createAnalysisPreferenceControls } from "./preferences/AnalysisPreferenceControls.js";
-import { AnalysisPreferencesModel } from "./preferences/AnalysisPreferencesModel.js";
-import { createColormapPreferenceControl } from "./preferences/ColormapPreferenceControl.js";
-import { AnalyzerModel } from "./sim-screen/model/AnalyzerModel.js";
-import { SimScreen } from "./sim-screen/SimScreen.js";
-import { AnalyzerViewProperties } from "./sim-screen/view/AnalyzerViewProperties.js";
+import { WaveComposerPreferencesModel } from "./preferences/WaveComposerPreferencesModel.js";
+import { WaveComposerPreferencesNode } from "./preferences/WaveComposerPreferencesNode.js";
 import { VoiceModel } from "./voice-screen/model/VoiceModel.js";
 import { VoiceScreen } from "./voice-screen/VoiceScreen.js";
 import WaveComposerColors from "./WaveComposerColors.js";
@@ -35,7 +34,7 @@ onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
   const screenNames = stringManager.getScreenNames();
 
-  const analysisPreferences = new AnalysisPreferencesModel();
+  const analysisPreferences = new WaveComposerPreferencesModel();
   const analyzerModel = new AnalyzerModel(analysisPreferences);
   const composerModel = new ComposerModel(analysisPreferences);
   const voiceModel = new VoiceModel(analysisPreferences);
@@ -50,7 +49,7 @@ onReadyToLaunch(() => {
       viewProperties: composerViewProperties,
       backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
     }),
-    new SimScreen(analyzerModel, {
+    new AnalyzerScreen(analyzerModel, {
       // The screen name Property updates automatically when the locale changes
       name: screenNames.analyzerStringProperty,
       tandem: Tandem.ROOT.createTandem("analyzerScreen"),
@@ -73,10 +72,8 @@ onReadyToLaunch(() => {
         supportsInteractiveHighlights: true,
         customPreferences: [
           {
-            createContent: () => createAnalysisPreferenceControls(analysisPreferences),
-          },
-          {
-            createContent: () => createColormapPreferenceControl(analyzerViewProperties.colormapProperty),
+            createContent: () =>
+              new WaveComposerPreferencesNode(analysisPreferences, analyzerViewProperties.colormapProperty),
           },
         ],
       },

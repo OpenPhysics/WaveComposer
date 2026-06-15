@@ -6,7 +6,7 @@
  */
 import { BooleanProperty, NumberProperty } from "scenerystack/axon";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 
 export class ComposerViewProperties implements ChartOverlayProperties {
   public readonly showLpcEnvelopeProperty = new BooleanProperty(false);
@@ -14,7 +14,7 @@ export class ComposerViewProperties implements ChartOverlayProperties {
   public readonly showPipeOverlayProperty = new BooleanProperty(true);
   public readonly showModeNumbersProperty = new BooleanProperty(true);
   public readonly timeWindowMsProperty = new NumberProperty(80, {
-    range: ViewConstants.TIME_WINDOW_MS_RANGE,
+    range: WaveComposerConstants.TIME_WINDOW_MS_RANGE,
   });
 
   public reset(): void {

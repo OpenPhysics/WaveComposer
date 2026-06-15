@@ -17,8 +17,8 @@ import {
 } from "scenerystack/axon";
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
-import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
-import { DEFAULT_FFT_SIZE } from "../../preferences/AnalysisPreferencesModel.js";
+import type { WaveComposerPreferencesModel } from "../../preferences/WaveComposerPreferencesModel.js";
+import { DEFAULT_FFT_SIZE } from "../../preferences/WaveComposerPreferencesModel.js";
 import { AudioFileFrameSource } from "./audio/AudioFileFrameSource.js";
 import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
 import { BufferPlaybackSource } from "./audio/BufferPlaybackSource.js";
@@ -92,7 +92,7 @@ function createPresetSource(entry: PresetCatalogEntry, fftSize: number): AudioFr
 
 export class BaseAnalysisModel implements TModel {
   public readonly presetCatalog: readonly PresetCatalogEntry[];
-  public readonly analysisPreferences: AnalysisPreferencesModel;
+  public readonly analysisPreferences: WaveComposerPreferencesModel;
 
   // ── Settings (inputs) ───────────────────────────────────────────────────────
   public readonly maxFrequencyProperty = new NumberProperty(DEFAULT_MAX_FREQUENCY_HZ, { range: MAX_FREQUENCY_RANGE });
@@ -164,7 +164,7 @@ export class BaseAnalysisModel implements TModel {
 
   public constructor(
     presetCatalog: readonly PresetCatalogEntry[],
-    analysisPreferences: AnalysisPreferencesModel,
+    analysisPreferences: WaveComposerPreferencesModel,
     options?: { includeMicrophone?: boolean },
   ) {
     this.presetCatalog = presetCatalog;

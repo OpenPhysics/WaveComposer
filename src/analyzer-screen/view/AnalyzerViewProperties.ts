@@ -9,7 +9,7 @@
  */
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
 import { COLORMAP_NAME_VALUES, type ColormapName } from "../../common/view/Colormaps.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 
 export class AnalyzerViewProperties {
   /** Spectrogram colormap. */
@@ -29,8 +29,8 @@ export class AnalyzerViewProperties {
   /** Label harmonic markers with standing-wave mode numbers (n = 1, 2, 3…). */
   public readonly showModeNumbersProperty = new BooleanProperty(false);
   /** Oscilloscope time window in milliseconds. */
-  public readonly timeWindowMsProperty = new NumberProperty(ViewConstants.DEFAULT_TIME_WINDOW_MS, {
-    range: ViewConstants.TIME_WINDOW_MS_RANGE,
+  public readonly timeWindowMsProperty = new NumberProperty(WaveComposerConstants.DEFAULT_TIME_WINDOW_MS, {
+    range: WaveComposerConstants.TIME_WINDOW_MS_RANGE,
   });
 
   public reset(): void {

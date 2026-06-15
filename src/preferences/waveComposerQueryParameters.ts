@@ -3,7 +3,7 @@
  *
  * Sim-specific startup query parameters for WaveComposer. These provide the
  * initial values for the shared DSP-analysis preferences in
- * AnalysisPreferencesModel. Public-facing parameters set `public: true`.
+ * WaveComposerPreferencesModel. Public-facing parameters set `public: true`.
  *
  * Usage: append e.g. `?fftSize=4096&lpcOrder=14` to the sim URL.
  */

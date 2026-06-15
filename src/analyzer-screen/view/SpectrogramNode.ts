@@ -19,7 +19,7 @@ import { Bounds2, Range } from "scenerystack/dot";
 import { CanvasNode, type CanvasNodeOptions, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { getColormapLut } from "../../common/view/Colormaps.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
@@ -97,7 +97,7 @@ class SpectrogramRaster extends CanvasNode {
     this.viewProperties = viewProperties;
     this.viewWidth = viewWidth;
     this.viewHeight = viewHeight;
-    this.cols = ViewConstants.SPECTROGRAM_HISTORY_COLUMNS;
+    this.cols = WaveComposerConstants.SPECTROGRAM_HISTORY_COLUMNS;
     this.rows = Math.max(1, Math.round(viewHeight));
 
     const offscreen = document.createElement("canvas");
@@ -149,7 +149,7 @@ class SpectrogramRaster extends CanvasNode {
     const maxF = Math.max(this.model.maxFrequencyProperty.value, minF + 1);
     const lut = getColormapLut(this.viewProperties.colormapProperty.value);
     const data = this.columnImage.data;
-    const dbSpan = ViewConstants.SPECTROGRAM_MAX_DB - ViewConstants.SPECTROGRAM_MIN_DB;
+    const dbSpan = WaveComposerConstants.SPECTROGRAM_MAX_DB - WaveComposerConstants.SPECTROGRAM_MIN_DB;
 
     for (let r = 0; r < this.rows; r++) {
       // Row 0 is the top of the display = highest frequency.
@@ -161,8 +161,8 @@ class SpectrogramRaster extends CanvasNode {
       } else if (bin >= half) {
         bin = half - 1;
       }
-      const db = analysis.powerSpectrumDb[bin] ?? ViewConstants.SPECTROGRAM_MIN_DB;
-      let t = (db - ViewConstants.SPECTROGRAM_MIN_DB) / dbSpan;
+      const db = analysis.powerSpectrumDb[bin] ?? WaveComposerConstants.SPECTROGRAM_MIN_DB;
+      let t = (db - WaveComposerConstants.SPECTROGRAM_MIN_DB) / dbSpan;
       t = t < 0 ? 0 : t > 1 ? 1 : t;
       const lutIndex = Math.round(t * 255) * 3;
       const o = r * 4;

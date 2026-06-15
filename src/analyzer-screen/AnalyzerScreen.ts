@@ -1,5 +1,5 @@
 /**
- * SimScreen.ts
+ * AnalyzerScreen.ts
  *
  * The top-level Screen component. It wires together the model and view
  * factories and passes screen-level options (name, background color, tandem)
@@ -15,18 +15,18 @@ import { linkAnalysisModelToScreenActive } from "../common/model/BaseAnalysisMod
 import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { AnalyzerModel } from "./model/AnalyzerModel.js";
+import { AnalyzerScreenView } from "./view/AnalyzerScreenView.js";
 import type { AnalyzerViewProperties } from "./view/AnalyzerViewProperties.js";
-import { SimScreenView } from "./view/SimScreenView.js";
 
 // Require tandem to be explicit — accidental omission would break PhET-iO.
 type SimScreenOptions = ScreenOptions & { tandem: Tandem; viewProperties: AnalyzerViewProperties };
 
-export class SimScreen extends Screen<AnalyzerModel, SimScreenView> {
+export class AnalyzerScreen extends Screen<AnalyzerModel, AnalyzerScreenView> {
   public constructor(model: AnalyzerModel, options: SimScreenOptions) {
     super(
       () => model,
       (screenModel) =>
-        new SimScreenView(screenModel, options.viewProperties, {
+        new AnalyzerScreenView(screenModel, options.viewProperties, {
           tandem: options.tandem.createTandem("view"),
         }),
       {

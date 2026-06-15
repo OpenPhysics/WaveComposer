@@ -15,7 +15,7 @@ import WaveComposerColors from "../../WaveComposerColors.js";
 import type { PresetCatalogEntry } from "../model/audio/presetCatalog.js";
 import { downloadBlob, encodeWav } from "../model/audio/WavEncoder.js";
 import { AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
-import { ViewConstants } from "./ViewConstants.js";
+import { WaveComposerConstants } from "../WaveComposerConstants.js";
 
 const CAPTION_MAX_WIDTH = 200;
 const BUTTON_MAX_TEXT_WIDTH = 180;
@@ -106,7 +106,7 @@ export function createSourceSelector(
         value,
         createNode: () =>
           new Text(nameProperty(value), {
-            font: ViewConstants.CONTROL_FONT,
+            font: WaveComposerConstants.CONTROL_FONT,
             fill: WaveComposerColors.textColorProperty,
           }),
       })),
@@ -140,7 +140,7 @@ export function createSourceSelector(
     },
   );
   const caption = new Text(captionProperty, {
-    font: ViewConstants.LABEL_FONT,
+    font: WaveComposerConstants.LABEL_FONT,
     fill: WaveComposerColors.textColorProperty,
     maxWidth: CAPTION_MAX_WIDTH,
   });
@@ -150,7 +150,7 @@ export function createSourceSelector(
     (recording, record, stop) => (recording ? stop : record),
   );
   const recordButton = new TextPushButton(recordLabel, {
-    font: ViewConstants.CONTROL_FONT,
+    font: WaveComposerConstants.CONTROL_FONT,
     baseColor: WaveComposerColors.buttonFillColorProperty,
     textFill: WaveComposerColors.textColorProperty,
     buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
@@ -166,7 +166,7 @@ export function createSourceSelector(
   });
 
   const saveButton = new TextPushButton(controls.saveRecordingStringProperty, {
-    font: ViewConstants.CONTROL_FONT,
+    font: WaveComposerConstants.CONTROL_FONT,
     baseColor: WaveComposerColors.buttonFillColorProperty,
     disabledColor: WaveComposerColors.buttonDisabledFillColorProperty,
     textFill: WaveComposerColors.textColorProperty,

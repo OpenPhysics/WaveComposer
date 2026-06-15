@@ -10,7 +10,7 @@ import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerysta
 import { Range, Vector2 } from "scenerystack/dot";
 import { Line, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
@@ -39,7 +39,7 @@ export class CepstrumNode extends Node {
     const frame = new ChartFrame({
       viewWidth: options.viewWidth,
       viewHeight: options.viewHeight,
-      xRange: new Range(ViewConstants.CEPSTRUM_MIN_MS, ViewConstants.CEPSTRUM_MAX_MS),
+      xRange: new Range(WaveComposerConstants.CEPSTRUM_MIN_MS, WaveComposerConstants.CEPSTRUM_MAX_MS),
       yRange: CEPSTRUM_Y_RANGE,
       xSpacing: QUEFRENCY_TICK_SPACING_MS,
       ySpacing: AMPLITUDE_TICK_SPACING,
@@ -79,8 +79,11 @@ export class CepstrumNode extends Node {
     }
     const sampleRate = this.model.sampleRateProperty.value;
     const cepstrum = analysis.cepstrum;
-    const startIndex = Math.max(1, Math.floor((ViewConstants.CEPSTRUM_MIN_MS / 1000) * sampleRate));
-    const endIndex = Math.min(cepstrum.length - 1, Math.ceil((ViewConstants.CEPSTRUM_MAX_MS / 1000) * sampleRate));
+    const startIndex = Math.max(1, Math.floor((WaveComposerConstants.CEPSTRUM_MIN_MS / 1000) * sampleRate));
+    const endIndex = Math.min(
+      cepstrum.length - 1,
+      Math.ceil((WaveComposerConstants.CEPSTRUM_MAX_MS / 1000) * sampleRate),
+    );
 
     const data: Vector2[] = [];
     for (let i = startIndex; i <= endIndex; i++) {
@@ -92,7 +95,10 @@ export class CepstrumNode extends Node {
     const f0 = this.model.f0Property.value;
     if (f0 > 0) {
       const quefrencyMs = 1000 / f0;
-      if (quefrencyMs >= ViewConstants.CEPSTRUM_MIN_MS && quefrencyMs <= ViewConstants.CEPSTRUM_MAX_MS) {
+      if (
+        quefrencyMs >= WaveComposerConstants.CEPSTRUM_MIN_MS &&
+        quefrencyMs <= WaveComposerConstants.CEPSTRUM_MAX_MS
+      ) {
         this.peakMarker.x = this.chartTransform.modelToViewX(quefrencyMs);
         this.peakMarker.visible = true;
       } else {

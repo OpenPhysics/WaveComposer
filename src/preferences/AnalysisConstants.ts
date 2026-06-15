@@ -2,7 +2,7 @@
  * AnalysisConstants.ts
  *
  * Default values and valid ranges for the shared DSP-analysis preferences.
- * Extracted into their own module so both AnalysisPreferencesModel and
+ * Extracted into their own module so both WaveComposerPreferencesModel and
  * waveComposerQueryParameters can import them without a circular dependency.
  */
 

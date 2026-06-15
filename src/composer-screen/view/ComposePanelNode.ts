@@ -10,7 +10,7 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { Checkbox, ComboBox, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { ComposePreset, ComposePresetValues } from "../../common/model/CompositionState.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
@@ -105,7 +105,7 @@ export class ComposePanelNode extends Panel {
       spacing: 6,
       children: [
         new Text(compose.titleStringProperty, {
-          font: ViewConstants.PANEL_TITLE_FONT,
+          font: WaveComposerConstants.PANEL_TITLE_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         sectionLabel(compose.presetStringProperty),
@@ -118,20 +118,23 @@ export class ComposePanelNode extends Panel {
     super(content, {
       fill: WaveComposerColors.panelBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
-      xMargin: ViewConstants.PANEL_X_MARGIN,
-      yMargin: ViewConstants.PANEL_Y_MARGIN,
-      cornerRadius: ViewConstants.CORNER_RADIUS,
+      xMargin: WaveComposerConstants.PANEL_X_MARGIN,
+      yMargin: WaveComposerConstants.PANEL_Y_MARGIN,
+      cornerRadius: WaveComposerConstants.CORNER_RADIUS,
       align: "left",
     });
   }
 }
 
 function controlText(content: string | TReadOnlyProperty<string>): Node {
-  return new Text(content, { font: ViewConstants.CONTROL_FONT, fill: WaveComposerColors.textColorProperty });
+  return new Text(content, { font: WaveComposerConstants.CONTROL_FONT, fill: WaveComposerColors.textColorProperty });
 }
 
 function sectionLabel(stringProperty: TReadOnlyProperty<string>): Node {
-  return new Text(stringProperty, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
+  return new Text(stringProperty, {
+    font: WaveComposerConstants.LABEL_FONT,
+    fill: WaveComposerColors.textColorProperty,
+  });
 }
 
 function divider(): Node {
@@ -165,11 +168,11 @@ function makeNumberControl(
       titleXSpacing: 4,
       arrowButtonsXSpacing: 6,
     }),
-    titleNodeOptions: { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
+    titleNodeOptions: { font: WaveComposerConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
     numberDisplayOptions: {
       valuePattern: `{{value}}${unit}`,
       decimalPlaces,
-      textOptions: { font: ViewConstants.CONTROL_FONT },
+      textOptions: { font: WaveComposerConstants.CONTROL_FONT },
     },
     arrowButtonOptions: { scale: 0.72 },
     sliderOptions: {

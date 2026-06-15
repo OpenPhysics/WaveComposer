@@ -1,5 +1,5 @@
 /**
- * AnalysisPreferencesModel.ts
+ * WaveComposerPreferencesModel.ts
  *
  * Shared DSP analysis settings (FFT size, LPC order, window function) used by
  * every screen's audio pipeline and exposed in Preferences → Visual.
@@ -12,7 +12,7 @@ import waveComposerQueryParameters from "./waveComposerQueryParameters.js";
 // Re-exported for backwards compatibility; canonical definitions live in AnalysisConstants.ts.
 export { DEFAULT_FFT_SIZE, DEFAULT_LPC_ORDER, FFT_SIZE_VALUES, LPC_ORDER_RANGE } from "./AnalysisConstants.js";
 
-export class AnalysisPreferencesModel {
+export class WaveComposerPreferencesModel {
   // Initial values come from query parameters (see waveComposerQueryParameters).
   public readonly fftSizeProperty = new NumberProperty(waveComposerQueryParameters.fftSize, {
     validValues: [...FFT_SIZE_VALUES],

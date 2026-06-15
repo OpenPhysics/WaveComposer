@@ -1,5 +1,5 @@
 /**
- * ViewConstants.ts
+ * WaveComposerConstants.ts
  *
  * Shared layout, range, and font constants for the view layer. Keeping these in
  * one place means the two screens stay visually consistent and the display
@@ -11,7 +11,7 @@
 import { Range } from "scenerystack/dot";
 import { PhetFont } from "scenerystack/scenery-phet";
 
-export const ViewConstants = {
+export const WaveComposerConstants = {
   /** Margin between screen edges and panels/buttons (layout-bounds units). */
   SCREEN_MARGIN: 20,
   /** Gap between stacked panels / nodes. */

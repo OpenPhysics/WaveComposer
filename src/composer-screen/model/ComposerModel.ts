@@ -12,7 +12,7 @@ import { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js";
 import { COMPOSE_SOURCE_ID, CompositionState } from "../../common/model/CompositionState.js";
 import type { HarmonicChartModel, StandingWaveMode } from "../../common/model/HarmonicChartModel.js";
 import { createPipeBoundaryProperty, PipeBoundary } from "../../common/model/PipeBoundary.js";
-import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
+import type { WaveComposerPreferencesModel } from "../../preferences/WaveComposerPreferencesModel.js";
 
 const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const FREQUENCY_RANGE = new Range(0, 22050);
@@ -25,7 +25,7 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
   public readonly pipeBoundaryProperty = createPipeBoundaryProperty(PipeBoundary.STRING);
   private readonly displayGenerator = createComposableGenerator(() => this.composition.getPartials());
 
-  public constructor(analysisPreferences: AnalysisPreferencesModel) {
+  public constructor(analysisPreferences: WaveComposerPreferencesModel) {
     super([], analysisPreferences, { includeMicrophone: false });
     this.registerAdditionalSource(
       COMPOSE_SOURCE_ID,

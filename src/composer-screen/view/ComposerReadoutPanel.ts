@@ -9,7 +9,7 @@ import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { toFixed } from "scenerystack/dot";
 import { GridBox, type Node, Text, VBox } from "scenerystack/scenery";
 import { Panel } from "scenerystack/sun";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
@@ -52,7 +52,7 @@ export class ComposerReadoutPanel extends Panel {
     });
 
     const caption = new Text(composerStrings.introStringProperty, {
-      font: ViewConstants.LABEL_FONT,
+      font: WaveComposerConstants.LABEL_FONT,
       fill: WaveComposerColors.textColorProperty,
       maxWidth: 220,
     });
@@ -62,7 +62,7 @@ export class ComposerReadoutPanel extends Panel {
       spacing: 10,
       children: [
         new Text(panelStrings.measurementsStringProperty, {
-          font: ViewConstants.PANEL_TITLE_FONT,
+          font: WaveComposerConstants.PANEL_TITLE_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         grid,
@@ -73,9 +73,9 @@ export class ComposerReadoutPanel extends Panel {
     super(content, {
       fill: WaveComposerColors.panelBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
-      xMargin: ViewConstants.PANEL_X_MARGIN,
-      yMargin: ViewConstants.PANEL_Y_MARGIN,
-      cornerRadius: ViewConstants.CORNER_RADIUS,
+      xMargin: WaveComposerConstants.PANEL_X_MARGIN,
+      yMargin: WaveComposerConstants.PANEL_Y_MARGIN,
+      cornerRadius: WaveComposerConstants.CORNER_RADIUS,
       align: "left",
     });
   }
@@ -83,14 +83,14 @@ export class ComposerReadoutPanel extends Panel {
 
 function label(stringProperty: TReadOnlyProperty<string>): Node {
   return new Text(stringProperty, {
-    font: ViewConstants.READOUT_LABEL_FONT,
+    font: WaveComposerConstants.READOUT_LABEL_FONT,
     fill: WaveComposerColors.textColorProperty,
   });
 }
 
 function value(stringProperty: TReadOnlyProperty<string>): Node {
   return new Text(stringProperty, {
-    font: ViewConstants.READOUT_VALUE_FONT,
+    font: WaveComposerConstants.READOUT_VALUE_FONT,
     fill: WaveComposerColors.accentColorProperty,
   });
 }

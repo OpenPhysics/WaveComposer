@@ -11,7 +11,7 @@ import { INSTRUMENT_PRESET_CATALOG } from "../../common/model/audio/presetCatalo
 import { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js";
 import type { HarmonicChartModel, StandingWaveMode } from "../../common/model/HarmonicChartModel.js";
 import { createPipeBoundaryProperty, PipeBoundary } from "../../common/model/PipeBoundary.js";
-import type { AnalysisPreferencesModel } from "../../preferences/AnalysisPreferencesModel.js";
+import type { WaveComposerPreferencesModel } from "../../preferences/WaveComposerPreferencesModel.js";
 
 const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const FREQUENCY_RANGE = new Range(0, 22050);
@@ -42,7 +42,7 @@ export class AnalyzerModel extends BaseAnalysisModel implements HarmonicChartMod
    */
   public readonly pipeBoundaryProperty = createPipeBoundaryProperty(PipeBoundary.NONE);
 
-  public constructor(analysisPreferences: AnalysisPreferencesModel) {
+  public constructor(analysisPreferences: WaveComposerPreferencesModel) {
     super(INSTRUMENT_PRESET_CATALOG, analysisPreferences);
     this.audioSourceProperty.lazyLink((source) => this.syncPipeBoundaryForPreset(source));
   }

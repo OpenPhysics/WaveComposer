@@ -8,8 +8,8 @@
 import { Node } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 import { AudioSourceControl } from "./AudioSourceControl.js";
@@ -18,8 +18,8 @@ import { SourceFilterDiagramNode } from "./SourceFilterDiagramNode.js";
 import { VoiceQualityReadout } from "./VoiceQualityReadout.js";
 import { VowelPlotNode } from "./VowelPlotNode.js";
 
-const MARGIN = ViewConstants.SCREEN_MARGIN;
-const SPACING = ViewConstants.SPACING;
+const MARGIN = WaveComposerConstants.SCREEN_MARGIN;
+const SPACING = WaveComposerConstants.SPACING;
 const CHART_LEFT_GUTTER = 56;
 const VOWEL_PLOT_SIZE = 380;
 const CEPSTRUM_HEIGHT = 200;

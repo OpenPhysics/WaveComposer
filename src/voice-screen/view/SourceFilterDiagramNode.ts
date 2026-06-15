@@ -8,7 +8,7 @@ import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { HBox, type Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { Panel } from "scenerystack/sun";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
@@ -63,7 +63,7 @@ export class SourceFilterDiagramNode extends Panel {
         (f0, f1, text) => (f0 > 0 && f1 > 0 && Math.abs(f0 - f1) < 60 ? text : ""),
       ),
       {
-        font: ViewConstants.LABEL_FONT,
+        font: WaveComposerConstants.LABEL_FONT,
         fill: WaveComposerColors.resonanceTuningColorProperty,
         maxWidth: 360,
       },
@@ -74,7 +74,7 @@ export class SourceFilterDiagramNode extends Panel {
       spacing: 8,
       children: [
         new Text(physics.sourceFilterStringProperty, {
-          font: ViewConstants.PANEL_TITLE_FONT,
+          font: WaveComposerConstants.PANEL_TITLE_FONT,
           fill: WaveComposerColors.textColorProperty,
         }),
         diagram,
@@ -85,9 +85,9 @@ export class SourceFilterDiagramNode extends Panel {
     super(content, {
       fill: WaveComposerColors.panelBackgroundColorProperty,
       stroke: WaveComposerColors.panelBorderColorProperty,
-      xMargin: ViewConstants.PANEL_X_MARGIN,
-      yMargin: ViewConstants.PANEL_Y_MARGIN,
-      cornerRadius: ViewConstants.CORNER_RADIUS,
+      xMargin: WaveComposerConstants.PANEL_X_MARGIN,
+      yMargin: WaveComposerConstants.PANEL_Y_MARGIN,
+      cornerRadius: WaveComposerConstants.CORNER_RADIUS,
       align: "left",
     });
   }
@@ -105,7 +105,7 @@ function labeledBox(label: TReadOnlyProperty<string>, fill: import("scenerystack
         cornerRadius: 4,
       }),
       new Text(label, {
-        font: ViewConstants.LABEL_FONT,
+        font: WaveComposerConstants.LABEL_FONT,
         fill: WaveComposerColors.textColorProperty,
         maxWidth: BOX_WIDTH,
       }),
@@ -120,5 +120,5 @@ function formantResonanceLabel(
   const text = new DerivedProperty([nameProperty, frequencyProperty], (name, hz) =>
     hz > 0 ? `${name} ${Math.round(hz)}` : name,
   );
-  return new Text(text, { font: ViewConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
+  return new Text(text, { font: WaveComposerConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty });
 }

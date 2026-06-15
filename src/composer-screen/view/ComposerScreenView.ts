@@ -6,21 +6,21 @@
  */
 import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
+import { SpectrumNode } from "../../analyzer-screen/view/SpectrumNode.js";
+import { StandingWaveNode } from "../../analyzer-screen/view/StandingWaveNode.js";
+import { WaveformNode } from "../../analyzer-screen/view/WaveformNode.js";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
-import { ViewConstants } from "../../common/view/ViewConstants.js";
 import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
+import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import { SpectrumNode } from "../../sim-screen/view/SpectrumNode.js";
-import { StandingWaveNode } from "../../sim-screen/view/StandingWaveNode.js";
-import { WaveformNode } from "../../sim-screen/view/WaveformNode.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 import { ComposePanelNode } from "./ComposePanelNode.js";
 import { ComposerControlPanel } from "./ComposerControlPanel.js";
 import { ComposerReadoutPanel } from "./ComposerReadoutPanel.js";
 import type { ComposerViewProperties } from "./ComposerViewProperties.js";
 
-const MARGIN = ViewConstants.SCREEN_MARGIN;
-const SPACING = ViewConstants.SPACING;
+const MARGIN = WaveComposerConstants.SCREEN_MARGIN;
+const SPACING = WaveComposerConstants.SPACING;
 const CHART_LEFT_GUTTER = 56;
 const RESET_BUTTON_CLEARANCE = 44;
 
