@@ -1,7 +1,7 @@
 {
   "name": "wave-composer",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.9.0",
   "type": "module",
   "description": "Three-screen VoceVista-style real-time voice-analysis simulation. Analyzes microphone input for waveform, spectrum, and composition.",
   "license": "AGPL-3.0-or-later",
