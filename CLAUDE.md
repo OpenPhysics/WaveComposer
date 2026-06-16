@@ -27,7 +27,7 @@ Audio defaults to **microphone** but starts lazily on the Start button (no permi
 
 ## Accessibility
 
-Follows the shared [OpenPhysics accessibility convention](https://github.com/OpenPhysics/OpenPhysics/blob/main/ACCESSIBILITY.md).
+Follows the shared [OpenPhysics accessibility convention](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
 Each screen registers the shared `WaveComposerScreenSummaryContent` (constructed with the screen's
 own `a11y` subgroup — `composer` / `analyzer` / `voice`) via the `screenSummaryContent` super-option.
 A11y strings live under the top-level `a11y` key in each locale JSON, via `StringManager.getA11yStrings()`.
