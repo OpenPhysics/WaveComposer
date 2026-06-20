@@ -20,6 +20,7 @@ export function autocorrelate(
   maxLag: number,
   out: Float32Array | Float64Array,
   length: number = signal.length,
+  normalize = false,
 ): void {
   const n = length;
   for (let lag = 0; lag <= maxLag; lag++) {
@@ -27,6 +28,6 @@ export function autocorrelate(
     for (let i = lag; i < n; i++) {
       sum += (signal[i] ?? 0) * (signal[i - lag] ?? 0);
     }
-    out[lag] = sum;
+    out[lag] = normalize && n > lag ? sum / (n - lag) : sum;
   }
 }

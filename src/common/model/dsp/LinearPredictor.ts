@@ -41,6 +41,8 @@ export function levinsonDurbin(autocorr: Float32Array | Float64Array, order: num
 
   // a[0] = 1 (implicit); a[1..order] are built up in `a`. Float64 for stability.
   const a = new Float64Array(order + 1);
+  // Scratch copy of `a` from the previous iteration; avoids a per-iteration slice().
+  const aPrev = new Float64Array(order + 1);
   a[0] = 1;
 
   for (let i = 1; i <= order; i++) {
@@ -52,10 +54,12 @@ export function levinsonDurbin(autocorr: Float32Array | Float64Array, order: num
     reflection[i - 1] = k;
 
     // Update a[1..i-1] symmetrically using the previous iteration's values.
-    const prev = a.slice(0, i);
+    for (let j = 0; j <= i; j++) {
+      aPrev[j] = a[j] ?? 0;
+    }
     a[i] = k;
     for (let j = 1; j < i; j++) {
-      a[j] = (prev[j] ?? 0) - k * (prev[i - j] ?? 0);
+      a[j] = (aPrev[j] ?? 0) - k * (aPrev[i - j] ?? 0);
     }
 
     error *= 1 - k * k;

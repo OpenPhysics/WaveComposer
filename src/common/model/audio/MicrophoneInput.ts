@@ -12,11 +12,14 @@
  * to record the raw PCM into memory (see {@link startRecording}); the captured clip
  * is replayed through a {@link RecordedAudioSource}.
  */
+import { AnalyserTap } from "./AnalyserTap.js";
 import type { AudioFrameSource } from "./AudioFrameSource.js";
 import type { MonitoredAudioSource } from "./MonitoredAudioSource.js";
 
 const DEFAULT_SAMPLE_RATE = 44100;
 const RECORD_BUFFER_SIZE = 4096;
+// Caps in-memory recording at ~2 min (44.1 kHz / 4096 samples per chunk ≈ 10.8 chunks/s).
+const MAX_RECORDING_CHUNKS = 1300;
 
 /** A captured microphone clip: mono PCM samples and the rate they were recorded at. */
 export interface RecordedClip {
@@ -25,26 +28,21 @@ export interface RecordedClip {
 }
 
 export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
-  private fftSize: number;
+  private readonly tap: AnalyserTap;
   private audioContext: AudioContext | null = null;
-  private analyser: AnalyserNode | null = null;
-  private gainNode: GainNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private stream: MediaStream | null = null;
-  private monitoringEnabled = true;
+  /** Serialises concurrent start() calls: both callers await the same promise. */
+  private startInProgress: Promise<void> | null = null;
   // Recording tap: a ScriptProcessorNode that accumulates raw PCM while active.
   // It must be connected to the destination to run, so its (silent) output is
   // routed through a muted gain to avoid echoing the microphone to the speakers.
   private recordProcessor: ScriptProcessorNode | null = null;
   private recordSink: GainNode | null = null;
   private recordedChunks: Float32Array[] = [];
-  // AnalyserNode requires an ArrayBuffer-backed view; we copy into the caller's
-  // buffer (which may be ArrayBufferLike) in getFrame.
-  private timeBuffer: Float32Array<ArrayBuffer>;
 
   public constructor(fftSize: number) {
-    this.fftSize = fftSize;
-    this.timeBuffer = new Float32Array(fftSize);
+    this.tap = new AnalyserTap(fftSize);
   }
 
   public get sampleRate(): number {
@@ -52,12 +50,27 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
   }
 
   public get isActive(): boolean {
-    return this.analyser !== null;
+    return this.tap.analyser !== null;
   }
 
-  /** Requests microphone access and starts the audio graph. Idempotent. */
-  public async start(): Promise<void> {
-    if (this.analyser) {
+  /**
+   * Requests microphone access and starts the audio graph. Idempotent and
+   * concurrency-safe: concurrent callers share the same in-flight promise.
+   */
+  public start(): Promise<void> {
+    if (this.tap.analyser) {
+      return Promise.resolve();
+    }
+    if (!this.startInProgress) {
+      this.startInProgress = this.doStart().finally(() => {
+        this.startInProgress = null;
+      });
+    }
+    return this.startInProgress;
+  }
+
+  private async doStart(): Promise<void> {
+    if (this.tap.analyser) {
       return;
     }
     const stream = await navigator.mediaDevices.getUserMedia({
@@ -71,12 +84,8 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
     if (audioContext.state === "suspended") {
       await audioContext.resume();
     }
-    const analyser = audioContext.createAnalyser();
-    analyser.fftSize = this.fftSize;
-    analyser.smoothingTimeConstant = 0;
-    const gainNode = audioContext.createGain();
-    gainNode.gain.value = this.monitoringEnabled ? 1 : 0;
 
+    const { analyser, gainNode } = this.tap.setup(audioContext);
     const sourceNode = audioContext.createMediaStreamSource(stream);
     sourceNode.connect(analyser);
     sourceNode.connect(gainNode);
@@ -84,16 +93,11 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
 
     this.stream = stream;
     this.audioContext = audioContext;
-    this.analyser = analyser;
-    this.gainNode = gainNode;
     this.sourceNode = sourceNode;
   }
 
   public setMonitoringEnabled(enabled: boolean): void {
-    this.monitoringEnabled = enabled;
-    if (this.gainNode) {
-      this.gainNode.gain.value = enabled ? 1 : 0;
-    }
+    this.tap.setMonitoringEnabled(enabled);
   }
 
   public get isRecording(): boolean {
@@ -110,8 +114,10 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
     this.recordedChunks = [];
     const processor = audioContext.createScriptProcessor(RECORD_BUFFER_SIZE, 1, 1);
     processor.onaudioprocess = (event) => {
-      // Copy: the input buffer is reused across callbacks.
-      this.recordedChunks.push(Float32Array.from(event.inputBuffer.getChannelData(0)));
+      if (this.recordedChunks.length < MAX_RECORDING_CHUNKS) {
+        // Copy: the input buffer is reused across callbacks.
+        this.recordedChunks.push(Float32Array.from(event.inputBuffer.getChannelData(0)));
+      }
     };
     const sink = audioContext.createGain();
     sink.gain.value = 0;
@@ -172,10 +178,10 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
     }
     const audioContext = this.audioContext;
     this.sourceNode = null;
-    this.analyser = null;
-    this.gainNode = null;
     this.stream = null;
     this.audioContext = null;
+    // Clear tap references so isActive returns false and readFrame returns false.
+    this.tap.clear();
     // Closing is asynchronous; we do not need to wait for it.
     if (audioContext) {
       audioContext.close().catch(() => undefined);
@@ -184,25 +190,10 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
 
   /** Updates the analyser FFT size (frame length). */
   public setFftSize(fftSize: number): void {
-    this.fftSize = fftSize;
-    if (this.timeBuffer.length !== fftSize) {
-      this.timeBuffer = new Float32Array(fftSize);
-    }
-    if (this.analyser) {
-      this.analyser.fftSize = fftSize;
-    }
+    this.tap.setFftSize(fftSize);
   }
 
   public getFrame(out: Float32Array): boolean {
-    const analyser = this.analyser;
-    if (!analyser) {
-      return false;
-    }
-    analyser.getFloatTimeDomainData(this.timeBuffer);
-    const count = Math.min(out.length, this.timeBuffer.length);
-    for (let i = 0; i < count; i++) {
-      out[i] = this.timeBuffer[i] ?? 0;
-    }
-    return true;
+    return this.tap.readFrame(out);
   }
 }

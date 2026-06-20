@@ -19,6 +19,9 @@ export class AudioFileFrameSource extends BufferPlaybackSource {
 
   protected async resolveBuffer(audioContext: AudioContext): Promise<AudioBuffer | null> {
     const response = await fetch(this.url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch audio asset ${response.status}: ${this.url}`);
+    }
     const data = await response.arrayBuffer();
     return audioContext.decodeAudioData(data);
   }

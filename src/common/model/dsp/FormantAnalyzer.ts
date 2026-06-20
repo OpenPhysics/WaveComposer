@@ -110,7 +110,7 @@ function pickPoles(roots: readonly Complex[], band: Band): PickedRoot[] {
 /** All poles (|z| >= 0.5) in the angular sector around a suspect merged peak. */
 function rootsInSector(roots: readonly Complex[], suspect: PickedRoot, sampleRate: number): Complex[] {
   const phiPeak = Math.atan2(suspect.im, suspect.re);
-  const sectorHalfRad = (MERGE_GAP_HZ * Math.PI) / sampleRate;
+  const sectorHalfRad = (2 * Math.PI * MERGE_GAP_HZ) / sampleRate;
   const phiLow = Math.max(phiPeak - sectorHalfRad, (2 * Math.PI * SECTOR_MIN_HZ) / sampleRate);
   const phiHigh = phiPeak + sectorHalfRad;
 

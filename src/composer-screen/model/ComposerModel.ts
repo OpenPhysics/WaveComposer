@@ -16,7 +16,6 @@ import type { WaveComposerPreferencesModel } from "../../preferences/WaveCompose
 
 const DEFAULT_MIN_FREQUENCY_HZ = 0;
 const FREQUENCY_RANGE = new Range(0, 22050);
-const DEFAULT_FFT_SIZE = 2048;
 
 export class ComposerModel extends BaseAnalysisModel implements HarmonicChartModel {
   public readonly minFrequencyProperty = new NumberProperty(DEFAULT_MIN_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
@@ -29,7 +28,7 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
     super([], analysisPreferences, { includeMicrophone: false });
     this.registerAdditionalSource(
       COMPOSE_SOURCE_ID,
-      createComposableSource(() => this.composition.getPartials(), DEFAULT_FFT_SIZE),
+      createComposableSource(() => this.composition.getPartials(), analysisPreferences.fftSizeProperty.value),
     );
     this.audioSourceProperty.value = COMPOSE_SOURCE_ID;
   }

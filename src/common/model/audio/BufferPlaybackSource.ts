@@ -12,25 +12,23 @@
  * so cycling through many presets never exhausts the browser's per-page budget.
  * Subclasses only provide the buffer via {@link resolveBuffer}.
  */
-import type { AudioFrameSource } from "./AudioFrameSource.js";
+import { AnalyserTap } from "./AnalyserTap.js";
+import type { PlayableAudioSource } from "./AudioFrameSource.js";
 import type { MonitoredAudioSource } from "./MonitoredAudioSource.js";
 import { getSharedSampleRate, resumeSharedAudioContext } from "./SharedAudioContext.js";
 
-export abstract class BufferPlaybackSource implements AudioFrameSource, MonitoredAudioSource {
-  private fftSize: number;
+export abstract class BufferPlaybackSource implements PlayableAudioSource, MonitoredAudioSource {
+  public readonly isPlayable = true as const;
+
+  private readonly tap: AnalyserTap;
   protected buffer: AudioBuffer | null = null;
   private bufferPromise: Promise<AudioBuffer | null> | null = null;
-  private analyser: AnalyserNode | null = null;
-  private gainNode: GainNode | null = null;
   private sourceNode: AudioBufferSourceNode | null = null;
-  private monitoringEnabled = true;
-  // AnalyserNode requires an ArrayBuffer-backed view; copied into the caller's
-  // buffer (which may be ArrayBufferLike) in getFrame.
-  private timeBuffer: Float32Array<ArrayBuffer>;
+  /** Serialises concurrent start() calls so only one audio graph is built. */
+  private startInProgress: Promise<void> | null = null;
 
   protected constructor(fftSize: number) {
-    this.fftSize = fftSize;
-    this.timeBuffer = new Float32Array(fftSize);
+    this.tap = new AnalyserTap(fftSize);
   }
 
   public get sampleRate(): number {
@@ -50,30 +48,44 @@ export abstract class BufferPlaybackSource implements AudioFrameSource, Monitore
 
   /**
    * Resumes the shared audio context, resolves the buffer on first use (cached
-   * afterward), and starts looping it through the analyser. Idempotent while
-   * already playing. Must be called from a user gesture so the context may start.
+   * afterward), and starts looping it through the analyser. Idempotent and
+   * concurrency-safe: concurrent callers share the same in-flight promise.
+   * Must be called from a user gesture so the context may start.
    */
-  public async start(): Promise<void> {
+  public start(): Promise<void> {
+    if (this.sourceNode) {
+      return Promise.resolve();
+    }
+    if (!this.startInProgress) {
+      this.startInProgress = this.doStart().finally(() => {
+        this.startInProgress = null;
+      });
+    }
+    return this.startInProgress;
+  }
+
+  private async doStart(): Promise<void> {
     if (this.sourceNode) {
       return;
     }
     const audioContext = await resumeSharedAudioContext();
     if (!this.buffer) {
-      this.bufferPromise ??= this.resolveBuffer(audioContext);
-      this.buffer = await this.bufferPromise;
+      if (!this.bufferPromise) {
+        this.bufferPromise = this.resolveBuffer(audioContext);
+      }
+      try {
+        this.buffer = await this.bufferPromise;
+      } catch {
+        // Clear the cached rejection so the next start() attempt can retry.
+        this.bufferPromise = null;
+        return;
+      }
     }
     const buffer = this.buffer;
     if (!buffer) {
       return;
     }
-    const analyser = this.analyser ?? audioContext.createAnalyser();
-    analyser.fftSize = this.fftSize;
-    analyser.smoothingTimeConstant = 0;
-    this.analyser = analyser;
-
-    const gainNode = this.gainNode ?? audioContext.createGain();
-    gainNode.gain.value = this.monitoringEnabled ? 1 : 0;
-    this.gainNode = gainNode;
+    const { analyser, gainNode } = this.tap.setup(audioContext);
 
     const sourceNode = audioContext.createBufferSource();
     sourceNode.buffer = buffer;
@@ -86,10 +98,7 @@ export abstract class BufferPlaybackSource implements AudioFrameSource, Monitore
   }
 
   public setMonitoringEnabled(enabled: boolean): void {
-    this.monitoringEnabled = enabled;
-    if (this.gainNode) {
-      this.gainNode.gain.value = enabled ? 1 : 0;
-    }
+    this.tap.setMonitoringEnabled(enabled);
   }
 
   /** Stops playback but keeps the resolved buffer for a fast restart. */
@@ -105,30 +114,18 @@ export abstract class BufferPlaybackSource implements AudioFrameSource, Monitore
     }
     // Disconnect the gain node so the next start() does not accumulate duplicate
     // destination connections — Web Audio connections are additive, not idempotent.
-    this.gainNode?.disconnect();
+    this.tap.gainNode?.disconnect();
   }
 
   /** Updates the analyser FFT size (frame length). */
   public setFftSize(fftSize: number): void {
-    this.fftSize = fftSize;
-    if (this.timeBuffer.length !== fftSize) {
-      this.timeBuffer = new Float32Array(fftSize);
-    }
-    if (this.analyser) {
-      this.analyser.fftSize = fftSize;
-    }
+    this.tap.setFftSize(fftSize);
   }
 
   public getFrame(out: Float32Array): boolean {
-    const analyser = this.analyser;
-    if (!(analyser && this.sourceNode)) {
+    if (!this.sourceNode) {
       return false;
     }
-    analyser.getFloatTimeDomainData(this.timeBuffer);
-    const count = Math.min(out.length, this.timeBuffer.length);
-    for (let i = 0; i < count; i++) {
-      out[i] = this.timeBuffer[i] ?? 0;
-    }
-    return true;
+    return this.tap.readFrame(out);
   }
 }
