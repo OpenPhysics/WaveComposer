@@ -6,26 +6,27 @@
  * rate; an {@link AnalyserNode} feeds the analyzer and a {@link GainNode} can
  * route the same signal to the speakers.
  */
-import type { AudioFrameSource } from "./AudioFrameSource.js";
+import { AnalyserTap } from "./AnalyserTap.js";
+import type { PlayableAudioSource } from "./AudioFrameSource.js";
+import type { MonitoredAudioSource } from "./MonitoredAudioSource.js";
 import type { PresetGenerator } from "./PresetFrameSource.js";
 import { getSharedSampleRate, resumeSharedAudioContext } from "./SharedAudioContext.js";
 
 const SCRIPT_BUFFER_SIZE = 2048;
 
-export class SyntheticWebAudioSource implements AudioFrameSource {
+export class SyntheticWebAudioSource implements PlayableAudioSource, MonitoredAudioSource {
+  public readonly isPlayable = true as const;
+
   private readonly generate: PresetGenerator;
-  private fftSize: number;
-  private analyser: AnalyserNode | null = null;
+  private readonly tap: AnalyserTap;
   private scriptNode: ScriptProcessorNode | null = null;
-  private gainNode: GainNode | null = null;
-  private monitoringEnabled = true;
+  /** Serialises concurrent start() calls so only one audio graph is built. */
+  private startInProgress: Promise<void> | null = null;
   private elapsedPlaybackTimeS = 0;
-  private timeBuffer: Float32Array<ArrayBuffer>;
 
   public constructor(generate: PresetGenerator, fftSize: number) {
     this.generate = generate;
-    this.fftSize = fftSize;
-    this.timeBuffer = new Float32Array(fftSize);
+    this.tap = new AnalyserTap(fftSize);
   }
 
   public get sampleRate(): number {
@@ -42,23 +43,29 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
   }
 
   /**
-   * Starts the synthesis graph. Idempotent while already running. Must be
-   * called from a user gesture so the shared context may start.
+   * Starts the synthesis graph. Idempotent and concurrency-safe: concurrent
+   * callers share the same in-flight promise. Must be called from a user gesture
+   * so the shared context may start.
    */
-  public async start(): Promise<void> {
+  public start(): Promise<void> {
+    if (this.scriptNode) {
+      return Promise.resolve();
+    }
+    if (!this.startInProgress) {
+      this.startInProgress = this.doStart().finally(() => {
+        this.startInProgress = null;
+      });
+    }
+    return this.startInProgress;
+  }
+
+  private async doStart(): Promise<void> {
     if (this.scriptNode) {
       return;
     }
     const audioContext = await resumeSharedAudioContext();
 
-    const analyser = this.analyser ?? audioContext.createAnalyser();
-    analyser.fftSize = this.fftSize;
-    analyser.smoothingTimeConstant = 0;
-    this.analyser = analyser;
-
-    const gainNode = this.gainNode ?? audioContext.createGain();
-    gainNode.gain.value = this.monitoringEnabled ? 1 : 0;
-    this.gainNode = gainNode;
+    const { analyser, gainNode } = this.tap.setup(audioContext);
 
     const scriptNode = audioContext.createScriptProcessor(SCRIPT_BUFFER_SIZE, 0, 1);
     scriptNode.onaudioprocess = (event) => {
@@ -78,37 +85,22 @@ export class SyntheticWebAudioSource implements AudioFrameSource {
     this.scriptNode = null;
     // Disconnect the gain node so the next start() does not accumulate duplicate
     // destination connections — Web Audio connections are additive, not idempotent.
-    this.gainNode?.disconnect();
+    this.tap.gainNode?.disconnect();
     this.elapsedPlaybackTimeS = 0;
   }
 
   public setMonitoringEnabled(enabled: boolean): void {
-    this.monitoringEnabled = enabled;
-    if (this.gainNode) {
-      this.gainNode.gain.value = enabled ? 1 : 0;
-    }
+    this.tap.setMonitoringEnabled(enabled);
   }
 
   public setFftSize(fftSize: number): void {
-    this.fftSize = fftSize;
-    if (this.timeBuffer.length !== fftSize) {
-      this.timeBuffer = new Float32Array(fftSize);
-    }
-    if (this.analyser) {
-      this.analyser.fftSize = fftSize;
-    }
+    this.tap.setFftSize(fftSize);
   }
 
   public getFrame(out: Float32Array): boolean {
-    const analyser = this.analyser;
-    if (!(analyser && this.scriptNode)) {
+    if (!this.scriptNode) {
       return false;
     }
-    analyser.getFloatTimeDomainData(this.timeBuffer);
-    const count = Math.min(out.length, this.timeBuffer.length);
-    for (let i = 0; i < count; i++) {
-      out[i] = this.timeBuffer[i] ?? 0;
-    }
-    return true;
+    return this.tap.readFrame(out);
   }
 }

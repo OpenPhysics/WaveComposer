@@ -18,10 +18,8 @@ import {
 import { Range } from "scenerystack/dot";
 import type { TModel } from "scenerystack/joist";
 import type { WaveComposerPreferencesModel } from "../../preferences/WaveComposerPreferencesModel.js";
-import { DEFAULT_FFT_SIZE } from "../../preferences/WaveComposerPreferencesModel.js";
 import { AudioFileFrameSource } from "./audio/AudioFileFrameSource.js";
-import type { AudioFrameSource } from "./audio/AudioFrameSource.js";
-import { BufferPlaybackSource } from "./audio/BufferPlaybackSource.js";
+import { type AudioFrameSource, isPlayableSource } from "./audio/AudioFrameSource.js";
 import { MicrophoneInput } from "./audio/MicrophoneInput.js";
 import { isMonitoredAudioSource } from "./audio/MonitoredAudioSource.js";
 import { getPresetAssetUrl } from "./audio/presetAssets.js";
@@ -69,11 +67,6 @@ export interface RecordingEntry {
   readonly samples: Float32Array;
   readonly sampleRate: number;
   readonly source: RecordedAudioSource;
-}
-
-/** Web Audio sources the model can start/stop and keep FFT-synced (everything but the mic). */
-function isPlayableSource(source: AudioFrameSource): source is BufferPlaybackSource | SyntheticWebAudioSource {
-  return source instanceof BufferPlaybackSource || source instanceof SyntheticWebAudioSource;
 }
 
 function createPresetSource(entry: PresetCatalogEntry, fftSize: number): AudioFrameSource {
@@ -170,15 +163,16 @@ export class BaseAnalysisModel implements TModel {
     this.presetCatalog = presetCatalog;
     this.analysisPreferences = analysisPreferences;
     const includeMicrophone = options?.includeMicrophone !== false;
-    this.micInput = includeMicrophone ? new MicrophoneInput(DEFAULT_FFT_SIZE) : null;
+    const initialFftSize = analysisPreferences.fftSizeProperty.value;
+    this.micInput = includeMicrophone ? new MicrophoneInput(initialFftSize) : null;
     const presetSources: [string, AudioFrameSource][] = presetCatalog.map((entry) => [
       entry.id,
-      createPresetSource(entry, DEFAULT_FFT_SIZE),
+      createPresetSource(entry, initialFftSize),
     ]);
     const micEntry: [string, AudioFrameSource][] = this.micInput ? [[AudioSource.MICROPHONE, this.micInput]] : [];
     this.sources = new Map<string, AudioFrameSource>([...micEntry, ...presetSources]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
-    this.frameBuffer = new Float32Array(DEFAULT_FFT_SIZE);
+    this.frameBuffer = new Float32Array(initialFftSize);
 
     // Reconfigure the analyzer + sources whenever an analysis setting changes.
     this.fftSizeProperty.lazyLink(() => this.applyConfig());

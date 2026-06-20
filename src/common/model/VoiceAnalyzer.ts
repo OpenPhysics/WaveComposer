@@ -265,8 +265,10 @@ export class VoiceAnalyzer {
       decimation,
     );
 
-    // Harmonics-to-noise ratio from the raw-frame autocorrelation.
-    autocorrelate(frame, this.hnrMaxLag, this.hnrAutocorr);
+    // Harmonics-to-noise ratio: normalize by (n − lag) so r[τ]/r[0] → 1 for
+    // periodic signals regardless of lag length (avoids systematic underestimation
+    // at low F0 where τ is large relative to the frame).
+    autocorrelate(frame, this.hnrMaxLag, this.hnrAutocorr, frame.length, true);
     const hnrDb = harmonicToNoiseRatio(this.hnrAutocorr, sampleRate, f0MinHz, f0MaxHz);
 
     return {
