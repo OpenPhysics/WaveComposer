@@ -26,6 +26,12 @@ export abstract class BufferPlaybackSource implements PlayableAudioSource, Monit
   private sourceNode: AudioBufferSourceNode | null = null;
   /** Serialises concurrent start() calls so only one audio graph is built. */
   private startInProgress: Promise<void> | null = null;
+  /**
+   * Bumped by every {@link stop}; {@link doStart} re-checks it after each await so
+   * a stop that arrives mid-start abandons the (now-stale) attempt instead of
+   * starting playback after the caller asked to stop.
+   */
+  private startGeneration = 0;
 
   protected constructor(fftSize: number) {
     this.tap = new AnalyserTap(fftSize);
@@ -68,7 +74,12 @@ export abstract class BufferPlaybackSource implements PlayableAudioSource, Monit
     if (this.sourceNode) {
       return;
     }
+    const generation = this.startGeneration;
     const audioContext = await resumeSharedAudioContext();
+    // A stop() landed while the context was resuming — abandon this attempt.
+    if (generation !== this.startGeneration) {
+      return;
+    }
     if (!this.buffer) {
       if (!this.bufferPromise) {
         this.bufferPromise = this.resolveBuffer(audioContext);
@@ -80,6 +91,10 @@ export abstract class BufferPlaybackSource implements PlayableAudioSource, Monit
         this.bufferPromise = null;
         return;
       }
+    }
+    // A stop() landed while the buffer was being fetched/decoded — do not start.
+    if (generation !== this.startGeneration) {
+      return;
     }
     const buffer = this.buffer;
     if (!buffer) {
@@ -103,6 +118,9 @@ export abstract class BufferPlaybackSource implements PlayableAudioSource, Monit
 
   /** Stops playback but keeps the resolved buffer for a fast restart. */
   public stop(): void {
+    // Invalidate any in-flight doStart() so a late-resolving buffer/context does
+    // not start playback after the caller asked to stop.
+    this.startGeneration++;
     if (this.sourceNode) {
       try {
         this.sourceNode.stop();

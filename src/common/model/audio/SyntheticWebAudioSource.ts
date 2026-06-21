@@ -22,6 +22,12 @@ export class SyntheticWebAudioSource implements PlayableAudioSource, MonitoredAu
   private scriptNode: ScriptProcessorNode | null = null;
   /** Serialises concurrent start() calls so only one audio graph is built. */
   private startInProgress: Promise<void> | null = null;
+  /**
+   * Bumped by every {@link stop}; {@link doStart} re-checks it after the context
+   * resume await so a stop that arrives mid-start abandons the (now-stale)
+   * attempt instead of starting synthesis after the caller asked to stop.
+   */
+  private startGeneration = 0;
   private elapsedPlaybackTimeS = 0;
 
   public constructor(generate: PresetGenerator, fftSize: number) {
@@ -63,7 +69,12 @@ export class SyntheticWebAudioSource implements PlayableAudioSource, MonitoredAu
     if (this.scriptNode) {
       return;
     }
+    const generation = this.startGeneration;
     const audioContext = await resumeSharedAudioContext();
+    // A stop() landed while the context was resuming — abandon this attempt.
+    if (generation !== this.startGeneration) {
+      return;
+    }
 
     const { analyser, gainNode } = this.tap.setup(audioContext);
 
@@ -81,6 +92,9 @@ export class SyntheticWebAudioSource implements PlayableAudioSource, MonitoredAu
 
   /** Stops synthesis but keeps nodes for a fast restart. */
   public stop(): void {
+    // Invalidate any in-flight doStart() so a late-resolving context resume does
+    // not start synthesis after the caller asked to stop.
+    this.startGeneration++;
     this.scriptNode?.disconnect();
     this.scriptNode = null;
     // Disconnect the gain node so the next start() does not accumulate duplicate
