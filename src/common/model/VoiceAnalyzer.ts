@@ -81,25 +81,27 @@ function formantDecimation(sampleRate: number): number {
 
 export class VoiceAnalyzer {
   private config: AnalyzerConfig;
-  private fft: Fft;
-  private yin: YinPitchDetector;
-  private window: Float32Array;
+  // These are populated by allocateFrameBuffers(), called from the constructor;
+  // the definite-assignment assertions tell TS that indirect init is intentional.
+  private fft!: Fft;
+  private yin!: YinPitchDetector;
+  private window!: Float32Array;
   /** Confined-Gaussian window for the LPC branch (independent of the display window). */
-  private gaussianWindow: Float32Array;
+  private gaussianWindow!: Float32Array;
 
   // Reused work + output buffers, sized to the current config.
-  private waveform: Float32Array;
-  private windowed: Float32Array;
-  private preEmphasized: Float32Array;
-  private windowedPreEmphasized: Float32Array;
-  private decimated: Float32Array;
-  private powerScratch: Float32Array;
-  private powerSpectrumDb: Float32Array;
-  private lpcEnvelopeDb: Float32Array;
-  private envReScratch: Float32Array;
-  private envImScratch: Float32Array;
-  private cepstrumReal: Float32Array;
-  private cepstrumImag: Float32Array;
+  private waveform!: Float32Array;
+  private windowed!: Float32Array;
+  private preEmphasized!: Float32Array;
+  private windowedPreEmphasized!: Float32Array;
+  private decimated!: Float32Array;
+  private powerScratch!: Float32Array;
+  private powerSpectrumDb!: Float32Array;
+  private lpcEnvelopeDb!: Float32Array;
+  private envReScratch!: Float32Array;
+  private envImScratch!: Float32Array;
+  private cepstrumReal!: Float32Array;
+  private cepstrumImag!: Float32Array;
   private lpcAutocorr: Float64Array;
   private hnrAutocorr: Float32Array;
   private hnrMaxLag: number;
@@ -111,12 +113,26 @@ export class VoiceAnalyzer {
 
   public constructor(config: AnalyzerConfig) {
     this.config = config;
-    const n = config.fftSize;
-    const half = n >> 1;
+    this.allocateFrameBuffers(config.fftSize);
+    this.lpcAutocorr = new Float64Array(config.lpcOrder + 1);
+    this.hnrMaxLag = Math.min(config.fftSize - 1, Math.ceil(config.sampleRate / config.f0MinHz));
+    this.hnrAutocorr = new Float32Array(this.hnrMaxLag + 1);
+    this.preEmphasisAlpha = Math.exp((-2 * Math.PI * PREEMPH_FREQUENCY_HZ) / config.sampleRate);
+    const decimation = formantDecimation(config.sampleRate);
+    this.decimator = new Decimator(decimation);
+    this.formantSampleRate = config.sampleRate / decimation;
+  }
 
+  /**
+   * (Re)allocates every frame-size-dependent buffer plus the FFT, YIN, and
+   * windows. Called from the constructor and whenever the FFT size changes, so
+   * the two paths cannot drift out of sync.
+   */
+  private allocateFrameBuffers(n: number): void {
+    const half = n >> 1;
     this.fft = new Fft(n);
     this.yin = new YinPitchDetector(n);
-    this.window = createWindow(config.windowType, n);
+    this.window = createWindow(this.config.windowType, n);
     this.gaussianWindow = createGaussianWindow(n, GAUSSIAN_ALPHA);
 
     this.waveform = new Float32Array(n);
@@ -131,14 +147,6 @@ export class VoiceAnalyzer {
     this.envImScratch = new Float32Array(n);
     this.cepstrumReal = new Float32Array(n);
     this.cepstrumImag = new Float32Array(n);
-    this.lpcAutocorr = new Float64Array(config.lpcOrder + 1);
-    this.hnrMaxLag = Math.min(n - 1, Math.ceil(config.sampleRate / config.f0MinHz));
-    this.hnrAutocorr = new Float32Array(this.hnrMaxLag + 1);
-
-    const decimation = formantDecimation(config.sampleRate);
-    this.decimator = new Decimator(decimation);
-    this.formantSampleRate = config.sampleRate / decimation;
-    this.preEmphasisAlpha = Math.exp((-2 * Math.PI * PREEMPH_FREQUENCY_HZ) / config.sampleRate);
   }
 
   /** The current configuration (read-only snapshot). */
@@ -160,25 +168,10 @@ export class VoiceAnalyzer {
     const n = config.fftSize;
 
     if (config.fftSize !== prev.fftSize) {
-      const half = n >> 1;
-      this.fft = new Fft(n);
-      this.yin.setBufferSize(n);
-      this.waveform = new Float32Array(n);
-      this.windowed = new Float32Array(n);
-      this.preEmphasized = new Float32Array(n);
-      this.windowedPreEmphasized = new Float32Array(n);
-      this.decimated = new Float32Array(n);
-      this.powerScratch = new Float32Array(half);
-      this.powerSpectrumDb = new Float32Array(half);
-      this.lpcEnvelopeDb = new Float32Array(half);
-      this.envReScratch = new Float32Array(n);
-      this.envImScratch = new Float32Array(n);
-      this.cepstrumReal = new Float32Array(n);
-      this.cepstrumImag = new Float32Array(n);
-      this.gaussianWindow = createGaussianWindow(n, GAUSSIAN_ALPHA);
-    }
-
-    if (config.fftSize !== prev.fftSize || config.windowType !== prev.windowType) {
+      // Rebuilds the FFT, YIN, windows, and every frame-size-dependent buffer.
+      this.config = config;
+      this.allocateFrameBuffers(n);
+    } else if (config.windowType !== prev.windowType) {
       this.window = createWindow(config.windowType, n);
     }
 

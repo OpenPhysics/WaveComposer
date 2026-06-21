@@ -72,6 +72,12 @@ const WaveComposerColors = {
     projector: "#1a1a1a",
   }),
 
+  /** Attention color for transient notices (e.g. mic permission denied). */
+  noticeColorProperty: new ProfileColorProperty(WaveComposerNamespace, "notice", {
+    default: "#ff8a80",
+    projector: "#b00020",
+  }),
+
   // ── Interactive controls (push buttons + combo boxes) ─────────────────────────
   /**
    * Base fill for push buttons and combo-box buttons/lists. Pairs with

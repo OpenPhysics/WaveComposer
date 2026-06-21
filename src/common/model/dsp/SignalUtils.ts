@@ -10,9 +10,10 @@ export function rms(signal: Float32Array): number {
   if (n === 0) {
     return 0;
   }
+  // for...of over the typed array yields `number` (not `number | undefined`),
+  // so the hot loop needs no per-element nullish guard under noUncheckedIndexedAccess.
   let sum = 0;
-  for (let i = 0; i < n; i++) {
-    const s = signal[i] ?? 0;
+  for (const s of signal) {
     sum += s * s;
   }
   return Math.sqrt(sum / n);
