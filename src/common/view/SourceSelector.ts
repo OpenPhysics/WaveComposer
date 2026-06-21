@@ -184,5 +184,17 @@ export function createSourceSelector(
 
   const recordControls = new HBox({ spacing: 6, align: "center", children: [recordButton, saveButton] });
 
-  return new VBox({ align: "left", spacing: 4, children: [comboContainer, caption, recordControls] });
+  // Transient feedback for audio failures (e.g. microphone permission denied),
+  // hidden until the model reports one so it never reserves layout space.
+  const notice = new Text("", {
+    font: WaveComposerConstants.LABEL_FONT,
+    fill: WaveComposerColors.noticeColorProperty,
+    maxWidth: CAPTION_MAX_WIDTH,
+    visibleProperty: new DerivedProperty([model.audioNoticeProperty], (text) => text !== null),
+  });
+  model.audioNoticeProperty.link((text) => {
+    notice.string = text ?? "";
+  });
+
+  return new VBox({ align: "left", spacing: 4, children: [comboContainer, caption, recordControls, notice] });
 }

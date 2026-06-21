@@ -39,12 +39,22 @@ export function encodeWav(samples: Float32Array, sampleRate: number): Blob {
   return new Blob([view], { type: "audio/wav" });
 }
 
+/**
+ * Strips path separators and shell-unfriendly characters from a download name so
+ * a caller-supplied (or future user-supplied) label cannot smuggle in path or
+ * quote tricks. Falls back to a safe default if nothing usable remains.
+ */
+function sanitizeFilename(filename: string): string {
+  const cleaned = filename.replace(/[^a-zA-Z0-9._-]/g, "_").replace(/^\.+/, "");
+  return cleaned.length > 0 ? cleaned : "download";
+}
+
 /** Triggers a browser download of the given blob under `filename`. */
 export function downloadBlob(blob: Blob, filename: string): void {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = filename;
+  anchor.download = sanitizeFilename(filename);
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

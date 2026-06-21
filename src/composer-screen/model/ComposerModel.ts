@@ -50,13 +50,16 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
     this.audioSourceProperty.value = COMPOSE_SOURCE_ID;
   }
 
+  /** Lowest active partial frequency (the fundamental), or 0 if none are active. */
   public getFundamentalHz(): number {
+    let fundamental = 0;
     for (const partial of this.composition.partials) {
-      if (partial.enabledProperty.value && partial.frequencyProperty.value > 0) {
-        return partial.frequencyProperty.value;
+      const frequency = partial.frequencyProperty.value;
+      if (partial.enabledProperty.value && frequency > 0 && (fundamental === 0 || frequency < fundamental)) {
+        fundamental = frequency;
       }
     }
-    return 0;
+    return fundamental;
   }
 
   public getStandingWaveModes(): readonly StandingWaveMode[] {

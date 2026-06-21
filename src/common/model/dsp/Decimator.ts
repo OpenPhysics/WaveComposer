@@ -38,6 +38,8 @@ export class Decimator {
     }
 
     // Windowed-sinc low-pass with its cutoff at the decimated Nyquist (π/factor).
+    // factor >= 2 here (factor === 1 returned above), so center >= tapsPerSide and
+    // length >= 2*tapsPerSide + 1 > 1 — the (length - 1) Hamming divisor is safe.
     const center = tapsPerSide * this.factor;
     const length = 2 * center + 1;
     const taps = new Float64Array(length);

@@ -102,6 +102,12 @@ export class BaseAnalysisModel implements TModel {
   public readonly isAudioEnabledProperty = new BooleanProperty(true);
   /** Sample rate (Hz) of the active source; the view needs it to map FFT bins to Hz. */
   public readonly sampleRateProperty = new NumberProperty(DEFAULT_SAMPLE_RATE_HZ);
+  /**
+   * Non-null when the last audio action failed (e.g. microphone permission denied)
+   * or hit a limit (recording cap). The view can show it; cleared on the next
+   * successful start or reset.
+   */
+  public readonly audioNoticeProperty = new Property<string | null>(null);
 
   // ── Outputs (scalar results) ────────────────────────────────────────────────
   public readonly f0Property = new NumberProperty(0);
@@ -169,6 +175,16 @@ export class BaseAnalysisModel implements TModel {
       entry.id,
       createPresetSource(entry, initialFftSize),
     ]);
+    if (this.micInput) {
+      // When an in-progress recording hits the in-memory cap, finalize it and
+      // tell the user instead of silently dropping further audio.
+      this.micInput.onRecordingLimitReached = () => {
+        if (this.isRecordingProperty.value) {
+          this.stopRecording();
+          this.audioNoticeProperty.value = "Recording length limit reached";
+        }
+      };
+    }
     const micEntry: [string, AudioFrameSource][] = this.micInput ? [[AudioSource.MICROPHONE, this.micInput]] : [];
     this.sources = new Map<string, AudioFrameSource>([...micEntry, ...presetSources]);
     this.analyzer = new VoiceAnalyzer(this.buildConfig());
@@ -189,7 +205,9 @@ export class BaseAnalysisModel implements TModel {
 
   /** The audio source the analyzer currently reads from, or null if none is registered. */
   private get source(): AudioFrameSource | null {
-    return this.sources.get(this.audioSourceProperty.value) ?? this.micInput;
+    // No silent fallback: an unknown id means "no source", so step() no-ops
+    // rather than analyzing the microphone under another source's label.
+    return this.sources.get(this.audioSourceProperty.value) ?? null;
   }
 
   /** Starts a newly selected source. File/synthetic/recorded clips auto-play; the mic stays lazy. */
@@ -240,7 +258,18 @@ export class BaseAnalysisModel implements TModel {
       return;
     }
     this.audioSourceProperty.value = AudioSource.MICROPHONE;
-    await this.micInput.start();
+    try {
+      await this.micInput.start();
+    } catch (error) {
+      // Surface the failure instead of swallowing it, so the view can react.
+      this.audioNoticeProperty.value =
+        error instanceof DOMException && error.name === "NotAllowedError"
+          ? "Microphone permission denied"
+          : "Could not start the microphone";
+      this.isListeningProperty.value = false;
+      return;
+    }
+    this.audioNoticeProperty.value = null;
     // The AudioContext's sample rate is known only after start.
     this.applyConfig();
     this.applyMonitoring();
@@ -386,6 +415,7 @@ export class BaseAnalysisModel implements TModel {
     this.sampleRateProperty.reset();
     this.maxFrequencyProperty.reset();
     this.isAudioEnabledProperty.reset();
+    this.audioNoticeProperty.reset();
     this.f0Property.reset();
     this.f0ConfidenceProperty.reset();
     this.rmsLevelProperty.reset();

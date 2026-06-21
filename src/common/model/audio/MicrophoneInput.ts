@@ -40,6 +40,16 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
   private recordProcessor: ScriptProcessorNode | null = null;
   private recordSink: GainNode | null = null;
   private recordedChunks: Float32Array[] = [];
+  /** Guards {@link onRecordingLimitReached} so it fires at most once per recording. */
+  private recordingLimitNotified = false;
+  /**
+   * Bumped by every {@link stop}; {@link doStart} re-checks it after each await so
+   * a stop that arrives mid-start abandons the (now-stale) stream instead of
+   * leaving the microphone live.
+   */
+  private startGeneration = 0;
+  /** Fired once when an in-progress recording reaches the in-memory cap. */
+  public onRecordingLimitReached: (() => void) | null = null;
 
   public constructor(fftSize: number) {
     this.tap = new AnalyserTap(fftSize);
@@ -73,6 +83,7 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
     if (this.tap.analyser) {
       return;
     }
+    const generation = this.startGeneration;
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: {
         echoCancellation: false,
@@ -80,9 +91,23 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
         autoGainControl: false,
       },
     });
+    // A stop() landed while we were awaiting permission — release and bail.
+    if (generation !== this.startGeneration) {
+      for (const track of stream.getTracks()) {
+        track.stop();
+      }
+      return;
+    }
     const audioContext = new AudioContext();
     if (audioContext.state === "suspended") {
       await audioContext.resume();
+    }
+    if (generation !== this.startGeneration) {
+      for (const track of stream.getTracks()) {
+        track.stop();
+      }
+      audioContext.close().catch(() => undefined);
+      return;
     }
 
     const { analyser, gainNode } = this.tap.setup(audioContext);
@@ -112,12 +137,20 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
       return;
     }
     this.recordedChunks = [];
+    this.recordingLimitNotified = false;
     const processor = audioContext.createScriptProcessor(RECORD_BUFFER_SIZE, 1, 1);
     processor.onaudioprocess = (event) => {
-      if (this.recordedChunks.length < MAX_RECORDING_CHUNKS) {
-        // Copy: the input buffer is reused across callbacks.
-        this.recordedChunks.push(Float32Array.from(event.inputBuffer.getChannelData(0)));
+      if (this.recordedChunks.length >= MAX_RECORDING_CHUNKS) {
+        // At capacity: stop silently dropping audio — hand control back so the
+        // owner can finalize the clip and surface the limit to the user.
+        if (!this.recordingLimitNotified) {
+          this.recordingLimitNotified = true;
+          this.onRecordingLimitReached?.();
+        }
+        return;
       }
+      // Copy: the input buffer is reused across callbacks.
+      this.recordedChunks.push(Float32Array.from(event.inputBuffer.getChannelData(0)));
     };
     const sink = audioContext.createGain();
     sink.gain.value = 0;
@@ -169,6 +202,9 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
 
   /** Stops the audio graph and releases the microphone. */
   public stop(): void {
+    // Invalidate any in-flight doStart() so a late-resolving getUserMedia does
+    // not revive the device after we have torn everything down.
+    this.startGeneration++;
     this.teardownRecording();
     this.sourceNode?.disconnect();
     if (this.stream) {
