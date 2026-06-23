@@ -4,6 +4,7 @@
  * The real-time analysis screen: spectrogram, spectrum with LPC envelope, and
  * waveform of the live microphone or preset audio source.
  */
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
@@ -25,11 +26,13 @@ export class AnalyzerScreen extends Screen<AnalyzerModel, AnalyzerScreenView> {
         new AnalyzerScreenView(screenModel, options.viewProperties, {
           tandem: options.tandem.createTandem("view"),
         }),
-      {
-        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
-        createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
-        ...options,
-      },
+      optionize<AnalyzerScreenOptions, EmptySelfOptions, ScreenOptions>()(
+        {
+          backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
+          createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
+        },
+        options,
+      ),
     );
     linkAnalysisModelToScreenActive(this.activeProperty, model);
   }

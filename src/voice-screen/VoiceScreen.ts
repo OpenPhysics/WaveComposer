@@ -5,6 +5,7 @@
  * source selection, microphone state, recordings, and analyzer outputs stay
  * isolated from the Analyzer screen.
  */
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
@@ -24,11 +25,13 @@ export class VoiceScreen extends Screen<VoiceModel, VoiceScreenView> {
         new VoiceScreenView(screenModel, {
           tandem: options.tandem.createTandem("view"),
         }),
-      {
-        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
-        createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
-        ...options,
-      },
+      optionize<VoiceScreenOptions, EmptySelfOptions, ScreenOptions>()(
+        {
+          backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
+          createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
+        },
+        options,
+      ),
     );
     linkAnalysisModelToScreenActive(this.activeProperty, model);
   }

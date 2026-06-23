@@ -4,6 +4,7 @@
  * The wave-composition screen: superpose sinusoids, explore beats, phase
  * cancellation, harmonic series, and standing-wave modes.
  */
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
@@ -24,11 +25,13 @@ export class ComposerScreen extends Screen<ComposerModel, ComposerScreenView> {
         new ComposerScreenView(screenModel, options.viewProperties, {
           tandem: options.tandem.createTandem("view"),
         }),
-      {
-        backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
-        createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
-        ...options,
-      },
+      optionize<ComposerScreenOptions, EmptySelfOptions, ScreenOptions>()(
+        {
+          backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
+          createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
+        },
+        options,
+      ),
     );
     linkAnalysisModelToScreenActive(this.activeProperty, model);
   }
