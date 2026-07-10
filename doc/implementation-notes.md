@@ -41,7 +41,7 @@ Shared model modules:
 2. **CompositionState**: Harmonic partials for the Composer screen
 3. **DSP modules** (`src/common/model/dsp/`): `Fft`, `LinearPredictor`, `FormantAnalyzer`, `YinPitchDetector`, `Autocorrelation`, `Decimator`
 4. **Audio sources** (`src/common/model/audio/`): `MicrophoneInput`, `PresetFrameSource`, `RecordedAudioSource`, `SyntheticWebAudioSource`
-5. **AnalysisPreferencesModel**: Shared FFT size, colormap, and analysis settings
+5. **WaveComposerPreferencesModel**: Shared FFT size, LPC order, window function, and analysis settings (Preferences → Visual)
 
 Bundled preset audio lives in `src/assets/audio/`.
 
