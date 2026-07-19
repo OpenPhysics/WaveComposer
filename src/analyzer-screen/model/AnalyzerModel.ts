@@ -25,12 +25,10 @@ const OPEN_PIPE_PRESET_IDS = new Set(["flute", "horn", "saxophone"]);
 /** Presets whose captions describe bowed / plucked string ladders. */
 const STRING_PRESET_IDS = new Set(["violin", "viola", "cello", "piano", "guitar"]);
 
-const DEFAULT_STANDING_WAVE_MODES: readonly StandingWaveMode[] = [
-  { modeNumber: 1, amplitude: 1 },
-  { modeNumber: 2, amplitude: 0.6 },
-  { modeNumber: 3, amplitude: 0.4 },
-  { modeNumber: 4, amplitude: 0.25 },
-];
+/** Number of harmonics represented in the standing-wave strip. */
+const STANDING_WAVE_MODE_COUNT = 4;
+/** Harmonics more than this far below the strongest one are not drawn. */
+const STANDING_WAVE_FLOOR_DB = 40;
 
 export class AnalyzerModel extends BaseAnalysisModel implements HarmonicChartModel {
   public readonly minFrequencyProperty = new NumberProperty(DEFAULT_MIN_FREQUENCY_HZ, { range: FREQUENCY_RANGE });
@@ -58,8 +56,52 @@ export class AnalyzerModel extends BaseAnalysisModel implements HarmonicChartMod
     return this.f0Property.value;
   }
 
+  /**
+   * Standing-wave modes with amplitudes read from the measured power spectrum at
+   * each harmonic of the detected F0 (normalized to the strongest harmonic), so
+   * the strip reflects the actual signal — e.g. a clarinet's weak even harmonics
+   * show up weak here too.
+   */
   public getStandingWaveModes(): readonly StandingWaveMode[] {
-    return this.f0Property.value > 0 ? DEFAULT_STANDING_WAVE_MODES : [];
+    const f0 = this.f0Property.value;
+    const analysis = this.analysis;
+    if (f0 <= 0 || !analysis) {
+      return [];
+    }
+    const spectrumDb = analysis.powerSpectrumDb;
+    const half = spectrumDb.length;
+    const fftSize = half * 2;
+    const sampleRate = this.sampleRateProperty.value;
+
+    // Peak dB per harmonic (searching ±1 bin to absorb bin-center error).
+    const harmonicDb: number[] = [];
+    let maxDb = Number.NEGATIVE_INFINITY;
+    for (let n = 1; n <= STANDING_WAVE_MODE_COUNT; n++) {
+      const bin = Math.round((n * f0 * fftSize) / sampleRate);
+      if (bin < 1 || bin >= half - 1) {
+        break;
+      }
+      const low = spectrumDb[bin - 1] ?? Number.NEGATIVE_INFINITY;
+      const mid = spectrumDb[bin] ?? Number.NEGATIVE_INFINITY;
+      const high = spectrumDb[bin + 1] ?? Number.NEGATIVE_INFINITY;
+      const db = Math.max(low, mid, high);
+      harmonicDb.push(db);
+      maxDb = Math.max(maxDb, db);
+    }
+    if (!Number.isFinite(maxDb)) {
+      return [];
+    }
+
+    const modes: StandingWaveMode[] = [];
+    for (let i = 0; i < harmonicDb.length; i++) {
+      const relativeDb = (harmonicDb[i] ?? Number.NEGATIVE_INFINITY) - maxDb;
+      if (relativeDb < -STANDING_WAVE_FLOOR_DB) {
+        continue;
+      }
+      // Power dB → linear amplitude relative to the strongest harmonic.
+      modes.push({ modeNumber: i + 1, amplitude: 10 ** (relativeDb / 20) });
+    }
+    return modes;
   }
 
   protected override get isAnalysisPaused(): boolean {

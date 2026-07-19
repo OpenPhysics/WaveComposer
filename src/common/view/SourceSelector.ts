@@ -15,7 +15,7 @@ import WaveComposerColors from "../../WaveComposerColors.js";
 import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { PresetCatalogEntry } from "../model/audio/presetCatalog.js";
 import { downloadBlob, encodeWav } from "../model/audio/WavEncoder.js";
-import { AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
+import { AudioNotice, AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
 
 const CAPTION_MAX_WIDTH = 200;
 const BUTTON_MAX_TEXT_WIDTH = 180;
@@ -61,7 +61,7 @@ export function createSourceSelector(
     catalog.map((entry) => [entry.id, presetNameProperty(stringsForEntry(entry), entry.nameKey)]),
   );
 
-  const recordingLabelCache = new Map<string, TReadOnlyProperty<string>>();
+  const recordingLabelCache = new Map<string, TReadOnlyProperty<string> & { dispose(): void }>();
   function nameProperty(value: string): TReadOnlyProperty<string> {
     if (value === AudioSource.MICROPHONE) {
       return instrumentStrings.microphoneStringProperty;
@@ -100,6 +100,14 @@ export function createSourceSelector(
       combo = null;
     }
     comboValues = model.getSourceValues();
+    // Drop (and dispose) cached labels for recordings that no longer exist,
+    // e.g. after Reset All — the DerivedProperties would otherwise accumulate.
+    for (const [id, labelProperty] of [...recordingLabelCache]) {
+      if (!comboValues.includes(id)) {
+        labelProperty.dispose();
+        recordingLabelCache.delete(id);
+      }
+    }
     combo = new ComboBox(
       model.audioSourceProperty,
       comboValues.map((value) => ({
@@ -185,15 +193,26 @@ export function createSourceSelector(
   const recordControls = new HBox({ spacing: 6, align: "center", children: [recordButton, saveButton] });
 
   // Transient feedback for audio failures (e.g. microphone permission denied),
-  // hidden until the model reports one so it never reserves layout space.
-  const notice = new Text("", {
+  // hidden until the model reports one so it never reserves layout space. The
+  // model exposes an AudioNotice key; the localized text lives with the other
+  // control strings so it follows locale switches.
+  const noticeStringProperties: Record<AudioNotice, TReadOnlyProperty<string>> = {
+    [AudioNotice.MICROPHONE_DENIED]: controls.noticeMicrophoneDeniedStringProperty,
+    [AudioNotice.MICROPHONE_UNAVAILABLE]: controls.noticeMicrophoneUnavailableStringProperty,
+    [AudioNotice.RECORDING_LIMIT]: controls.noticeRecordingLimitStringProperty,
+  };
+  const noticeTextProperty = DerivedProperty.deriveAny(
+    [model.audioNoticeProperty, ...Object.values(noticeStringProperties)],
+    () => {
+      const key = model.audioNoticeProperty.value;
+      return key ? noticeStringProperties[key].value : "";
+    },
+  );
+  const notice = new Text(noticeTextProperty, {
     font: WaveComposerConstants.LABEL_FONT,
     fill: WaveComposerColors.noticeColorProperty,
     maxWidth: CAPTION_MAX_WIDTH,
-    visibleProperty: new DerivedProperty([model.audioNoticeProperty], (text) => text !== null),
-  });
-  model.audioNoticeProperty.link((text) => {
-    notice.string = text ?? "";
+    visibleProperty: new DerivedProperty([model.audioNoticeProperty], (key) => key !== null),
   });
 
   return new VBox({ align: "left", spacing: 4, children: [comboContainer, caption, recordControls, notice] });

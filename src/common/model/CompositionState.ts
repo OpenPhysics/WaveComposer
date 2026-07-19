@@ -227,11 +227,14 @@ function presetDefaults(preset: ComposePreset): PartialDefaults[] {
         { frequencyHz: 880, amplitude: 0.125, phaseRad: 0, enabled: true },
       ];
     case ComposePreset.TRIANGLE_ISH:
+      // Triangle series: (8/π²)·Σ (−1)^((n−1)/2)·sin(nωt)/n², n odd — the sign
+      // alternates, so harmonics 3 and 7 need a π phase flip or the summed
+      // waveform is not triangular.
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
-        { frequencyHz: 660, amplitude: 0.06, phaseRad: 0, enabled: true },
+        { frequencyHz: 660, amplitude: 0.06, phaseRad: pi, enabled: true },
         { frequencyHz: 1100, amplitude: 0.02, phaseRad: 0, enabled: true },
-        { frequencyHz: 1540, amplitude: 0.01, phaseRad: 0, enabled: true },
+        { frequencyHz: 1540, amplitude: 0.01, phaseRad: pi, enabled: true },
       ];
     default:
       return [];

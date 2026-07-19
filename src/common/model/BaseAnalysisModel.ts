@@ -53,6 +53,19 @@ export const AudioSource = {
 
 export type AudioSource = (typeof AudioSource)[keyof typeof AudioSource] | PresetId | string;
 
+/**
+ * Keys for user-facing audio failure/limit notices. The model reports a key and
+ * the view maps it to a localized string, so notices localize like every other
+ * string in the sim.
+ */
+export const AudioNotice = {
+  MICROPHONE_DENIED: "microphoneDenied",
+  MICROPHONE_UNAVAILABLE: "microphoneUnavailable",
+  RECORDING_LIMIT: "recordingLimit",
+} as const;
+
+export type AudioNotice = (typeof AudioNotice)[keyof typeof AudioNotice];
+
 /** Prefix for the dynamic ids of user recordings (e.g. "recording-1"). */
 const RECORDING_ID_PREFIX = "recording-";
 
@@ -104,10 +117,10 @@ export class BaseAnalysisModel implements TModel {
   public readonly sampleRateProperty = new NumberProperty(DEFAULT_SAMPLE_RATE_HZ);
   /**
    * Non-null when the last audio action failed (e.g. microphone permission denied)
-   * or hit a limit (recording cap). The view can show it; cleared on the next
-   * successful start or reset.
+   * or hit a limit (recording cap). Holds an {@link AudioNotice} key that the view
+   * localizes; cleared on the next successful start or reset.
    */
-  public readonly audioNoticeProperty = new Property<string | null>(null);
+  public readonly audioNoticeProperty = new Property<AudioNotice | null>(null);
 
   // ── Outputs (scalar results) ────────────────────────────────────────────────
   public readonly f0Property = new NumberProperty(0);
@@ -181,7 +194,7 @@ export class BaseAnalysisModel implements TModel {
       this.micInput.onRecordingLimitReached = () => {
         if (this.isRecordingProperty.value) {
           this.stopRecording();
-          this.audioNoticeProperty.value = "Recording length limit reached";
+          this.audioNoticeProperty.value = AudioNotice.RECORDING_LIMIT;
         }
       };
     }
@@ -214,7 +227,18 @@ export class BaseAnalysisModel implements TModel {
   private activate(value: string): void {
     const source = this.sources.get(value);
     if (source && isPlayableSource(source)) {
-      source.start().catch(() => undefined);
+      // The source's sampleRate is only guaranteed accurate once start() has
+      // resolved (the shared AudioContext is created synchronously today, but
+      // that is an implementation detail of start()). Re-apply the analyzer
+      // config afterward so every frequency mapping uses the real device rate.
+      source
+        .start()
+        .then(() => {
+          if (this.audioSourceProperty.value === value) {
+            this.applyConfig();
+          }
+        })
+        .catch(() => undefined);
     }
     this.applyMonitoring();
   }
@@ -264,8 +288,8 @@ export class BaseAnalysisModel implements TModel {
       // Surface the failure instead of swallowing it, so the view can react.
       this.audioNoticeProperty.value =
         error instanceof DOMException && error.name === "NotAllowedError"
-          ? "Microphone permission denied"
-          : "Could not start the microphone";
+          ? AudioNotice.MICROPHONE_DENIED
+          : AudioNotice.MICROPHONE_UNAVAILABLE;
       this.isListeningProperty.value = false;
       return;
     }
@@ -340,6 +364,12 @@ export class BaseAnalysisModel implements TModel {
       return;
     }
     await this.startListening();
+    // startListening() reports failures (e.g. permission denied) via
+    // audioNoticeProperty instead of throwing; without a live microphone the
+    // recording tap would be a silent no-op, so don't claim to be recording.
+    if (!this.isListeningProperty.value) {
+      return;
+    }
     this.micInput.startRecording();
     this.isRecordingProperty.value = true;
   }

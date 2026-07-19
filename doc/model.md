@@ -94,11 +94,14 @@ inactive screens pause their pipeline to save CPU.
 - Microphone permission and device quality affect real recordings; presets avoid that variability.
 - Pitch and formant trackers can fail on noisy, unvoiced, or polyphonic audio — confidence gates
   hide unreliable readouts.
+- **Low-pitch floor vs. frame size:** YIN searches lags up to N/2 samples, so the effective F0 floor is
+  ≈ 2·f_s/N — at the smallest frame size (N = 1024, f_s = 48 kHz) that is ≈ 94 Hz, above the nominal
+  60 Hz band edge. Use a larger FFT size to reach the lowest voices.
 
 ## References
 
-- J. Laroche, "Estimation of the fundamental frequency of a monophonic signal" (YIN), *IEEE Trans. Speech
-  Audio*, 2002.
-- R. Rabiner & B. Gold, *Theory and Application of Digital Signal Processing* — FFT, windowing, LPC.
+- A. de Cheveigné & H. Kawahara, "YIN, a fundamental frequency estimator for speech and music,"
+  *J. Acoust. Soc. Am.* 111(4), 2002.
+- L. Rabiner & B. Gold, *Theory and Application of Digital Signal Processing* — FFT, windowing, LPC.
 - J. Markel & A. Gray, *Linear Prediction of Speech* — formant extraction via LPC.
 - VoceVista / spectrographic voice analysis pedagogy (UI inspiration).
