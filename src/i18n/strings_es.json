@@ -41,7 +41,10 @@
     "showHarmonics": "Marcadores armónicos",
     "showPipeOverlay": "Armónicos permitidos",
     "showModeNumbers": "Números de modo (n)",
-    "pipeBoundary": "Modelo de frontera"
+    "pipeBoundary": "Modelo de frontera",
+    "noticeMicrophoneDenied": "Permiso de micrófono denegado",
+    "noticeMicrophoneUnavailable": "No se pudo iniciar el micrófono",
+    "noticeRecordingLimit": "Se alcanzó el límite de duración de grabación"
   },
   "compose": {
     "title": "Componer",

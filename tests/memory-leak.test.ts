@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Decimator } from "../src/common/model/dsp/Decimator.js";
+import { VoiceAnalyzer } from "../src/common/model/VoiceAnalyzer.js";
 
 async function forceGC(earlyExitRef?: WeakRef<object>): Promise<void> {
   for (let i = 0; i < 15; i++) {
@@ -24,6 +25,21 @@ function createAndDropDecimator(): WeakRef<object> {
   return new WeakRef<object>(decimator);
 }
 
+function createAndDropVoiceAnalyzer(): WeakRef<object> {
+  const analyzer = new VoiceAnalyzer({
+    sampleRate: 44100,
+    fftSize: 1024,
+    windowType: "hann",
+    lpcOrder: 12,
+    f0MinHz: 60,
+    f0MaxHz: 800,
+    formantMaxHz: 5000,
+  });
+  // Run one frame so every lazily touched buffer/FFT path is exercised.
+  analyzer.analyze(new Float32Array(1024));
+  return new WeakRef<object>(analyzer);
+}
+
 describe("Memory leak regression", () => {
   it("global.gc is available (--expose-gc)", () => {
     expect(globalThis.gc).toBeDefined();
@@ -37,6 +53,12 @@ describe("Memory leak regression", () => {
 
   it("Decimator is collected after drop", async () => {
     const ref = createAndDropDecimator();
+    await forceGC(ref);
+    expect(ref.deref()).toBeUndefined();
+  });
+
+  it("VoiceAnalyzer (full DSP pipeline) is collected after drop", async () => {
+    const ref = createAndDropVoiceAnalyzer();
     await forceGC(ref);
     expect(ref.deref()).toBeUndefined();
   });

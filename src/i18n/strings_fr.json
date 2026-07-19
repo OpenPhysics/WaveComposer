@@ -41,7 +41,10 @@
     "showHarmonics": "Repères harmoniques",
     "showPipeOverlay": "Harmoniques autorisées",
     "showModeNumbers": "Numéros de mode (n)",
-    "pipeBoundary": "Modèle de frontière"
+    "pipeBoundary": "Modèle de frontière",
+    "noticeMicrophoneDenied": "Autorisation du microphone refusée",
+    "noticeMicrophoneUnavailable": "Impossible de démarrer le microphone",
+    "noticeRecordingLimit": "Limite de durée d'enregistrement atteinte"
   },
   "compose": {
     "title": "Composer",

@@ -121,6 +121,9 @@ class SpectrogramRaster extends CanvasNode {
     // New columns adopt the new colormap immediately; clear so it isn't mixed.
     model.fftSizeProperty.lazyLink(() => this.clear());
     viewProperties.colormapProperty.lazyLink(() => this.clear());
+    // The ring buffer bakes in the background color, so a theme change (e.g.
+    // projector mode) must repaint the history or stale-colored columns linger.
+    WaveComposerColors.chartBackgroundColorProperty.lazyLink(() => this.clear());
     viewProperties.showF0TrackProperty.lazyLink(() => this.invalidatePaint());
     viewProperties.showFormantTracksProperty.lazyLink(() => this.invalidatePaint());
   }

@@ -41,7 +41,10 @@
     "showHarmonics": "Harmonic Markers",
     "showPipeOverlay": "Allowed Harmonics",
     "showModeNumbers": "Mode Numbers (n)",
-    "pipeBoundary": "Boundary Model"
+    "pipeBoundary": "Boundary Model",
+    "noticeMicrophoneDenied": "Microphone permission denied",
+    "noticeMicrophoneUnavailable": "Could not start the microphone",
+    "noticeRecordingLimit": "Recording length limit reached"
   },
   "compose": {
     "title": "Compose",

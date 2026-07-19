@@ -1,12 +1,25 @@
 /**
  * StandingWaveNode.ts
  *
- * Compact 1D standing-wave strip: y(x) = Σ Aₙ sin(nπx/L) cos(2πnf₀t), synced to
- * the detected F0 (or the compose-lab fundamental when that source is active).
+ * Compact 1D standing-wave strip: y(x,t) = Σ Aₙ·φₙ(x)·cos(2πn·f_anim·t), synced
+ * to the detected F0 (or the compose-lab fundamental when that source is active).
+ *
+ * The spatial shape φₙ(x) follows the selected boundary model, and modes the
+ * boundary disallows (even harmonics of a closed pipe) are not drawn — matching
+ * the spectrum overlay's allowed-harmonic bands:
+ *   - string (fixed–fixed):      φₙ = sin(nπx)        (nodes at both ends)
+ *   - open pipe (displacement):  φₙ = cos(nπx)        (antinodes at both ends)
+ *   - closed pipe (displacement): φₙ = sin(nπx/2), n odd (node at closed end,
+ *     antinode at open end)
+ *
+ * The animation runs in deliberate slow motion (mode n oscillates at
+ * n·SLOW_MOTION_RATE_HZ) — animating at the real f₀ against the display refresh
+ * rate would alias into meaningless flicker.
  */
 import { Bounds2, Range } from "scenerystack/dot";
 import { CanvasNode, Node } from "scenerystack/scenery";
 import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.js";
+import { isModeAllowed, PipeBoundary } from "../../common/model/PipeBoundary.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
@@ -18,6 +31,10 @@ interface StandingWaveNodeOptions {
 
 const POINT_COUNT = 200;
 const TWO_PI = 2 * Math.PI;
+/** Slow-motion oscillation rate of the fundamental, in Hz of wall-clock time. */
+const SLOW_MOTION_RATE_HZ = 0.4;
+/** Cap on the per-frame clock advance so background tabs don't jump on return. */
+const MAX_FRAME_DT_S = 0.1;
 
 export class StandingWaveNode extends Node {
   public constructor(model: HarmonicChartModel, options: StandingWaveNodeOptions) {
@@ -43,7 +60,9 @@ class StandingWaveCanvas extends CanvasNode {
   private readonly model: HarmonicChartModel;
   private readonly viewWidth: number;
   private readonly viewHeight: number;
-  private phaseS = 0;
+  /** Slow-motion animation clock (s), advanced by real elapsed time while voiced. */
+  private clockS = 0;
+  private lastFrameMs: number | null = null;
 
   public constructor(model: HarmonicChartModel, viewWidth: number, viewHeight: number) {
     super({ canvasBounds: new Bounds2(0, 0, viewWidth, viewHeight) });
@@ -52,10 +71,28 @@ class StandingWaveCanvas extends CanvasNode {
     this.viewHeight = viewHeight;
 
     model.frameProcessedEmitter.addListener(() => {
-      const f0 = this.model.getFundamentalHz();
-      this.phaseS += f0 > 0 ? 1 / 60 : 0;
+      const nowMs = performance.now();
+      if (this.model.getFundamentalHz() > 0) {
+        const dtS = this.lastFrameMs === null ? 0 : (nowMs - this.lastFrameMs) / 1000;
+        this.clockS += Math.min(dtS, MAX_FRAME_DT_S);
+      }
+      this.lastFrameMs = nowMs;
       this.invalidatePaint();
     });
+  }
+
+  /** Spatial mode shape φₙ(x) for the current boundary model (x in [0, 1]). */
+  private static modeShape(n: number, xNorm: number, boundary: PipeBoundary): number {
+    if (boundary === PipeBoundary.OPEN_PIPE) {
+      // Displacement antinodes at both open ends.
+      return Math.cos(n * Math.PI * xNorm);
+    }
+    if (boundary === PipeBoundary.CLOSED_PIPE) {
+      // Node at the closed end (x = 0), antinode at the open end (x = 1).
+      return Math.sin((n * Math.PI * xNorm) / 2);
+    }
+    // String (and the unspecified default): nodes at both fixed ends.
+    return Math.sin(n * Math.PI * xNorm);
   }
 
   public override paintCanvas(context: CanvasRenderingContext2D): void {
@@ -64,7 +101,10 @@ class StandingWaveCanvas extends CanvasNode {
       return;
     }
 
-    const modes = this.getModeAmplitudes();
+    const boundary = this.model.pipeBoundaryProperty.value;
+    const modes = [...this.model.getStandingWaveModes()].filter(
+      (mode) => boundary === PipeBoundary.NONE || isModeAllowed(mode.modeNumber, boundary),
+    );
     const stroke = WaveComposerColors.standingWaveColorProperty.value.toCSS();
     context.strokeStyle = stroke;
     context.lineWidth = 2;
@@ -78,8 +118,8 @@ class StandingWaveCanvas extends CanvasNode {
           continue;
         }
         const n = mode.modeNumber;
-        const spatial = Math.sin(n * Math.PI * xNorm);
-        const temporal = Math.cos(TWO_PI * f0 * n * this.phaseS);
+        const spatial = StandingWaveCanvas.modeShape(n, xNorm, boundary);
+        const temporal = Math.cos(TWO_PI * SLOW_MOTION_RATE_HZ * n * this.clockS);
         y += mode.amplitude * spatial * temporal;
       }
       const px = xNorm * this.viewWidth;
@@ -91,9 +131,5 @@ class StandingWaveCanvas extends CanvasNode {
       }
     }
     context.stroke();
-  }
-
-  private getModeAmplitudes(): { modeNumber: number; amplitude: number }[] {
-    return [...this.model.getStandingWaveModes()];
   }
 }
