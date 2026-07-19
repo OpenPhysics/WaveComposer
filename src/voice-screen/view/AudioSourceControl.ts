@@ -52,6 +52,7 @@ export class AudioSourceControl extends Panel {
       tandem: Tandem.OPT_OUT,
     });
 
+    const a11yControls = StringManager.getInstance().getA11yStrings().controls;
     const playAudioCheckbox = new Checkbox(
       model.isAudioEnabledProperty,
       new Text(controls.playAudioStringProperty, {
@@ -63,6 +64,7 @@ export class AudioSourceControl extends Panel {
         checkboxColor: WaveComposerColors.textColorProperty,
         checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
         tandem: Tandem.OPT_OUT,
+        accessibleName: a11yControls.playAudioStringProperty,
       },
     );
 

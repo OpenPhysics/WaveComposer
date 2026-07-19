@@ -55,8 +55,17 @@ export class AnalyzerControlPanel extends Panel {
       tandem: Tandem.OPT_OUT,
     });
 
-    const freezeCheckbox = makeCheckbox(model.isFrozenProperty, controls.freezeStringProperty);
-    const playAudioCheckbox = makeCheckbox(model.isAudioEnabledProperty, controls.playAudioStringProperty);
+    const a11yControls = StringManager.getInstance().getA11yStrings().controls;
+    const freezeCheckbox = makeCheckbox(
+      model.isFrozenProperty,
+      controls.freezeStringProperty,
+      a11yControls.freezeStringProperty,
+    );
+    const playAudioCheckbox = makeCheckbox(
+      model.isAudioEnabledProperty,
+      controls.playAudioStringProperty,
+      a11yControls.playAudioStringProperty,
+    );
 
     // ── Analysis settings ───────────────────────────────────────────────────
     const maxFreqControl = makeNumberControl(
@@ -154,12 +163,17 @@ function divider(): Node {
   return new Line(0, 0, PANEL_WIDTH, 0, { stroke: WaveComposerColors.panelBorderColorProperty, lineWidth: 1 });
 }
 
-function makeCheckbox(property: Property<boolean>, labelProperty: TReadOnlyProperty<string>): Checkbox {
+function makeCheckbox(
+  property: Property<boolean>,
+  labelProperty: TReadOnlyProperty<string>,
+  accessibleName?: TReadOnlyProperty<string>,
+): Checkbox {
   return new Checkbox(property, controlText(labelProperty), {
     boxWidth: 16,
     checkboxColor: WaveComposerColors.textColorProperty,
     checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
     tandem: Tandem.OPT_OUT,
+    ...(accessibleName ? { accessibleName } : {}),
   });
 }
 

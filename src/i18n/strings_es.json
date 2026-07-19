@@ -227,6 +227,11 @@
         "interactionHint": "Habla o elige un preajuste de voz y observa cómo los formantes de las vocales se mueven en la gráfica F1 por F2."
       },
       "currentDetails": "Elige una fuente de voz y observa sus formantes de vocales, su cepstrum y su calidad vocal."
+    },
+    "controls": {
+      "resetAll": "Restablecer todo",
+      "freeze": "Congelar pantalla",
+      "playAudio": "Reproducir audio"
     }
   }
 }

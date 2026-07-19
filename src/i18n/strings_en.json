@@ -227,6 +227,11 @@
         "interactionHint": "Speak or choose a voice preset and watch the vowel formants move on the F1 by F2 plot."
       },
       "currentDetails": "Choose a voice source and observe its vowel formants, cepstrum, and voice quality."
+    },
+    "controls": {
+      "resetAll": "Reset All",
+      "freeze": "Freeze display",
+      "playAudio": "Play audio"
     }
   }
 }

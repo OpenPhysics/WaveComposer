@@ -227,6 +227,11 @@
         "interactionHint": "Parlez ou choisissez un préréglage vocal et observez les formants des voyelles se déplacer sur le graphique F1 par F2."
       },
       "currentDetails": "Choisissez une source vocale et observez ses formants de voyelles, son cepstre et sa qualité vocale."
+    },
+    "controls": {
+      "resetAll": "Tout réinitialiser",
+      "freeze": "Figer l'affichage",
+      "playAudio": "Lire l'audio"
     }
   }
 }

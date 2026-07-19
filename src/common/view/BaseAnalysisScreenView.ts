@@ -8,6 +8,7 @@ import { Node, Rectangle } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
+import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
@@ -35,6 +36,7 @@ export class BaseAnalysisScreenView extends ScreenView {
       },
       right: this.layoutBounds.maxX - WaveComposerConstants.SCREEN_MARGIN,
       bottom: this.layoutBounds.maxY - WaveComposerConstants.SCREEN_MARGIN,
+      accessibleName: StringManager.getInstance().getA11yStrings().controls.resetAllStringProperty,
     });
     this.addChild(this.resetAllButton);
     return this.resetAllButton;
