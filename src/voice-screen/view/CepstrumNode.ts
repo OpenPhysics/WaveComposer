@@ -10,9 +10,9 @@ import { CanvasLinePlot, ChartCanvasNode, type ChartTransform } from "scenerysta
 import { Range, Vector2 } from "scenerystack/dot";
 import { Line, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface CepstrumNodeOptions {

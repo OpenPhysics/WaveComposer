@@ -11,8 +11,8 @@ import { StandingWaveNode } from "../../analyzer-screen/view/StandingWaveNode.js
 import { WaveformNode } from "../../analyzer-screen/view/WaveformNode.js";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
 import { WaveComposerScreenSummaryContent } from "../../common/view/WaveComposerScreenSummaryContent.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 import { ComposePanelNode } from "./ComposePanelNode.js";
 import { ComposerControlPanel } from "./ComposerControlPanel.js";

@@ -12,9 +12,9 @@ import { Checkbox, ComboBox, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { PipeBoundary, PipeBoundaryValues } from "../../common/model/PipeBoundary.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 
 const MAX_FREQUENCY_RANGE = new Range(500, 3000);

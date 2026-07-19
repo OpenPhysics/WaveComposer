@@ -15,9 +15,9 @@ import { Tandem } from "scenerystack/tandem";
 import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
 import { PipeBoundary, PipeBoundaryValues } from "../../common/model/PipeBoundary.js";
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 

@@ -12,9 +12,9 @@ import type { BaseAnalysisModel } from "../../common/model/BaseAnalysisModel.js"
 import { hasDisplayWaveform } from "../../common/model/HarmonicChartModel.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 interface WaveformNodeOptions {
   viewWidth: number;

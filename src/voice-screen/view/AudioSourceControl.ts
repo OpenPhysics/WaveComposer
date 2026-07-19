@@ -13,9 +13,9 @@ import { ButtonNode, Checkbox, Panel, TextPushButton } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { AudioSource } from "../../common/model/BaseAnalysisModel.js";
 import { createSourceSelector } from "../../common/view/SourceSelector.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 const MAX_BUTTON_TEXT_WIDTH = 170;

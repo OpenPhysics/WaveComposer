@@ -8,10 +8,10 @@ import { Node, Rectangle } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { ScreenView } from "scenerystack/sim";
-import { ButtonNode } from "scenerystack/sun";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
-import { WaveComposerConstants } from "../WaveComposerConstants.js";
+import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../WaveComposerButtonOptions.js";
 
 export class BaseAnalysisScreenView extends ScreenView {
   protected readonly popupLayer = new Node();
@@ -28,7 +28,7 @@ export class BaseAnalysisScreenView extends ScreenView {
 
   protected addResetAllButton(model: BaseAnalysisModel, resetView: () => void): ResetAllButton {
     this.resetAllButton = new ResetAllButton({
-      buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
+      ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
         model.reset();
         resetView();

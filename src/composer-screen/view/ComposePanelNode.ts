@@ -10,9 +10,9 @@ import { NumberControl } from "scenerystack/scenery-phet";
 import { Checkbox, ComboBox, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { ComposePreset, ComposePresetValues } from "../../common/model/CompositionState.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 
 const PARTIAL_COLUMN_WIDTH = 168;

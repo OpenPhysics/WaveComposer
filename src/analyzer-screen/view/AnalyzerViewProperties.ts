@@ -9,7 +9,7 @@
  */
 import { BooleanProperty, NumberProperty, Property } from "scenerystack/axon";
 import { COLORMAP_NAME_VALUES, type ColormapName } from "../../common/view/Colormaps.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 export class AnalyzerViewProperties {
   /** Spectrogram colormap. */

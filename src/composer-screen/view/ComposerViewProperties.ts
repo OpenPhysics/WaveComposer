@@ -6,7 +6,7 @@
  */
 import { BooleanProperty, NumberProperty } from "scenerystack/axon";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 export class ComposerViewProperties implements ChartOverlayProperties {
   public readonly showLpcEnvelopeProperty = new BooleanProperty(false);

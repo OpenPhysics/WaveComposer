@@ -17,9 +17,9 @@ import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.j
 import { isModeAllowed, PipeBoundary } from "../../common/model/PipeBoundary.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 interface SpectrumNodeOptions {
   viewWidth: number;

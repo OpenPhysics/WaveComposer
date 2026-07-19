@@ -8,9 +8,9 @@ import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
 import { HBox, type Node, Rectangle, Text, VBox } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { Panel } from "scenerystack/sun";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 const BOX_WIDTH = 88;

@@ -11,9 +11,9 @@ import { Vector2 } from "scenerystack/dot";
 import { Circle, Node, Text } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { IPA_VOWELS } from "../../common/view/IpaVowels.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { VoiceModel } from "../model/VoiceModel.js";
 
 interface VowelPlotNodeOptions {

@@ -12,10 +12,10 @@ import { ButtonNode, ComboBox, type ComboBoxOptions, TextPushButton } from "scen
 import { Tandem } from "scenerystack/tandem";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { PresetCatalogEntry } from "../model/audio/presetCatalog.js";
 import { downloadBlob, encodeWav } from "../model/audio/WavEncoder.js";
 import { AudioSource, type BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
-import { WaveComposerConstants } from "../WaveComposerConstants.js";
 
 const CAPTION_MAX_WIDTH = 200;
 const BUTTON_MAX_TEXT_WIDTH = 180;

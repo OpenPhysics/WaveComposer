@@ -24,7 +24,7 @@ Physics for educators: `doc/model.md`. Architecture: `doc/implementation-notes.m
 | Shared view | `src/common/view/BaseAnalysisScreenView.ts`, `ChartFrame`, `WaveComposerScreenSummaryContent.ts` |
 | Screens | `src/composer-screen/`, `src/analyzer-screen/`, `src/voice-screen/` |
 | Assets | `src/assets/audio/` (bundled preset `.ogg` recordings) |
-| Constants | `src/common/WaveComposerConstants.ts`, `src/preferences/AnalysisConstants.ts` |
+| Constants | `src/WaveComposerConstants.ts`, `src/preferences/AnalysisConstants.ts` |
 | Colors / strings | `WaveComposerColors.ts`, `src/i18n/StringManager.ts` |
 
 ## Model

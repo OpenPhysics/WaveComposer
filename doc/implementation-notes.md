@@ -50,7 +50,7 @@ src/assets/audio/              bundled .ogg presets (see CREDITS.md)
 ```
 
 Charts use **frequency/time/formant axes**, not spatial model-view transforms. Layout constants live
-in `src/common/WaveComposerConstants.ts` and `src/preferences/AnalysisConstants.ts`.
+in `src/WaveComposerConstants.ts` and `src/preferences/AnalysisConstants.ts`.
 
 ## Key design decisions
 

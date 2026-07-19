@@ -19,8 +19,8 @@ import { Bounds2, Range } from "scenerystack/dot";
 import { CanvasNode, type CanvasNodeOptions, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { getColormapLut } from "../../common/view/Colormaps.js";
-import { WaveComposerConstants } from "../../common/WaveComposerConstants.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { AnalyzerModel } from "../model/AnalyzerModel.js";
 import type { AnalyzerViewProperties } from "./AnalyzerViewProperties.js";
 

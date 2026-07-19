@@ -19,7 +19,7 @@ import { Shape } from "scenerystack/kite";
 import { Orientation } from "scenerystack/phet-core";
 import { Node, Text } from "scenerystack/scenery";
 import WaveComposerColors from "../../WaveComposerColors.js";
-import { WaveComposerConstants } from "../WaveComposerConstants.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 const TICK_LENGTH = 5;
 const Y_TITLE_GUTTER = 38;
