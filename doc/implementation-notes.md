@@ -1,86 +1,95 @@
-# Implementation Notes - Wave Composer Simulation
+# Implementation Notes - Wave Composer
+
+Developer-facing notes on the architecture. The DSP pipeline is documented for educators in
+[model.md](./model.md).
 
 ## Architecture Overview
 
-Wave Composer is a VoceVista-style real-time voice and wave analysis simulation with three screens. Each screen has an isolated model extending `BaseAnalysisModel` with its own audio source and DSP pipeline. Inactive screens pause their analysis pipeline via `linkAnalysisModelToScreenActive()`.
+Wave Composer is a three-screen SceneryStack sim. Each screen owns an isolated model extending
+`BaseAnalysisModel` (separate audio source, recordings, and analysis outputs). Inactive screens pause
+analysis via `linkAnalysisModelToScreenActive()` in each `*Screen.ts`.
 
-### High-Level Architecture
+```
+src/common/model/
+  ├─ BaseAnalysisModel.ts        per-screen audio + settings + step() → VoiceAnalyzer
+  ├─ VoiceAnalyzer.ts            orchestrates one frame: YIN, FFT, LPC, cepstrum, HNR
+  ├─ CompositionState.ts         Composer harmonic partials (Composer screen)
+  ├─ HarmonicChartModel.ts / PipeBoundary.ts
+  ├─ dsp/
+  │   ├─ Fft.ts, WindowFunction.ts, SignalUtils.ts, Decimator.ts
+  │   ├─ LinearPredictor.ts, FormantAnalyzer.ts, Autocorrelation.ts
+  │   ├─ YinPitchDetector.ts, VoiceQuality.ts, NoteUtils.ts
+  │   └─ PolynomialRootFinder.ts, Complex.ts, types.ts
+  └─ audio/
+      ├─ AudioFrameSource.ts, SharedAudioContext.ts, AnalyserTap.ts
+      ├─ MicrophoneInput.ts, RecordedAudioSource.ts, AudioFileFrameSource.ts
+      ├─ PresetFrameSource.ts, SyntheticWebAudioSource.ts, SyntheticFrameSource.ts
+      ├─ ComposableFrameSource.ts, MonitoredAudioSource.ts, BufferPlaybackSource.ts
+      ├─ presetCatalog.ts, presetAssets.ts, voicePresets.ts, WavEncoder.ts
+      └─ presets.ts
 
-The simulation follows a modular architecture with **three screens**:
+src/common/view/
+  ├─ BaseAnalysisScreenView.ts   shared shell, start/stop, reset
+  ├─ ChartFrame.ts, SourceSelector.ts, Colormaps.ts, IpaVowels.ts
+  └─ WaveComposerScreenSummaryContent.ts, WaveComposerKeyboardHelpContent.ts
 
-- **Composer** (`src/composer-screen/`): Synthetic sinusoid superposition, beats, harmonics, standing-wave modes
-- **Analyzer** (`src/analyzer-screen/`): Spectrogram, spectrum with LPC envelope, waveform
-- **Voice & Vowels** (`src/voice-screen/`): F1×F2 vowel plot, cepstrum, voice-quality readout
+src/composer-screen/
+  ├─ model/ComposerModel.ts
+  └─ view/ ComposePanelNode, ComposerControlPanel, ComposerReadoutPanel, …
 
-Shared infrastructure lives under `src/common/`:
+src/analyzer-screen/
+  ├─ model/AnalyzerModel.ts
+  └─ view/ WaveformNode, SpectrumNode, SpectrogramNode, StandingWaveNode, …
 
-- **Model**: `BaseAnalysisModel`, `VoiceAnalyzer`, audio sources, DSP modules
-- **View**: `BaseAnalysisScreenView`, `ChartFrame`, `SourceSelector`, colormaps
+src/voice-screen/
+  ├─ model/VoiceModel.ts
+  └─ view/ VowelPlotNode, CepstrumNode, SourceFilterDiagramNode, VoiceQualityReadout, …
 
-Audio defaults to microphone input but starts lazily on the Start button. Permission-free preset recordings and synthetic fallbacks use `PresetFrameSource` and related classes. Attributions are in `CREDITS.md`.
+src/preferences/ WaveComposerPreferencesModel, AnalysisConstants, colormap/LPC/FFT prefs
+src/assets/audio/              bundled .ogg presets (see CREDITS.md)
+```
 
-### Coordinate System
+Charts use **frequency/time/formant axes**, not spatial model-view transforms. Layout constants live
+in `src/common/WaveComposerConstants.ts` and `src/preferences/AnalysisConstants.ts`.
 
-Displays use chart axes (frequency, time, formant space) rather than spatial model-view transforms. Layout margins are defined in `src/common/WaveComposerConstants.ts`.
+## Key design decisions
 
-## Model Components
+- **One analyzer, reusable buffers.** `VoiceAnalyzer` owns FFT/YIN instances and scratch arrays sized
+  to the current config — `analyze()` avoids large per-frame allocation (only small result wrappers).
+- **Screen isolation.** `main.ts` constructs three models (`ComposerModel`, `AnalyzerModel`,
+  `VoiceModel`) sharing one `WaveComposerPreferencesModel` for FFT size, window, LPC order, colormap.
+- **Lazy microphone.** No permission prompt on load; Start enables `MicrophoneInput`. Presets use
+  `AudioFileFrameSource` or `createSyntheticSource()` when assets are missing.
+- **Formant path decimation.** LPC branch decimates toward ~11 kHz (`FORMANT_LPC_RATE_HZ`) to match
+  reference voice-analysis practice (see comments in `VoiceAnalyzer.ts`).
+- **View-only overlay state.** `ComposerViewProperties` / `AnalyzerViewProperties` hold chart toggles
+  separate from the DSP model.
 
-### Core Model Design
+## Model / view design
 
-`BaseAnalysisModel` provides per-screen audio capture, FFT, formant analysis, F0 detection, and voice-quality metrics. Each screen model adds pedagogy-specific state:
+- `BaseAnalysisModel.step(dt)` pulls frames from the active source when listening, runs
+  `voiceAnalyzer.analyze()`, writes `f0Property`, `formantsProperty`, spectrum buffers exposed to views.
+- Spectrogram colour comes from user colormap preference, not hardcoded UI colors (`WaveComposerColors`
+  for chrome only).
+- `SourceSelector.dispose()` cleans up source-switch listeners when used in dynamic contexts.
 
-1. **ComposerModel** — `CompositionState` with up to four sinusoids, pipe boundary, standing-wave modes
-2. **AnalyzerModel** — instrument presets, freeze, pipe-boundary pedagogy
-3. **VoiceModel** — voice and phonetics presets
+## Disposal conventions
 
-### Component Specialization
+Most audio nodes and Property links live for the app lifetime. `MicrophoneInput` and recording sources
+should be stopped on screen deactivate (handled in screen active linking). If adding removable chart
+nodes or source panels, follow fleet WeakRef dispose tests.
 
-Shared model modules:
+## Testing
 
-1. **VoiceAnalyzer**: Orchestrates the per-frame DSP chain
-2. **CompositionState**: Harmonic partials for the Composer screen
-3. **DSP modules** (`src/common/model/dsp/`): `Fft`, `LinearPredictor`, `FormantAnalyzer`, `YinPitchDetector`, `Autocorrelation`, `Decimator`
-4. **Audio sources** (`src/common/model/audio/`): `MicrophoneInput`, `PresetFrameSource`, `RecordedAudioSource`, `SyntheticWebAudioSource`
-5. **WaveComposerPreferencesModel**: Shared FFT size, LPC order, window function, and analysis settings (Preferences → Visual)
+`npm test` (vitest, `--expose-gc`):
 
-Bundled preset audio lives in `src/assets/audio/`.
+- `tests/common/model/VoiceAnalyzer.test.ts` — end-to-end frame analysis on synthetic signals
+- `tests/common/model/dsp/` — Fft, LinearPredictor, FormantAnalyzer, YinPitchDetector, WindowFunction,
+  VoiceQuality, Decimator, NoteUtils, PolynomialRootFinder
+- `tests/common/model/audio/` — ComposableFrameSource, PresetFrameSource
+- `tests/memory-leak.test.ts` — fleet WeakRef/GC regression
 
-View-specific overlay toggles use `ComposerViewProperties` and `AnalyzerViewProperties`.
+## Multi-screen simulations
 
-## View Components
-
-### BaseAnalysisScreenView as Coordinator
-
-The base view provides the shared shell: background, reset, and popup layer. Each screen view adds specialized chart nodes.
-
-**Composer screen:**
-
-1. **ComposePanelNode**, **ComposerControlPanel**, **ComposerReadoutPanel**
-2. **StandingWaveNode**
-
-**Analyzer screen:**
-
-1. **WaveformNode**, **SpectrumNode**, **SpectrogramNode**
-2. **AnalyzerControlPanel**, **AnalyzerReadoutPanel**
-3. **StandingWaveNode**
-
-**Voice screen:**
-
-1. **VowelPlotNode**, **CepstrumNode**, **SourceFilterDiagramNode**
-2. **VoiceQualityReadout**, **AudioSourceControl**
-
-Shared view utilities: **ChartFrame**, **SourceSelector**, **ColormapPreferenceControl**.
-
-### Color Scheme
-
-Colors are defined in `WaveComposerColors.ts`. Spectrogram and chart colors should follow the user-selected colormap preference rather than hardcoded palettes.
-
-### Performance Optimizations
-
-- Inactive screen pipelines are paused to avoid redundant FFT work
-- FFT size is user-configurable via preferences
-- Preset audio avoids microphone permission for classroom demos
-
-Unit tests for DSP and audio modules run via `npm test` (Vitest).
-
-Note that audio nodes and Property links should be disposed if screen lifecycle changes; most objects persist for the app lifetime.
+Three screens with shared preferences and parallel model instances; see fleet `doc/multi-screen.md`
+for the pattern used in `main.ts` (pre-built models passed into Screen constructors).

@@ -6,56 +6,99 @@ simulation, in terms appropriate for an educator. It is the companion to
 
 ## Overview
 
-Wave Composer is a real-time **sound-analysis** simulation in the spirit of voice-spectrography tools.
-Rather than a physics model of moving objects, its "model" is a **digital signal processing (DSP)
-pipeline**: an audio signal is captured in short overlapping frames, and each frame is transformed into
-the frequency-domain and acoustic representations that musicians and speech scientists use. The three
-screens share the same pipeline (`BaseAnalysisModel`) but expose different views of it:
+Wave Composer is a real-time **sound-analysis** simulation in the spirit of voice-spectrography tools
+(e.g. VoceVista). Its "physics" is a **digital signal processing (DSP) pipeline**: audio arrives in
+short overlapping frames, and each frame is transformed into frequency-domain and acoustic
+representations musicians and speech scientists use. There is no Newtonian mechanics — the model is
+the analysis chain itself.
+
+Three screens share the same per-frame pipeline (`BaseAnalysisModel` + `VoiceAnalyzer`) but expose
+different pedagogical views:
 
 - **Composer** — the signal is *synthesized* from user-chosen sinusoids, beats, harmonic stacks, and
-  standing-wave modes, so students can hear and see how adding partials builds a complex tone.
-- **Analyzer** — a live **spectrogram** (frequency vs. time), instantaneous **spectrum** with an **LPC
-  spectral envelope**, and the time-domain **waveform**.
-- **Voice & Vowels** — an **F1×F2 vowel plot**, a **cepstrum**, and a voice-quality readout derived from
-  the same frame analysis applied to speech.
+  standing-wave modes so students hear and see how partials build a complex tone.
+- **Analyzer** — live **spectrogram** (frequency vs. time), instantaneous **spectrum** with an **LPC
+  spectral envelope**, and time-domain **waveform**.
+- **Voice & Vowels** — **F1×F2 vowel plot**, **cepstrum**, source–filter diagram, and voice-quality
+  readouts from the same analysis.
 
-The audio source defaults to the microphone but starts only when the student presses Start; permission-
-free preset recordings (and synthesized fallbacks) are available so the sim works without a microphone.
+Audio defaults to the **microphone** but capture starts only when the student presses Start;
+permission-free **preset recordings** (and synthesized fallbacks) allow classroom use without a mic.
+
+The key ideas a student should take away:
+
+- A periodic sound repeats in time; its **spectrum** shows which frequencies are present.
+- **Windowing** before the FFT reduces spectral leakage from analyzing finite chunks.
+- **LPC** fits a smooth envelope whose peaks approximate **formants** — vocal-tract resonances.
+- The **cepstrum** separates **source** (pitch periodicity) from **filter** (formant structure).
+- Adding sinusoids in the Composer screen demonstrates **superposition** in the time and frequency domains.
 
 ## Quantities and units
 
 | Quantity | Symbol | Units | Notes |
 |---|---|---|---|
-| Sample rate | fₛ | Hz | Frames are sampled from the audio context (typically 44.1/48 kHz) |
-| Frame (FFT) size | N | samples | User preference (1024 / 2048 / 4096); sets frequency resolution fₛ/N |
-| Frequency | f | Hz | Bin k maps to f = k·fₛ/N |
-| Magnitude / level | — | dB | Spectrum and spectrogram are shown on a decibel scale |
-| Fundamental frequency | f₀ | Hz | Estimated pitch of a voiced/periodic signal |
-| Formants | F1, F2, … | Hz | Vocal-tract resonance peaks, read from the LPC envelope |
-| LPC order | p | — | Number of linear-prediction coefficients (preference, range 8–16) |
-| Quefrency | τ | s | Independent axis of the cepstrum (the "spectrum of the log-spectrum") |
+| Sample rate | f_s | Hz | From Web Audio context (typically 44.1 or 48 kHz) |
+| Frame (FFT) size | N | samples | Preference: 1024 / 2048 / 4096; Δf = f_s / N |
+| Frequency bin | k | — | Maps to f = k · f_s / N |
+| Time | t | s | Spectrogram horizontal axis; frame advance |
+| Magnitude / level | — | dB | Power spectrum and spectrogram display |
+| Fundamental (pitch) | f₀ | Hz | YIN estimate; search band ~60–800 Hz |
+| Formants | F1, F2, … | Hz | Peaks of LPC envelope (≤ 5 reported) |
+| LPC order | p | — | Preference, typically 8–16 |
+| Quefrency | τ | s | Cepstrum horizontal axis; peak ⇒ f₀ ≈ 1/τ |
+| HNR / CPP | — | dB | Harmonic-to-noise ratio; cepstral peak prominence |
 
 ## Governing computations
 
-**Windowing + FFT.** Each frame of N samples is multiplied by a window function (Hann, etc., a user
-preference) to reduce spectral leakage, then transformed with the FFT to a magnitude spectrum. The
-spectrogram is the sequence of these spectra stacked over time and mapped to color.
+**Frame acquisition.** Active `AudioFrameSource` implementations (`MicrophoneInput`, preset file
+playback, synthetic Web Audio, user recordings) supply N-sample frames at f_s.
 
-**LPC envelope and formants.** Linear Predictive Coding fits an all-pole filter of order *p* to the
-frame; the smooth envelope of that filter approximates the vocal-tract transfer function, and its peaks
-are the formant frequencies F1, F2, … plotted on the vowel chart.
+**Window + FFT.** Each frame is multiplied by a window (Hann, Hamming, Blackman, … — user preference),
+then transformed with an in-place **FFT** to a **power spectrum in dB**:
 
-**Pitch (YIN).** The fundamental frequency f₀ is estimated with the YIN autocorrelation-difference
-method, which is robust to the octave errors that plague naive autocorrelation.
+```
+X[k] = FFT{ w[n] · x[n] }
+P[k] = 20 log₁₀ |X[k]|
+```
 
-**Cepstrum.** Taking the inverse transform of the log-magnitude spectrum produces the cepstrum; a peak at
-quefrency τ indicates periodicity at f₀ = 1/τ, separating the source (pitch) from the filter (formants).
+The spectrogram stacks successive P[k] over time with a user-selected colormap.
 
-All analysis advances through the model's `step(dt)` chain as new audio frames arrive; there are no
-frame-rate assumptions in the model.
+**Pitch (YIN).** The **YIN** autocorrelation-difference algorithm estimates f₀ and a confidence score;
+a frame is **voiced** when confidence exceeds ~0.5 and f₀ > 0.
 
-## Simplifications
+**LPC formants.** For formant analysis the chain applies **pre-emphasis**, a confined-Gaussian window,
+**decimation** toward ~11 kHz, **autocorrelation**, and **Levinson–Durbin** to obtain LPC coefficients.
+The all-pole filter envelope peaks are **formants** (F1, F2, …) plotted on the vowel chart.
 
-- Analysis is per-frame and assumes the signal is approximately stationary over each short frame.
-- Formant extraction is the standard LPC peak-picking approximation, not a full articulatory model.
-- Synthesized sources on the Composer screen are ideal (no instrument body or noise model).
+**Cepstrum.** Real cepstrum from log-magnitude spectrum:
+
+```
+c[τ] = IFFT{ log |X[k]| }
+```
+
+Peaks at low quefrency indicate periodicity (pitch); the **CPP** metric summarizes cepstral peak
+prominence. **HNR** uses autocorrelation harmonic vs. noise energy.
+
+**Composer synthesis.** `CompositionState` sums up to four sinusoids (frequency, amplitude, phase);
+optional beat pairs, harmonic stacks, and standing-wave boundary modes feed the same analyzer as live
+input.
+
+Analysis advances in `BaseAnalysisModel.step(dt)` when the screen is active and audio is running;
+inactive screens pause their pipeline to save CPU.
+
+## Simplifications and assumptions
+
+- **Short-time stationarity:** each frame is analyzed as if the signal were steady over N samples.
+- **LPC formants** are a standard peak-picking approximation, not an articulatory vocal-tract model.
+- **Composer sources** are ideal sinusoids — no instrument body, breath noise, or inharmonicity model.
+- Microphone permission and device quality affect real recordings; presets avoid that variability.
+- Pitch and formant trackers can fail on noisy, unvoiced, or polyphonic audio — confidence gates
+  hide unreliable readouts.
+
+## References
+
+- J. Laroche, "Estimation of the fundamental frequency of a monophonic signal" (YIN), *IEEE Trans. Speech
+  Audio*, 2002.
+- R. Rabiner & B. Gold, *Theory and Application of Digital Signal Processing* — FFT, windowing, LPC.
+- J. Markel & A. Gray, *Linear Prediction of Speech* — formant extraction via LPC.
+- VoceVista / spectrographic voice analysis pedagogy (UI inspiration).
