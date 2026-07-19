@@ -10,6 +10,7 @@ import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
 import { linkAnalysisModelToScreenActive } from "../common/model/BaseAnalysisModel.js";
 import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
+import { createAnalyzerIcon } from "../common/WaveComposerScreenIcons.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { AnalyzerModel } from "./model/AnalyzerModel.js";
 import { AnalyzerScreenView } from "./view/AnalyzerScreenView.js";
@@ -30,6 +31,8 @@ export class AnalyzerScreen extends Screen<AnalyzerModel, AnalyzerScreenView> {
         {
           backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
+          homeScreenIcon: createAnalyzerIcon(),
+          navigationBarIcon: createAnalyzerIcon(),
         },
         options,
       ),

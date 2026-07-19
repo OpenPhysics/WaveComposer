@@ -11,6 +11,7 @@ import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
 import { linkAnalysisModelToScreenActive } from "../common/model/BaseAnalysisModel.js";
 import { WaveComposerKeyboardHelpContent } from "../common/view/WaveComposerKeyboardHelpContent.js";
+import { createVoiceIcon } from "../common/WaveComposerScreenIcons.js";
 import WaveComposerColors from "../WaveComposerColors.js";
 import type { VoiceModel } from "./model/VoiceModel.js";
 import { VoiceScreenView } from "./view/VoiceScreenView.js";
@@ -29,6 +30,8 @@ export class VoiceScreen extends Screen<VoiceModel, VoiceScreenView> {
         {
           backgroundColorProperty: WaveComposerColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new WaveComposerKeyboardHelpContent(),
+          homeScreenIcon: createVoiceIcon(),
+          navigationBarIcon: createVoiceIcon(),
         },
         options,
       ),
