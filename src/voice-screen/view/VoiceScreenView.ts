@@ -67,6 +67,7 @@ export class VoiceScreenView extends BaseAnalysisScreenView {
     this.addChild(readout);
 
     this.addResetAllButton(model, () => this.reset());
+    this.establishPdomOrder([vowelContainer, sourceControl, cepstrumContainer, sourceFilterDiagram, readout]);
     this.addPopupLayer();
   }
 

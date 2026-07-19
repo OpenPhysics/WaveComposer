@@ -84,6 +84,7 @@ export class ComposerScreenView extends BaseAnalysisScreenView {
     this.addChild(charts);
 
     this.addResetAllButton(model, () => this.reset());
+    this.establishPdomOrder([composePanel, charts, controlPanel, readoutPanel]);
     this.addPopupLayer();
   }
 

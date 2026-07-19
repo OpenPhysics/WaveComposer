@@ -89,6 +89,7 @@ export class AnalyzerScreenView extends BaseAnalysisScreenView {
     this.addChild(charts);
 
     this.addResetAllButton(model, () => this.reset());
+    this.establishPdomOrder([controlPanel, charts, readoutPanel]);
     this.addPopupLayer();
   }
 

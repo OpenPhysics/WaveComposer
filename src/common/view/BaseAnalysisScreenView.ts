@@ -15,6 +15,7 @@ import { WaveComposerConstants } from "../WaveComposerConstants.js";
 
 export class BaseAnalysisScreenView extends ScreenView {
   protected readonly popupLayer = new Node();
+  private resetAllButton: ResetAllButton | null = null;
 
   public constructor(options?: ScreenViewOptions) {
     super(options);
@@ -25,8 +26,8 @@ export class BaseAnalysisScreenView extends ScreenView {
     this.addChild(background);
   }
 
-  protected addResetAllButton(model: BaseAnalysisModel, resetView: () => void): void {
-    const resetAllButton = new ResetAllButton({
+  protected addResetAllButton(model: BaseAnalysisModel, resetView: () => void): ResetAllButton {
+    this.resetAllButton = new ResetAllButton({
       buttonAppearanceStrategy: ButtonNode.FlatAppearanceStrategy,
       listener: () => {
         model.reset();
@@ -35,7 +36,24 @@ export class BaseAnalysisScreenView extends ScreenView {
       right: this.layoutBounds.maxX - WaveComposerConstants.SCREEN_MARGIN,
       bottom: this.layoutBounds.maxY - WaveComposerConstants.SCREEN_MARGIN,
     });
-    this.addChild(resetAllButton);
+    this.addChild(this.resetAllButton);
+    return this.resetAllButton;
+  }
+
+  /**
+   * Deterministic Tab / screen-reader order. ScreenView throws if you set
+   * `pdomOrder` on itself, so borrow the interactive nodes onto a wrapper.
+   * Reset All is always last.
+   */
+  protected establishPdomOrder(interactiveNodes: Node[]): void {
+    if (!this.resetAllButton) {
+      throw new Error("call addResetAllButton before establishPdomOrder");
+    }
+    this.addChild(
+      new Node({
+        pdomOrder: [...interactiveNodes, this.resetAllButton],
+      }),
+    );
   }
 
   /** Add after content so popups render above everything else. */
