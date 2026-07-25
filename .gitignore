@@ -38,3 +38,6 @@ Thumbs.db
 
 # Reference repos cloned locally for study (not part of this project)
 references/
+
+# CI / local npm audit artifact (must not be linted)
+audit.json
