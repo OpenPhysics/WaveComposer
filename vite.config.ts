@@ -155,7 +155,8 @@ export default defineConfig(({ mode }) => {
               name: "Wave Composer",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
               short_name: "WaveComposer",
-              description: "A single-screen SceneryStack simulation",
+              description:
+                "Three-screen real-time voice analysis: waveform, spectrum, and composition from microphone input",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
               theme_color: "#1a1a2e",
               // biome-ignore lint/style/useNamingConvention: Web App Manifest spec requires snake_case keys
