@@ -7,7 +7,7 @@
  * per screen while the construction stays uniform.
  *
  * Follows the OpenPhysics accessibility convention; see the canonical
- * TemplateSingleSim/SimScreenSummaryContent.ts.
+ * SceneryStackTemplate/SimScreenSummaryContent.ts.
  */
 import { ScreenSummaryContent } from "scenerystack/sim";
 import type { StringManager } from "../../i18n/StringManager.js";
