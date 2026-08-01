@@ -2,6 +2,9 @@
 
 Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
 
+
+Upstream audio/spectrogram references live under `../Baseline/WaveComposer/` (OpenPhysics/Baseline); they are not part of the shipped sim.
+
 ## Project
 
 VoceVista-style real-time **voice-analysis** simulation with three screens. Each screen has an isolated model extending `BaseAnalysisModel` (own audio source + DSP pipeline):
