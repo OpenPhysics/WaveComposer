@@ -37,8 +37,6 @@ Thumbs.db
 .claude/settings.local.json
 
 # Reference repos cloned locally for study (not part of this project)
-# Upstream: ../Baseline/WaveComposer/
-references/
 
 # CI / local npm audit artifact (must not be linted)
 audit.json
