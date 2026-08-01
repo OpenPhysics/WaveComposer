@@ -5,6 +5,7 @@
  * on the right, and a voice-quality readout below it. The screen owns an
  * independent VoiceModel, so its source and analysis settings are isolated.
  */
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
@@ -24,14 +25,19 @@ const CHART_LEFT_GUTTER = 56;
 const VOWEL_PLOT_SIZE = 380;
 const CEPSTRUM_HEIGHT = 200;
 
+export type VoiceScreenViewOptions = ScreenViewOptions;
+
 export class VoiceScreenView extends BaseAnalysisScreenView {
   private readonly vowelPlot: VowelPlotNode;
 
-  public constructor(model: VoiceModel, options?: ScreenViewOptions) {
-    super({
-      ...options,
-      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().voice),
-    });
+  public constructor(model: VoiceModel, providedOptions?: VoiceScreenViewOptions) {
+    const options = optionize<VoiceScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().voice),
+      },
+      providedOptions,
+    );
+    super(options);
 
     // ── Vowel plot (left) ───────────────────────────────────────────────────
     this.vowelPlot = new VowelPlotNode(model, { viewWidth: VOWEL_PLOT_SIZE, viewHeight: VOWEL_PLOT_SIZE });

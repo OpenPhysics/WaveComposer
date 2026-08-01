@@ -10,6 +10,8 @@
  * Positioning uses this.layoutBounds; the chart width is derived from the gap
  * left between the two side panels.
  */
+
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { BaseAnalysisScreenView } from "../../common/view/BaseAnalysisScreenView.js";
@@ -34,15 +36,26 @@ const SPECTRUM_HEIGHT = 150;
 const WAVEFORM_HEIGHT = 70;
 const STANDING_WAVE_HEIGHT = 56;
 
+export type AnalyzerScreenViewOptions = ScreenViewOptions;
+
 export class AnalyzerScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: AnalyzerViewProperties;
   private readonly spectrogram: SpectrogramNode;
 
-  public constructor(model: AnalyzerModel, viewProperties: AnalyzerViewProperties, options?: ScreenViewOptions) {
-    super({
-      ...options,
-      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().analyzer),
-    });
+  public constructor(
+    model: AnalyzerModel,
+    viewProperties: AnalyzerViewProperties,
+    providedOptions?: AnalyzerScreenViewOptions,
+  ) {
+    const options = optionize<AnalyzerScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new WaveComposerScreenSummaryContent(
+          StringManager.getInstance().getA11yStrings().analyzer,
+        ),
+      },
+      providedOptions,
+    );
+    super(options);
 
     this.viewProperties = viewProperties;
 

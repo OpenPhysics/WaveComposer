@@ -25,21 +25,26 @@
  *   const panel = new WaveComposerPanel(content, { fill: "transparent" });
  */
 
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { Node } from "scenerystack/scenery";
-import type { PanelOptions } from "scenerystack/sun";
-import { Panel } from "scenerystack/sun";
+import { Panel, type PanelOptions } from "scenerystack/sun";
 import WaveComposerColors from "../WaveComposerColors.js";
 import { PANEL_CORNER_RADIUS } from "../WaveComposerConstants.js";
 
+export type WaveComposerPanelOptions = PanelOptions;
+
 export class WaveComposerPanel extends Panel {
-  public constructor(content: Node, providedOptions?: PanelOptions) {
-    super(content, {
-      fill: WaveComposerColors.panelBackgroundColorProperty,
-      stroke: WaveComposerColors.panelBorderColorProperty,
-      cornerRadius: PANEL_CORNER_RADIUS,
-      xMargin: 12,
-      yMargin: 10,
-      ...providedOptions,
-    });
+  public constructor(content: Node, providedOptions?: WaveComposerPanelOptions) {
+    const options = optionize<WaveComposerPanelOptions, EmptySelfOptions, PanelOptions>()(
+      {
+        fill: WaveComposerColors.panelBackgroundColorProperty,
+        stroke: WaveComposerColors.panelBorderColorProperty,
+        cornerRadius: PANEL_CORNER_RADIUS,
+        xMargin: 12,
+        yMargin: 10,
+      },
+      providedOptions,
+    );
+    super(content, options);
   }
 }

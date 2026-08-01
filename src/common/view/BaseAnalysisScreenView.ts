@@ -4,21 +4,28 @@
  * Shared shell for analysis screens: background, popup layer ordering, Reset All,
  * and the no-op step used by display nodes that subscribe directly to models.
  */
+
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { Node, Rectangle } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
-import type { ScreenViewOptions } from "scenerystack/sim";
-import { ScreenView } from "scenerystack/sim";
+import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { BaseAnalysisModel } from "../model/BaseAnalysisModel.js";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../WaveComposerButtonOptions.js";
 
+export type BaseAnalysisScreenViewOptions = ScreenViewOptions;
+
 export class BaseAnalysisScreenView extends ScreenView {
   protected readonly popupLayer = new Node();
   private resetAllButton: ResetAllButton | null = null;
 
-  public constructor(options?: ScreenViewOptions) {
+  public constructor(providedOptions?: BaseAnalysisScreenViewOptions) {
+    const options = optionize<BaseAnalysisScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {},
+      providedOptions,
+    );
     super(options);
 
     const background = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {

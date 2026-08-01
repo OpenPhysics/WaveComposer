@@ -4,6 +4,8 @@
  * The wave-composition screen: partial controls on the left, waveform / spectrum /
  * standing-wave charts in the center, and live readouts on the right.
  */
+
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { VBox } from "scenerystack/scenery";
 import type { ScreenViewOptions } from "scenerystack/sim";
 import { SpectrumNode } from "../../analyzer-screen/view/SpectrumNode.js";
@@ -24,14 +26,25 @@ const SPACING = WaveComposerConstants.SPACING;
 const CHART_LEFT_GUTTER = 56;
 const RESET_BUTTON_CLEARANCE = 44;
 
+export type ComposerScreenViewOptions = ScreenViewOptions;
+
 export class ComposerScreenView extends BaseAnalysisScreenView {
   private readonly viewProperties: ComposerViewProperties;
 
-  public constructor(model: ComposerModel, viewProperties: ComposerViewProperties, options?: ScreenViewOptions) {
-    super({
-      ...options,
-      screenSummaryContent: new WaveComposerScreenSummaryContent(StringManager.getInstance().getA11yStrings().composer),
-    });
+  public constructor(
+    model: ComposerModel,
+    viewProperties: ComposerViewProperties,
+    providedOptions?: ComposerScreenViewOptions,
+  ) {
+    const options = optionize<ComposerScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
+      {
+        screenSummaryContent: new WaveComposerScreenSummaryContent(
+          StringManager.getInstance().getA11yStrings().composer,
+        ),
+      },
+      providedOptions,
+    );
+    super(options);
     this.viewProperties = viewProperties;
 
     const readoutPanel = new ComposerReadoutPanel(model);

@@ -16,6 +16,7 @@
  */
 import type { ChartTransform } from "scenerystack/bamboo";
 import { Bounds2, Range } from "scenerystack/dot";
+import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import { CanvasNode, type CanvasNodeOptions, Node } from "scenerystack/scenery";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { getColormapLut } from "../../common/view/Colormaps.js";
@@ -92,7 +93,11 @@ class SpectrogramRaster extends CanvasNode {
     viewHeight: number,
     providedOptions?: CanvasNodeOptions,
   ) {
-    super({ ...providedOptions, canvasBounds: new Bounds2(0, 0, viewWidth, viewHeight) });
+    const options = optionize<CanvasNodeOptions, EmptySelfOptions, CanvasNodeOptions>()(
+      { canvasBounds: new Bounds2(0, 0, viewWidth, viewHeight) },
+      providedOptions,
+    );
+    super(options);
     this.model = model;
     this.viewProperties = viewProperties;
     this.viewWidth = viewWidth;
