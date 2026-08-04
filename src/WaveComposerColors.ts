@@ -196,6 +196,27 @@ const WaveComposerColors = {
     projector: "#ef6c00",
   }),
 
+  // ── Composer partials ─────────────────────────────────────────────────────────
+  // One identity color per partial, shared by its swatch in the Compose panel and
+  // its component trace in the waveform chart, so a slider can be read straight
+  // off the curve it moves. Kept clear of the summed-waveform green.
+  partial1ColorProperty: new ProfileColorProperty(WaveComposerNamespace, "partial1", {
+    default: "#64b5f6",
+    projector: "#1565c0",
+  }),
+  partial2ColorProperty: new ProfileColorProperty(WaveComposerNamespace, "partial2", {
+    default: "#ba68c8",
+    projector: "#6a1b9a",
+  }),
+  partial3ColorProperty: new ProfileColorProperty(WaveComposerNamespace, "partial3", {
+    default: "#4dd0e1",
+    projector: "#00838f",
+  }),
+  partial4ColorProperty: new ProfileColorProperty(WaveComposerNamespace, "partial4", {
+    default: "#f06292",
+    projector: "#ad1457",
+  }),
+
   // ── Wave-physics overlays ─────────────────────────────────────────────────────
   /** Shaded bands for allowed harmonics on the spectrum. */
   allowedHarmonicBandColorProperty: new ProfileColorProperty(WaveComposerNamespace, "allowedHarmonicBand", {
@@ -241,5 +262,13 @@ const WaveComposerColors = {
     projector: "#1a1a1a",
   }),
 };
+
+/** Partial identity colors, indexed by partial number − 1. */
+export const PARTIAL_COLOR_PROPERTIES = [
+  WaveComposerColors.partial1ColorProperty,
+  WaveComposerColors.partial2ColorProperty,
+  WaveComposerColors.partial3ColorProperty,
+  WaveComposerColors.partial4ColorProperty,
+] as const;
 
 export default WaveComposerColors;

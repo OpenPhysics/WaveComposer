@@ -29,6 +29,7 @@ export class ComposerReadoutPanel extends Panel {
     ]);
 
     const fundamentalValue = new DerivedProperty([model.f0Property], (f0) => (f0 > 0 ? `${Math.round(f0)} Hz` : EMPTY));
+    const noteValue = new DerivedProperty([model.noteNameProperty], (note) => note || EMPTY);
     const beatValue = DerivedProperty.deriveAny(partialDependencies, () => {
       const beatHz = model.getBeatRateHz();
       return beatHz > 0 ? `${toFixed(beatHz, 1)} Hz` : EMPTY;
@@ -46,6 +47,7 @@ export class ComposerReadoutPanel extends Panel {
       xAlign: "left",
       rows: [
         [label(readout.pitchStringProperty), value(fundamentalValue)],
+        [label(readout.noteStringProperty), value(noteValue)],
         [label(composerStrings.beatRateStringProperty), value(beatValue)],
         [label(composerStrings.activePartialsStringProperty), value(partialCountValue)],
       ],
