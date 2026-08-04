@@ -64,6 +64,15 @@ in `src/WaveComposerConstants.ts` and `src/preferences/AnalysisConstants.ts`.
   reference voice-analysis practice (see comments in `VoiceAnalyzer.ts`).
 - **View-only overlay state.** `ComposerViewProperties` / `AnalyzerViewProperties` hold chart toggles
   separate from the DSP model.
+- **Superposition is drawn, not implied.** `WaveformNode` accepts optional `componentTraces`; the
+  Composer screen supplies one per partial, filled by `ComposerModel.fillPartialWaveform()` on the
+  same time base as the sum, so the faint component curves line up sample-for-sample with the bold
+  summed curve. Each partial's identity color (`PARTIAL_COLOR_PROPERTIES`) is shared by its swatch in
+  the Compose panel and its trace, which is what ties a slider to the curve it moves.
+- **Preset/partial coupling lives in the model.** `CompositionState` links `presetProperty` to
+  `applyPreset()` and every partial Property back to `markCustom()`, so panels stay presentational.
+  Partials a preset leaves off keep a non-zero `STANDBY_AMPLITUDE`: switching one on must do
+  something audible.
 
 ## Model / view design
 

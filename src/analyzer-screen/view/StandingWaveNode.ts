@@ -16,17 +16,26 @@
  * n·SLOW_MOTION_RATE_HZ) — animating at the real f₀ against the display refresh
  * rate would alias into meaningless flicker.
  */
+import type { TReadOnlyProperty } from "scenerystack/axon";
 import { Bounds2, Range } from "scenerystack/dot";
-import { CanvasNode, Node } from "scenerystack/scenery";
+import { CanvasNode, Node, Text } from "scenerystack/scenery";
 import type { HarmonicChartModel } from "../../common/model/HarmonicChartModel.js";
 import { isModeAllowed, PipeBoundary } from "../../common/model/PipeBoundary.js";
 import { ChartFrame } from "../../common/view/ChartFrame.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
+import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 
 interface StandingWaveNodeOptions {
   viewWidth: number;
   viewHeight: number;
+  /**
+   * Caption shown in place of the curve when there is a fundamental but no modes
+   * to draw. Only meaningful where "no modes" has a definite cause — on the
+   * Composer screen it means the partials are not a harmonic series; from
+   * measured audio it just means no harmonics were resolved, so it is omitted.
+   */
+  emptyMessage?: TReadOnlyProperty<string>;
 }
 
 const POINT_COUNT = 200;
@@ -40,6 +49,7 @@ export class StandingWaveNode extends Node {
   public constructor(model: HarmonicChartModel, options: StandingWaveNodeOptions) {
     super();
     const physics = StringManager.getInstance().getPhysicsStrings();
+    const axisStrings = StringManager.getInstance().getAxisStrings();
 
     const frame = new ChartFrame({
       viewWidth: options.viewWidth,
@@ -49,9 +59,28 @@ export class StandingWaveNode extends Node {
       xSpacing: 0.25,
       ySpacing: 0.5,
       xLabel: physics.standingWaveStringProperty,
+      yLabel: axisStrings.displacementStringProperty,
     });
 
     frame.plotLayer.addChild(new StandingWaveCanvas(model, options.viewWidth, options.viewHeight));
+
+    // A blank strip is ambiguous: it looks the same whether the partials are silent
+    // or simply cannot stand on one string. Say which it is.
+    if (options.emptyMessage) {
+      const emptyCaption = new Text(options.emptyMessage, {
+        font: WaveComposerConstants.LABEL_FONT,
+        fill: WaveComposerColors.axisColorProperty,
+        maxWidth: options.viewWidth - 16,
+        centerX: options.viewWidth / 2,
+        centerY: options.viewHeight / 2,
+        visible: false,
+      });
+      frame.plotLayer.addChild(emptyCaption);
+      model.frameProcessedEmitter.addListener(() => {
+        emptyCaption.visible = model.getFundamentalHz() > 0 && model.getStandingWaveModes().length === 0;
+      });
+    }
+
     this.addChild(frame);
   }
 }
@@ -105,6 +134,11 @@ class StandingWaveCanvas extends CanvasNode {
     const modes = [...this.model.getStandingWaveModes()].filter(
       (mode) => boundary === PipeBoundary.NONE || isModeAllowed(mode.modeNumber, boundary),
     );
+    // No modes means no wave — drawing the flat y = 0 line instead would read as a
+    // real (motionless) standing wave, and it sits on top of the empty-state caption.
+    if (modes.length === 0) {
+      return;
+    }
     const stroke = WaveComposerColors.standingWaveColorProperty.value.toCSS();
     context.strokeStyle = stroke;
     context.lineWidth = 2;

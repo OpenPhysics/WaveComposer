@@ -89,13 +89,26 @@ export class CompositionState {
   private applyingPreset = false;
 
   public constructor() {
+    // Partials 3 and 4 start off, but with an audible amplitude: switching one on
+    // has to change the sound and the charts, or the checkbox reads as broken.
     this.partials = [
       new CompositionPartialState(220, 0.5, 0, true),
       new CompositionPartialState(224, 0.5, 0, true),
-      new CompositionPartialState(440, 0, 0, false),
-      new CompositionPartialState(660, 0, 0, false),
+      new CompositionPartialState(440, 0.3, 0, false),
+      new CompositionPartialState(660, 0.2, 0, false),
     ];
     assertPartialCount(this.partials.length);
+
+    // Choosing a named preset rewrites every partial; editing any partial afterwards
+    // drops the selection back to Custom. Both directions live here rather than in
+    // the panel so the state stays consistent no matter who changes it.
+    this.presetProperty.lazyLink((preset) => this.applyPreset(preset));
+    for (const partial of this.partials) {
+      partial.frequencyProperty.lazyLink(() => this.markCustom());
+      partial.amplitudeProperty.lazyLink(() => this.markCustom());
+      partial.phaseProperty.lazyLink(() => this.markCustom());
+      partial.enabledProperty.lazyLink(() => this.markCustom());
+    }
   }
 
   /** Snapshot for the composable audio generator. */
@@ -119,9 +132,7 @@ export class CompositionState {
           partial?.enabledProperty.set(false);
           continue;
         }
-        if (values.enabled) {
-          partial.frequencyProperty.set(values.frequencyHz);
-        }
+        partial.frequencyProperty.set(values.frequencyHz);
         partial.amplitudeProperty.set(values.amplitude);
         partial.phaseProperty.set(values.phaseRad);
         partial.enabledProperty.set(values.enabled);
@@ -159,6 +170,13 @@ type PartialDefaults = {
   enabled: boolean;
 };
 
+/**
+ * Amplitude parked on a partial that a preset leaves switched off. It is silent
+ * until the user enables it, but non-zero so that enabling it audibly (and
+ * visibly) adds the next harmonic instead of doing nothing.
+ */
+const STANDBY_AMPLITUDE = 0.25;
+
 function presetDefaults(preset: ComposePreset): PartialDefaults[] {
   const pi = Math.PI;
   const halfPi = pi / 2;
@@ -166,51 +184,51 @@ function presetDefaults(preset: ComposePreset): PartialDefaults[] {
     case ComposePreset.PURE_TONE:
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
-        { frequencyHz: 440, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 660, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 880, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 440, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 660, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 880, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.OCTAVE:
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
         { frequencyHz: 440, amplitude: 0.25, phaseRad: 0, enabled: true },
-        { frequencyHz: 660, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 880, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 660, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 880, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.MAJOR_TRIAD:
       return [
         { frequencyHz: 220, amplitude: 0.4, phaseRad: 0, enabled: true },
         { frequencyHz: 275, amplitude: 0.3, phaseRad: 0, enabled: true },
         { frequencyHz: 330, amplitude: 0.25, phaseRad: 0, enabled: true },
-        { frequencyHz: 440, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 440, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.BEATS:
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
         { frequencyHz: 224, amplitude: 0.5, phaseRad: 0, enabled: true },
-        { frequencyHz: 440, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 660, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 440, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 660, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.PHASE_CANCEL:
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
         { frequencyHz: 220, amplitude: 0.5, phaseRad: pi, enabled: true },
-        { frequencyHz: 440, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 660, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 440, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 660, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.PHASE_QUADRATURE:
       return [
         { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
         { frequencyHz: 220, amplitude: 0.5, phaseRad: halfPi, enabled: true },
-        { frequencyHz: 440, amplitude: 0, phaseRad: 0, enabled: false },
-        { frequencyHz: 660, amplitude: 0, phaseRad: 0, enabled: false },
+        { frequencyHz: 440, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
+        { frequencyHz: 660, amplitude: STANDBY_AMPLITUDE, phaseRad: 0, enabled: false },
       ];
     case ComposePreset.HARMONIC_SERIES:
       return [
-        { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
-        { frequencyHz: 440, amplitude: 0.35, phaseRad: 0, enabled: true },
-        { frequencyHz: 660, amplitude: 0.25, phaseRad: 0, enabled: true },
-        { frequencyHz: 880, amplitude: 0.15, phaseRad: 0, enabled: true },
+        { frequencyHz: 220, amplitude: 0.4, phaseRad: 0, enabled: true },
+        { frequencyHz: 440, amplitude: 0.28, phaseRad: 0, enabled: true },
+        { frequencyHz: 660, amplitude: 0.2, phaseRad: 0, enabled: true },
+        { frequencyHz: 880, amplitude: 0.12, phaseRad: 0, enabled: true },
       ];
     case ComposePreset.SQUARE_ISH:
       return [
@@ -220,11 +238,13 @@ function presetDefaults(preset: ComposePreset): PartialDefaults[] {
         { frequencyHz: 1540, amplitude: 0.07, phaseRad: 0, enabled: true },
       ];
     case ComposePreset.SAWTOOTH_ISH:
+      // Sawtooth series: amplitude ∝ 1/n, scaled so the in-phase sum stays inside
+      // the ±1 the oscilloscope plots (0.48 + 0.24 + 0.16 + 0.12 = 1).
       return [
-        { frequencyHz: 220, amplitude: 0.5, phaseRad: 0, enabled: true },
-        { frequencyHz: 440, amplitude: 0.25, phaseRad: 0, enabled: true },
-        { frequencyHz: 660, amplitude: 0.17, phaseRad: 0, enabled: true },
-        { frequencyHz: 880, amplitude: 0.125, phaseRad: 0, enabled: true },
+        { frequencyHz: 220, amplitude: 0.48, phaseRad: 0, enabled: true },
+        { frequencyHz: 440, amplitude: 0.24, phaseRad: 0, enabled: true },
+        { frequencyHz: 660, amplitude: 0.16, phaseRad: 0, enabled: true },
+        { frequencyHz: 880, amplitude: 0.12, phaseRad: 0, enabled: true },
       ];
     case ComposePreset.TRIANGLE_ISH:
       // Triangle series: (8/π²)·Σ (−1)^((n−1)/2)·sin(nωt)/n², n odd — the sign

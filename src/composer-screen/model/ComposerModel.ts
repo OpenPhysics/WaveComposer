@@ -32,6 +32,10 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
   public readonly composition = new CompositionState();
   public readonly pipeBoundaryProperty = createPipeBoundaryProperty(PipeBoundary.STRING);
   private readonly displayGenerator = createComposableGenerator(() => this.composition.getPartials());
+  /** One single-partial generator per partial, for the oscilloscope's component traces. */
+  private readonly partialGenerators = this.composition.partials.map((partial) =>
+    createComposableGenerator(() => [partial.toPartial()]),
+  );
 
   public constructor(analysisPreferences: WaveComposerPreferencesModel) {
     super([], analysisPreferences, { includeMicrophone: false });
@@ -130,5 +134,22 @@ export class ComposerModel extends BaseAnalysisModel implements HarmonicChartMod
    */
   public fillDisplayWaveform(out: Float32Array): void {
     this.displayGenerator(out, this.sampleRateProperty.value, this.getSourcePlaybackTimeS(COMPOSE_SOURCE_ID));
+  }
+
+  /**
+   * Fills `out` with one partial's contribution on the same time base as
+   * {@link fillDisplayWaveform}, so a component trace lines up sample-for-sample
+   * with the sum drawn over it. Returns false when the partial contributes
+   * nothing (off, silent, or out of range), in which case `out` is left zeroed.
+   */
+  public fillPartialWaveform(index: number, out: Float32Array): boolean {
+    const partial = this.composition.partials[index];
+    const generator = this.partialGenerators[index];
+    if (!(partial && generator && partial.enabledProperty.value) || partial.amplitudeProperty.value <= 0) {
+      out.fill(0);
+      return false;
+    }
+    generator(out, this.sampleRateProperty.value, this.getSourcePlaybackTimeS(COMPOSE_SOURCE_ID));
+    return true;
   }
 }

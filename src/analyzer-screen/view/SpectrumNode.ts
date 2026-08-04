@@ -29,10 +29,13 @@ interface SpectrumNodeOptions {
 const FREQUENCY_TICK_SPACING_HZ = 1000;
 const DB_TICK_SPACING = 20;
 const HARMONIC_BAND_WIDTH_HZ = 18;
+/** Clear space (view px) required between consecutive mode-number labels. */
+const MODE_LABEL_MIN_GAP = 6;
 
 export class SpectrumNode extends Node {
   private readonly model: HarmonicChartModel;
   private readonly viewProperties: ChartOverlayProperties;
+  private readonly viewWidth: number;
   private readonly viewHeight: number;
   private readonly chartTransform: ChartTransform;
   private readonly spectrumPlot: CanvasLinePlot;
@@ -48,6 +51,7 @@ export class SpectrumNode extends Node {
     super();
     this.model = model;
     this.viewProperties = viewProperties;
+    this.viewWidth = options.viewWidth;
     this.viewHeight = options.viewHeight;
     const axisStrings = StringManager.getInstance().getAxisStrings();
     const physics = StringManager.getInstance().getPhysicsStrings();
@@ -203,6 +207,9 @@ export class SpectrumNode extends Node {
     }
     const shape = new Shape();
     const modeLabelPattern = StringManager.getInstance().getPhysicsStrings().modeLabelStringProperty.value;
+    // Labels are only drawn where the previous one has room to end; a dense harmonic
+    // stack would otherwise smear "n = 1 n = 2 n = 3 …" into an unreadable line.
+    let lastLabelRight = Number.NEGATIVE_INFINITY;
     let modeNumber = 0;
     for (let freq = f0; freq <= maxF; freq += f0) {
       modeNumber += 1;
@@ -210,15 +217,16 @@ export class SpectrumNode extends Node {
         const x = this.chartTransform.modelToViewX(freq);
         shape.moveTo(x, 0).lineTo(x, this.viewHeight);
         if (this.viewProperties.showModeNumbersProperty.value) {
-          const label = modeLabelPattern.replace("{{n}}", `${modeNumber}`);
-          this.modeNumberLayer.addChild(
-            new Text(label, {
-              font: WaveComposerConstants.LABEL_FONT,
-              fill: WaveComposerColors.harmonicMarkerColorProperty,
-              centerX: x,
-              top: 2,
-            }),
-          );
+          const label = new Text(modeLabelPattern.replace("{{n}}", `${modeNumber}`), {
+            font: WaveComposerConstants.LABEL_FONT,
+            fill: WaveComposerColors.harmonicMarkerColorProperty,
+            centerX: x,
+            top: 2,
+          });
+          if (label.left > lastLabelRight + MODE_LABEL_MIN_GAP && label.right < this.viewWidth) {
+            lastLabelRight = label.right;
+            this.modeNumberLayer.addChild(label);
+          }
         }
       }
     }

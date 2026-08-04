@@ -154,9 +154,10 @@ export class ChartFrame extends Node {
 }
 
 function defaultTickLabel(value: number): Node {
-  // Integers print plainly; fractional spacings (e.g. 0.5) keep one decimal so
-  // adjacent ticks don't collapse to the same rounded label.
-  const text = Number.isInteger(value) ? `${value}` : toFixed(value, 1);
+  // Integers print plainly; fractional spacings keep up to two decimals (trailing
+  // zeros trimmed) so adjacent ticks don't collapse to the same rounded label —
+  // a 0.25 spacing has to read 0.25 / 0.5 / 0.75, not 0.3 / 0.5 / 0.8.
+  const text = Number.isInteger(value) ? `${value}` : `${Number.parseFloat(toFixed(value, 2))}`;
   return new Text(text, {
     font: WaveComposerConstants.TICK_FONT,
     fill: WaveComposerColors.textColorProperty,

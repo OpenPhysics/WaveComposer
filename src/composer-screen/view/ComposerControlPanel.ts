@@ -4,24 +4,28 @@
  * Playback, analysis settings, overlay toggles, and boundary-model controls
  * for the Composer screen.
  */
-import type { NumberProperty, Property, TReadOnlyProperty } from "scenerystack/axon";
+import type { Property, TReadOnlyProperty } from "scenerystack/axon";
 import { Dimension2, Range } from "scenerystack/dot";
-import { Line, type Node, Text, VBox } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
+import { AlignGroup, Line, type Node, Text, VBox } from "scenerystack/scenery";
 import { Checkbox, ComboBox, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { PipeBoundary, PipeBoundaryValues } from "../../common/model/PipeBoundary.js";
-import type { ChartOverlayProperties } from "../../common/view/ChartOverlayProperties.js";
+import { createCompactNumberControl } from "../../common/view/CompactNumberControl.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import WaveComposerColors from "../../WaveComposerColors.js";
 import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
+import type { ComposerViewProperties } from "./ComposerViewProperties.js";
 
 const MAX_FREQUENCY_RANGE = new Range(500, 3000);
 const PANEL_WIDTH = 232;
+/** Shorter track than the partial sliders: these titles and values are wider. */
+const RANGE_SLIDER_TRACK_SIZE = new Dimension2(40, 3);
+/** Control rows span the panel's inner width exactly. */
+const ROW_WIDTH = PANEL_WIDTH - 2 * WaveComposerConstants.PANEL_X_MARGIN;
 
 export class ComposerControlPanel extends Panel {
-  public constructor(model: ComposerModel, viewProperties: ChartOverlayProperties, listParent: Node) {
+  public constructor(model: ComposerModel, viewProperties: ComposerViewProperties, listParent: Node) {
     const controls = StringManager.getInstance().getControlStrings();
     const panelStrings = StringManager.getInstance().getPanelStrings();
     const physics = StringManager.getInstance().getPhysicsStrings();
@@ -35,9 +39,25 @@ export class ComposerControlPanel extends Panel {
 
     const a11yControls = StringManager.getInstance().getA11yStrings().controls;
 
+    // Shared columns so the two range controls line up.
+    const titleGroup = new AlignGroup({ matchVertical: false });
+    const valueGroup = new AlignGroup({ matchVertical: false });
+
+    const overlays = new VBox({
+      align: "left",
+      spacing: 4,
+      children: [
+        sectionLabel(controls.overlaysStringProperty),
+        makeCheckbox(viewProperties.showComponentsProperty, controls.showComponentsStringProperty),
+        makeCheckbox(viewProperties.showHarmonicsProperty, controls.showHarmonicsStringProperty),
+        makeCheckbox(viewProperties.showPipeOverlayProperty, controls.showPipeOverlayStringProperty),
+        makeCheckbox(viewProperties.showModeNumbersProperty, controls.showModeNumbersStringProperty),
+      ],
+    });
+
     const content = new VBox({
       align: "left",
-      spacing: 8,
+      spacing: 6,
       children: [
         new Text(panelStrings.controlsStringProperty, {
           font: WaveComposerConstants.PANEL_TITLE_FONT,
@@ -50,18 +70,34 @@ export class ComposerControlPanel extends Panel {
         ),
         makeCheckbox(model.isFrozenProperty, controls.freezeStringProperty, a11yControls.freezeStringProperty),
         divider(),
-        makeNumberControl(
+        createCompactNumberControl(
           controls.maxFrequencyStringProperty,
           model.maxFrequencyProperty,
           MAX_FREQUENCY_RANGE,
-          500,
-          " Hz",
+          {
+            titleGroup,
+            valueGroup,
+            delta: 500,
+            numberDisplayOptions: { valuePattern: "{{value}} Hz" },
+            rowWidth: ROW_WIDTH,
+            sliderOptions: { trackSize: RANGE_SLIDER_TRACK_SIZE, keyboardStep: 500 },
+          },
+        ),
+        createCompactNumberControl(
+          controls.timeWindowStringProperty,
+          viewProperties.timeWindowMsProperty,
+          WaveComposerConstants.TIME_WINDOW_MS_RANGE,
+          {
+            titleGroup,
+            valueGroup,
+            delta: 10,
+            numberDisplayOptions: { valuePattern: "{{value}} ms" },
+            rowWidth: ROW_WIDTH,
+            sliderOptions: { trackSize: RANGE_SLIDER_TRACK_SIZE, keyboardStep: 10 },
+          },
         ),
         divider(),
-        sectionLabel(controls.overlaysStringProperty),
-        makeCheckbox(viewProperties.showHarmonicsProperty, controls.showHarmonicsStringProperty),
-        makeCheckbox(viewProperties.showPipeOverlayProperty, controls.showPipeOverlayStringProperty),
-        makeCheckbox(viewProperties.showModeNumbersProperty, controls.showModeNumbersStringProperty),
+        overlays,
         sectionLabel(controls.pipeBoundaryStringProperty),
         new ComboBox(
           model.pipeBoundaryProperty,
@@ -120,24 +156,5 @@ function makeCheckbox(
     checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
     tandem: Tandem.OPT_OUT,
     ...(accessibleName ? { accessibleName } : {}),
-  });
-}
-
-function makeNumberControl(
-  title: TReadOnlyProperty<string>,
-  property: NumberProperty,
-  range: Range,
-  delta: number,
-  unit = "",
-): NumberControl {
-  return new NumberControl(title, property, range, {
-    delta,
-    titleNodeOptions: { font: WaveComposerConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
-    numberDisplayOptions: {
-      valuePattern: `{{value}}${unit}`,
-      textOptions: { font: WaveComposerConstants.CONTROL_FONT },
-    },
-    sliderOptions: { trackSize: new Dimension2(120, 3), thumbSize: new Dimension2(13, 22) },
-    tandem: Tandem.OPT_OUT,
   });
 }

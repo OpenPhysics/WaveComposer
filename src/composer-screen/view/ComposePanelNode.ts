@@ -2,32 +2,44 @@
  * ComposePanelNode.ts
  *
  * Partial controls and pedagogical presets for the Composer screen.
+ *
+ * Each partial is one block: a color-swatch checkbox that switches it on, and
+ * compact single-row frequency / amplitude / phase controls beneath. The swatch
+ * color is the partial's identity — the same color draws its component trace in
+ * the waveform chart, so a slider can be traced to the curve it moves. A partial
+ * that is switched off dims but stays adjustable, so it can be set up before it
+ * is heard.
  */
-import { DerivedProperty, type NumberProperty, type TReadOnlyProperty } from "scenerystack/axon";
-import { Dimension2, Range } from "scenerystack/dot";
-import { GridBox, Line, type Node, Text, VBox } from "scenerystack/scenery";
-import { NumberControl } from "scenerystack/scenery-phet";
+import { PatternStringProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { Range } from "scenerystack/dot";
+import { AlignGroup, Circle, HBox, Line, type Node, Text, VBox } from "scenerystack/scenery";
 import { Checkbox, ComboBox, Panel } from "scenerystack/sun";
 import { Tandem } from "scenerystack/tandem";
 import { ComposePreset, ComposePresetValues } from "../../common/model/CompositionState.js";
+import { createCompactNumberControl } from "../../common/view/CompactNumberControl.js";
 import { StringManager } from "../../i18n/StringManager.js";
-import WaveComposerColors from "../../WaveComposerColors.js";
+import WaveComposerColors, { PARTIAL_COLOR_PROPERTIES } from "../../WaveComposerColors.js";
 import { WaveComposerConstants } from "../../WaveComposerConstants.js";
 import type { ComposerModel } from "../model/ComposerModel.js";
 
-const PARTIAL_COLUMN_WIDTH = 168;
-const PARTIAL_COLUMN_SPACING = 8;
-const PANEL_WIDTH = PARTIAL_COLUMN_WIDTH * 2 + PARTIAL_COLUMN_SPACING;
-const SLIDER_TRACK_WIDTH = PARTIAL_COLUMN_WIDTH - 28;
-const SLIDER_TRACK_HEIGHT = 2;
-const SLIDER_THUMB_SIZE = new Dimension2(10, 16);
+const PANEL_WIDTH = 226;
+/** Control rows span the panel's inner width exactly. */
+const ROW_WIDTH = PANEL_WIDTH - 2 * WaveComposerConstants.PANEL_X_MARGIN;
+const SWATCH_RADIUS = 5;
+/** Opacity of a switched-off partial's controls — dimmed, but still adjustable. */
+const DISABLED_PARTIAL_OPACITY = 0.5;
+
 const FREQUENCY_RANGE = new Range(50, 2000);
 const AMPLITUDE_RANGE = new Range(0, 1);
 const PHASE_RANGE = new Range(0, 2 * Math.PI);
+/** Phase steps in whole degrees (15° per arrow press) — the presets speak in degrees too. */
+const PHASE_STEP_RAD = Math.PI / 12;
+const DEGREES_PER_RADIAN = 180 / Math.PI;
 
 export class ComposePanelNode extends Panel {
   public constructor(model: ComposerModel, listParent: Node) {
     const compose = StringManager.getInstance().getComposeStrings();
+    const a11yControls = StringManager.getInstance().getA11yStrings().controls;
 
     const presetLabels: Record<ComposePreset, TReadOnlyProperty<string>> = {
       [ComposePreset.CUSTOM]: compose.customStringProperty,
@@ -57,52 +69,89 @@ export class ComposePanelNode extends Panel {
         listStroke: WaveComposerColors.panelBorderColorProperty,
         highlightFill: WaveComposerColors.comboBoxHighlightColorProperty,
         accessibleName: compose.presetStringProperty,
+        maxWidth: PANEL_WIDTH,
         tandem: Tandem.OPT_OUT,
       },
     );
-    model.composition.presetProperty.lazyLink((preset) => {
-      if (preset !== ComposePreset.CUSTOM) {
-        model.composition.applyPreset(preset);
-      }
-    });
 
-    const partialSections: Node[] = [];
-    for (let index = 0; index < model.composition.partials.length; index++) {
-      const partial = model.composition.partials[index];
-      if (!partial) {
-        continue;
-      }
-      const label = new DerivedProperty([compose.partialStringProperty], (text) => `${text} ${index + 1}`);
-      partial.frequencyProperty.lazyLink(() => model.composition.markCustom());
-      partial.amplitudeProperty.lazyLink(() => model.composition.markCustom());
-      partial.phaseProperty.lazyLink(() => model.composition.markCustom());
-      partial.enabledProperty.lazyLink(() => model.composition.markCustom());
+    // Shared groups keep every row's title column and value column the same width,
+    // so all twelve sliders line up down the panel.
+    const titleGroup = new AlignGroup({ matchVertical: false });
+    const valueGroup = new AlignGroup({ matchVertical: false });
 
-      partialSections.push(
-        new VBox({
-          align: "left",
-          spacing: 2,
-          children: [
-            sectionLabel(label),
-            makeCheckbox(partial.enabledProperty, compose.enabledStringProperty),
-            makeNumberControl(compose.frequencyStringProperty, partial.frequencyProperty, FREQUENCY_RANGE, 1, " Hz"),
-            makeNumberControl(compose.amplitudeStringProperty, partial.amplitudeProperty, AMPLITUDE_RANGE, 0.05, "", 2),
-            makeNumberControl(compose.phaseStringProperty, partial.phaseProperty, PHASE_RANGE, 0.1, " rad", 2),
-          ],
+    const partialSections: Node[] = model.composition.partials.map((partial, index) => {
+      const partialNumber = index + 1;
+      const patternValues = { n: partialNumber };
+      const label = new PatternStringProperty(compose.partialLabelStringProperty, patternValues);
+      const swatchColorProperty = PARTIAL_COLOR_PROPERTIES[index] ?? WaveComposerColors.accentColorProperty;
+
+      const enabledCheckbox = new Checkbox(
+        partial.enabledProperty,
+        new HBox({
+          spacing: 6,
+          children: [new Circle(SWATCH_RADIUS, { fill: swatchColorProperty }), controlText(label)],
         }),
+        {
+          boxWidth: 16,
+          checkboxColor: WaveComposerColors.textColorProperty,
+          checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
+          accessibleName: label,
+          tandem: Tandem.OPT_OUT,
+        },
       );
-    }
 
-    const partialGrid = new GridBox({
-      xSpacing: PARTIAL_COLUMN_SPACING,
-      ySpacing: 4,
-      xAlign: "left",
-      rows: [partialSections.slice(0, 2), partialSections.slice(2, 4)],
+      const sliders = new VBox({
+        align: "left",
+        spacing: 1,
+        children: [
+          createCompactNumberControl(compose.frequencyStringProperty, partial.frequencyProperty, FREQUENCY_RANGE, {
+            titleGroup,
+            valueGroup,
+            rowWidth: ROW_WIDTH,
+            delta: 1,
+            accessibleName: new PatternStringProperty(a11yControls.partialFrequencyStringProperty, patternValues),
+            numberDisplayOptions: { valuePattern: "{{value}} Hz" },
+            sliderOptions: { keyboardStep: 10, shiftKeyboardStep: 1, pageKeyboardStep: 100 },
+          }),
+          createCompactNumberControl(compose.amplitudeStringProperty, partial.amplitudeProperty, AMPLITUDE_RANGE, {
+            titleGroup,
+            valueGroup,
+            rowWidth: ROW_WIDTH,
+            delta: 0.05,
+            accessibleName: new PatternStringProperty(a11yControls.partialAmplitudeStringProperty, patternValues),
+            numberDisplayOptions: { decimalPlaces: 2 },
+            sliderOptions: { keyboardStep: 0.05, shiftKeyboardStep: 0.01, pageKeyboardStep: 0.2 },
+          }),
+          createCompactNumberControl(compose.phaseStringProperty, partial.phaseProperty, PHASE_RANGE, {
+            titleGroup,
+            valueGroup,
+            rowWidth: ROW_WIDTH,
+            delta: PHASE_STEP_RAD,
+            accessibleName: new PatternStringProperty(a11yControls.partialPhaseStringProperty, patternValues),
+            numberDisplayOptions: { numberFormatter: (radians) => `${Math.round(radians * DEGREES_PER_RADIAN)}\u00b0` },
+            sliderOptions: {
+              keyboardStep: PHASE_STEP_RAD,
+              shiftKeyboardStep: PHASE_STEP_RAD / 3,
+              pageKeyboardStep: PHASE_STEP_RAD * 6,
+            },
+          }),
+        ],
+      });
+      // Dim, but do not disable: a partial can be dialed in before it is switched on.
+      partial.enabledProperty.link((enabled) => {
+        sliders.opacity = enabled ? 1 : DISABLED_PARTIAL_OPACITY;
+      });
+
+      return new VBox({
+        align: "left",
+        spacing: 3,
+        children: [enabledCheckbox, sliders],
+      });
     });
 
     const content = new VBox({
       align: "left",
-      spacing: 6,
+      spacing: 7,
       children: [
         new Text(compose.titleStringProperty, {
           font: WaveComposerConstants.PANEL_TITLE_FONT,
@@ -111,7 +160,7 @@ export class ComposePanelNode extends Panel {
         sectionLabel(compose.presetStringProperty),
         presetCombo,
         divider(),
-        partialGrid,
+        ...partialSections,
       ],
     });
 
@@ -139,46 +188,4 @@ function sectionLabel(stringProperty: TReadOnlyProperty<string>): Node {
 
 function divider(): Node {
   return new Line(0, 0, PANEL_WIDTH, 0, { stroke: WaveComposerColors.panelBorderColorProperty, lineWidth: 1 });
-}
-
-function makeCheckbox(
-  property: import("scenerystack/axon").Property<boolean>,
-  labelProperty: TReadOnlyProperty<string>,
-): Checkbox {
-  return new Checkbox(property, controlText(labelProperty), {
-    boxWidth: 16,
-    checkboxColor: WaveComposerColors.textColorProperty,
-    checkboxColorBackground: WaveComposerColors.chartBackgroundColorProperty,
-    tandem: Tandem.OPT_OUT,
-  });
-}
-
-function makeNumberControl(
-  title: TReadOnlyProperty<string>,
-  property: NumberProperty,
-  range: Range,
-  delta: number,
-  unit = "",
-  decimalPlaces = 0,
-): NumberControl {
-  return new NumberControl(title, property, range, {
-    delta,
-    layoutFunction: NumberControl.createLayoutFunction1({
-      ySpacing: 2,
-      titleXSpacing: 4,
-      arrowButtonsXSpacing: 6,
-    }),
-    titleNodeOptions: { font: WaveComposerConstants.LABEL_FONT, fill: WaveComposerColors.textColorProperty },
-    numberDisplayOptions: {
-      valuePattern: `{{value}}${unit}`,
-      decimalPlaces,
-      textOptions: { font: WaveComposerConstants.CONTROL_FONT },
-    },
-    arrowButtonOptions: { scale: 0.72 },
-    sliderOptions: {
-      trackSize: new Dimension2(SLIDER_TRACK_WIDTH, SLIDER_TRACK_HEIGHT),
-      thumbSize: SLIDER_THUMB_SIZE,
-    },
-    tandem: Tandem.OPT_OUT,
-  });
 }

@@ -44,7 +44,9 @@
     "pipeBoundary": "Modelo de frontera",
     "noticeMicrophoneDenied": "Permiso de micrófono denegado",
     "noticeMicrophoneUnavailable": "No se pudo iniciar el micrófono",
-    "noticeRecordingLimit": "Se alcanzó el límite de duración de grabación"
+    "noticeRecordingLimit": "Se alcanzó el límite de duración de grabación",
+    "timeWindow": "Ventana temporal",
+    "showComponents": "Ondas componentes"
   },
   "compose": {
     "title": "Componer",
@@ -60,11 +62,10 @@
     "sawtoothIsh": "Tipo diente de sierra (todos los armónicos)",
     "squareIsh": "Tipo cuadrada (armónicos impares)",
     "triangleIsh": "Tipo triangular (impares, 1/n²)",
-    "partial": "Parcial",
     "frequency": "Frecuencia",
     "amplitude": "Amplitud",
     "phase": "Fase",
-    "enabled": "Activado"
+    "partialLabel": "Parcial {{n}}"
   },
   "physics": {
     "none": "Ninguno",
@@ -78,7 +79,8 @@
     "sourceFilter": "Modelo fuente-filtro",
     "glottalSource": "Fuente glótica",
     "vocalTract": "Filtro del tracto vocal",
-    "resonanceTuning": "F0 cerca de F1 — ajuste de resonancia"
+    "resonanceTuning": "F0 cerca de F1 — ajuste de resonancia",
+    "noStandingWaveModes": "Sin modos de onda estacionaria para estos parciales"
   },
   "presets": {
     "microphone": "Micrófono",
@@ -198,7 +200,8 @@
     "amplitude": "Amplitud",
     "quefrency": "Quefrencia (ms)",
     "f1": "F1 (Hz)",
-    "f2": "F2 (Hz)"
+    "f2": "F2 (Hz)",
+    "displacement": "Desplazamiento"
   },
   "units": {
     "hz": "Hz",
@@ -234,7 +237,10 @@
     "controls": {
       "resetAll": "Restablecer todo",
       "freeze": "Congelar pantalla",
-      "playAudio": "Reproducir audio"
+      "playAudio": "Reproducir audio",
+      "partialFrequency": "Frecuencia del parcial {{n}}",
+      "partialAmplitude": "Amplitud del parcial {{n}}",
+      "partialPhase": "Fase del parcial {{n}}"
     }
   }
 }
