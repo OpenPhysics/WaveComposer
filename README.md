@@ -1,5 +1,7 @@
 # Wave Composer
 
+[![CI](https://github.com/OpenPhysics/WaveComposer/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/WaveComposer/actions/workflows/ci.yml)
+
 A three-screen VoceVista-style real-time voice-analysis simulation built with [SceneryStack](https://scenerystack.org/),
 Vite 8, TypeScript 7, and Biome 2.
 
