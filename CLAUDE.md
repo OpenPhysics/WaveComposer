@@ -56,6 +56,7 @@ deriving from each screen's model.
 ## Compliance carve-outs
 
 - **Nested constants:** DSP/layout constants beside analysis models under `src/common/model/` and `src/preferences/AnalysisConstants.ts` (multi-screen tool layout).
+- **PWA Workbox globPatterns:** also precaches `wav`/`mp3`/`ogg` so bundled preset audio clips work offline.
 
 
 ### `package.json` overrides
