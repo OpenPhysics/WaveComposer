@@ -79,9 +79,32 @@ export class MicrophoneInput implements AudioFrameSource, MonitoredAudioSource {
     return this.startInProgress;
   }
 
+  /**
+   * Whether this document's Permissions-Policy allows `getUserMedia({ audio })`.
+   * Calling getUserMedia when the policy forbids microphone logs a console error
+   * (`Permissions policy violation`) even if the promise is caught.
+   */
+  private static isMicrophoneAllowedByPolicy(): boolean {
+    if (typeof document === "undefined") {
+      return false;
+    }
+    const policyHolder = document as Document & {
+      permissionsPolicy?: { allowsFeature: (feature: string) => boolean };
+      featurePolicy?: { allowsFeature: (feature: string) => boolean };
+    };
+    const policy = policyHolder.permissionsPolicy ?? policyHolder.featurePolicy;
+    if (policy && typeof policy.allowsFeature === "function") {
+      return policy.allowsFeature("microphone");
+    }
+    return true;
+  }
+
   private async doStart(): Promise<void> {
     if (this.tap.analyser) {
       return;
+    }
+    if (!(MicrophoneInput.isMicrophoneAllowedByPolicy() && navigator.mediaDevices?.getUserMedia)) {
+      throw new Error("Microphone is not available in this document");
     }
     const generation = this.startGeneration;
     const stream = await navigator.mediaDevices.getUserMedia({
