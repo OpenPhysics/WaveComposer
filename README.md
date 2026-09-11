@@ -1,6 +1,6 @@
 # Wave Composer
 
-[![CI](https://github.com/OpenPhysics/WaveComposer/actions/workflows/ci.yml/badge.svg)](https://github.com/OpenPhysics/WaveComposer/actions/workflows/ci.yml)
+[![CI](../../actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 
 A three-screen VoceVista-style real-time voice-analysis simulation built with [SceneryStack](https://scenerystack.org/),
 Vite 8, TypeScript 7, and Biome 2.
@@ -49,9 +49,9 @@ npm start        # dev server → http://localhost:5173
 
 ## License
 
-GNU Affero General Public License v3.0 — see [OpenPhysics org license](https://github.com/OpenPhysics/.github/blob/main/LICENSE).
+GNU Affero General Public License v3.0 — see [OpenLyceum org license](https://github.com/OpenLyceum/.github/blob/main/LICENSE).
 
 ## Contributing
 
-See [OpenPhysics contributing guidelines](https://github.com/OpenPhysics/.github/blob/main/CONTRIBUTING.md).
+See [OpenLyceum contributing guidelines](https://github.com/OpenLyceum/.github/blob/main/CONTRIBUTING.md).
 Report bugs via GitHub Issues; use org issue templates.

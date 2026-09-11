@@ -1,9 +1,9 @@
 # CLAUDE.md — Wave Composer
 
-Sim-specific context for AI assistants. General SceneryStack guidance: [OpenPhysics/.github/CLAUDE.md](https://github.com/OpenPhysics/.github/blob/main/CLAUDE.md).
+Sim-specific context for AI assistants. General SceneryStack guidance: [OpenLyceum/.github/CLAUDE.md](https://github.com/OpenLyceum/.github/blob/main/CLAUDE.md).
 
 
-Upstream audio/spectrogram references live under `../Baseline/WaveComposer/` (OpenPhysics/Baseline); they are not part of the shipped sim.
+Upstream audio/spectrogram references live under `../Baseline/WaveComposer/` (OpenLyceum/Baseline); they are not part of the shipped sim.
 
 ## Project
 
@@ -46,7 +46,7 @@ Each screen model adds screen-specific Properties (harmonic stacks, spectrogram 
 
 ## Accessibility
 
-Follows the shared [OpenPhysics accessibility convention](https://github.com/OpenPhysics/Baton/blob/main/ACCESSIBILITY.md).
+Follows the shared [OpenLyceum accessibility convention](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
 Each screen registers the shared `WaveComposerScreenSummaryContent` (constructed with the screen's
 own `a11y` subgroup — `composer` / `analyzer` / `voice`) via the `screenSummaryContent`
 super-option. A11y strings live under the top-level `a11y` key in each locale JSON, via

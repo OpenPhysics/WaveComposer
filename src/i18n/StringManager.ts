@@ -69,7 +69,7 @@ export class StringManager {
   /**
    * Accessibility (Interactive Description) StringProperties, grouped per screen
    * (`composer`, `analyzer`, `voice`): screen-summary regions and a current-details
-   * paragraph. See the shared OpenPhysics ACCESSIBILITY.md convention.
+   * paragraph. See the shared OpenLyceum ACCESSIBILITY.md convention.
    */
   public getA11yStrings() {
     return stringProperties.a11y;

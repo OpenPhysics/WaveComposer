@@ -6,7 +6,7 @@
  * subgroup (composer / analyzer / voice), so the structured regions stay accurate
  * per screen while the construction stays uniform.
  *
- * Follows the OpenPhysics accessibility convention; see the canonical
+ * Follows the OpenLyceum accessibility convention; see the canonical
  * SceneryStackTemplate/SimScreenSummaryContent.ts.
  */
 import { ScreenSummaryContent } from "scenerystack/sim";
